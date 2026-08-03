@@ -106,7 +106,7 @@ class SocialPlannerAI(models.AbstractModel):
     @api.model
     def _call_ai_agent(self, system_prompt, user_prompt):
         """ Anropa ai_agent för att generera innehåll.
-        Detta är en enkel implementation — kan ersättas med full ai_quest-integration. """
+        Detta är en enkel implementation — kan ersättas med full ai.coworker-integration. """
         # Försök hitta en AI-agent att använda
         agent = self.env['ai.agent'].search([
             ('generic_agent', '=', True),
@@ -120,9 +120,9 @@ class SocialPlannerAI(models.AbstractModel):
             return False
 
         try:
-            # Skapa en enkel quest/session för engångsgenerering
+            # Skapa en enkel session för engångsgenerering
             # Detta är en förenklad approach — full integration kräver
-            # en dedicated ai.quest med rätt config
+            # en dedicated ai.coworker med rätt config
             result = agent.trigger_prompt(
                 message=f"{system_prompt}\n\n---\n\n{user_prompt}",
             )
