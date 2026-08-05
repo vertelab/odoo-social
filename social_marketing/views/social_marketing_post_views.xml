@@ -238,7 +238,7 @@
 <!--                            <field name="failure_reason" />-->
 <!--                            <field name="live_post_link" />-->
 <!--                            <templates>-->
-<!--                                <t t-name="kanban-box">-->
+<!--                                <t t-name="card">-->
 <!--                                    <div class="o_social_marketing_live_post_kanban ms-0 me-3">-->
 <!--                                        <div class="row">-->
 <!--                                            <div class="col-md-8 o_social_marketing_live_post_kanban_account">-->

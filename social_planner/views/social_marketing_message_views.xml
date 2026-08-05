@@ -21,7 +21,7 @@
                 <field name="from_avatar_url"/>
                 <field name="response_time_minutes"/>
                 <templates>
-                    <t t-name="kanban-box">
+                    <t t-name="card">
                         <div t-attf-class="oe_kanban_global_click o_social_inbox_card #{state == 'unread' and 'o_social_inbox_unread' or ''} #{priority in ['2','3'] and 'o_social_inbox_priority' or ''}">
                             <div class="o_social_inbox_card_header">
                                 <img t-att-src="from_avatar_url"

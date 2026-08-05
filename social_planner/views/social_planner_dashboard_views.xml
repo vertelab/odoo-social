@@ -18,7 +18,7 @@
                                     <field name="active_plan_ids" nolabel="1">
                                         <kanban class="o_kanban_mobile">
                                             <templates>
-                                                <t t-name="kanban-box">
+                                                <t t-name="card">
                                                     <div>
                                                         <strong><field name="name"/></strong>
                                                         <div>
