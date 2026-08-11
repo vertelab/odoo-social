@@ -21,3 +21,4 @@ access_social_marketing_utm_campaign_manager,social.utm.campaign.manager,utm.mod
 access_social_marketing_utm_medium_manager,social.utm.medium.manager,utm.model_utm_medium,social_marketing.group_social_marketing_manager,1,1,1,1
 access_social_marketing_utm_source_manager,social.utm.source.manager,utm.model_utm_source,social_marketing.group_social_marketing_manager,1,1,1,1
 
+access_social_marketing_cron_line_admin,social.marketing.cron.line admin,model_social_marketing_cron_line,social_marketing.group_social_marketing_manager,1,1,1,1

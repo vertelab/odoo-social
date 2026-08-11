@@ -27,7 +27,35 @@
                             </setting>
                         </block>
                         <block title="Developer Accounts" help="Use your own Developer Accounts on our Social app. Those credentials are provided in the developer section of your professional social media account." class="o_social_marketing_developer_settings"></block>
-                    </app>
+                                                <block title="Background Jobs">
+                                <setting id="social_bg_jobs_display" string="Cron-jobb">
+                                    <field name="social_marketing_cron_line_ids" widget="one2many">
+                                        <form>
+                                            <group>
+                                                <field name="cron_id" readonly="1" force_save="1"/>
+                                                <field name="cron_name" readonly="1"/>
+                                                <field name="cron_active"/>
+                                                <field name="cron_interval_number"/>
+                                                <field name="cron_interval_type"/>
+                                                <field name="cron_lastcall" readonly="1"/>
+                                                <field name="cron_failure_count" readonly="1"/>
+                                                <field name="cron_code" readonly="1"/>
+                                                <button name="action_run_now" type="object"
+                                                        string="Kör nu" icon="fa-play"/>
+                                            </group>
+                                        </form>
+                                        <list>
+                                            <field name="cron_name"/>
+                                            <field name="cron_active"/>
+                                            <field name="cron_interval_number"/>
+                                            <field name="cron_interval_type"/>
+                                            <field name="cron_lastcall"/>
+                                            <field name="cron_failure_count"/>
+                                        </list>
+                                    </field>
+                                </setting>
+                            </block>
+                        </app>
                 </t>
             </xpath>
         </field>
