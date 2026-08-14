@@ -1,4 +1,4 @@
-F# Translation of Odoo Server.
+# Translation of Odoo Server.
 # This file contains the translation of the following modules:
 # 	* social_marketing
 #
