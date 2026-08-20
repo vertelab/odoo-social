@@ -81,6 +81,29 @@ class SocialMarketingCompetitor(models.Model):
         self.env['social_marketing.competitor.snapshot'].create(vals)
         self.last_checked = fields.Datetime.now()
 
+    def action_open_profile(self):
+        """Open the competitor's profile URL in a new browser tab."""
+        self.ensure_one()
+        if not self.profile_url:
+            raise UserError(_('No profile URL set for this competitor.'))
+        return {
+            'type': 'ir.actions.act_url',
+            'url': self.profile_url,
+            'target': 'new',
+        }
+
+    def action_compare(self):
+        """Open the competitor list filtered to the same platform for comparison."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Competitors — %s' % self.media_type,
+            'res_model': 'social_marketing.competitor',
+            'view_mode': 'list,form',
+            'domain': [('media_type', '=', self.media_type)],
+            'target': 'current',
+        }
+
     def action_update_metrics(self, follower_count=0, engagement_rate=0.0,
                                avg_likes=0, avg_comments=0, avg_shares=0,
                                post_frequency=0.0, top_theme=False):
