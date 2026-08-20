@@ -10,7 +10,7 @@ _logger = logging.getLogger(__name__)
 
 
 class SocialPlannerAI(models.AbstractModel):
-    """ AI-helper för social_planner — integration med ai_agent för
+    """ AI-helper för social_planner — integration med ai.coworker (ai_agent_core) för
     innehållsgenerering, sentimentanalys och optimering. """
 
     _name = 'social.planner.ai'
@@ -19,7 +19,7 @@ class SocialPlannerAI(models.AbstractModel):
     @api.model
     def generate_post_content(self, post_id):
         """ Generera innehåll för en social_marketing.post med AI.
-        Använder ai_agent för att skapa innehåll baserat på planens
+        Använder ai.coworker för att skapa innehåll baserat på planens
         målgrupp, policyns tonalitet, och radens tema. """
         post = self.env['social_marketing.post'].browse(post_id)
         if not post.exists():
@@ -29,7 +29,7 @@ class SocialPlannerAI(models.AbstractModel):
         system_prompt = self._build_system_prompt(post)
         user_prompt = self._build_user_prompt(post)
 
-        # Försök anropa ai_agent om tillgängligt
+        # Försök anropa ai.coworker om tillgängligt
         try:
             generated = self._call_ai_agent(system_prompt, user_prompt)
             if generated:
@@ -105,34 +105,27 @@ class SocialPlannerAI(models.AbstractModel):
 
     @api.model
     def _call_ai_agent(self, system_prompt, user_prompt):
-        """ Anropa ai_agent för att generera innehåll.
-        Detta är en enkel implementation — kan ersättas med full ai.coworker-integration. """
-        # Försök hitta en AI-agent att använda
-        agent = self.env['ai.agent'].search([
-            ('generic_agent', '=', True),
+        """ Anropa ai.coworker (ai_agent_core) för att generera innehåll.
+
+        Den gamla ai_agent-modulen (ai.agent.trigger_prompt) ersattes av
+        ai_agent_core — innehållsgenerering görs via ai.coworker.run(). """
+        # Hitta en aktiv AI-coworker att använda
+        coworker = self.env['ai.coworker'].search([
+            ('active', '=', True),
         ], limit=1)
 
-        if not agent:
-            agent = self.env['ai.agent'].search([], limit=1)
-
-        if not agent:
-            _logger.warning("No AI agent found for content generation")
+        if not coworker:
+            _logger.warning("No AI coworker found for content generation")
             return False
 
         try:
-            # Skapa en enkel session för engångsgenerering
-            # Detta är en förenklad approach — full integration kräver
-            # en dedicated ai.coworker med rätt config
-            result = agent.trigger_prompt(
-                message=f"{system_prompt}\n\n---\n\n{user_prompt}",
+            return coworker.run(
+                prompt=user_prompt,
+                system_prompt=system_prompt,
             )
-            if result:
-                return result.strip()
         except Exception as e:
-            _logger.warning("AI agent call failed: %s", str(e))
+            _logger.warning("AI coworker call failed: %s", str(e))
             return False
-
-        return False
 
     @api.model
     def analyze_sentiment(self, text):

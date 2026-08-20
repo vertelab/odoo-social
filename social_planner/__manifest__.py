@@ -24,7 +24,7 @@ Social Planner — Kommunikationsplanering för sociala medier
         'social_marketing_linkedin',
         'social_marketing_facebook',
         'social_marketing_instagram',
-        'ai_agent',
+        'ai_agent_core',
     ],
     'data': [
         'security/security.xml',
