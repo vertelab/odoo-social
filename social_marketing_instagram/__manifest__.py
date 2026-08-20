@@ -15,7 +15,7 @@ Requires a Facebook App with Instagram Basic Display and Instagram Graph API:
 - instagram_manage_messages
 - instagram_manage_comments
     """,
-    'depends': ['social_marketing', 'social_planner', 'social_marketing_facebook'],
+    'depends': ['social_marketing', 'social_marketing_facebook'],
     'data': [
         'security/ir.model.access.csv',
         'data/social_marketing_media_data.xml',

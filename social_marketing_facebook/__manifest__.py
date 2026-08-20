@@ -16,7 +16,7 @@ Requires a Facebook App with:
 - pages_manage_metadata
 - pages_messaging (for DMs)
     """,
-    'depends': ['social_marketing', 'social_planner'],
+    'depends': ['social_marketing'],
     'data': [
         'security/ir.model.access.csv',
         'data/social_marketing_media_data.xml',
