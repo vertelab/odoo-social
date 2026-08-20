@@ -38,6 +38,9 @@ class SocialPost(models.Model):
              "or 'Posted'")
     has_post_errors = fields.Boolean("There are post errors on sub-posts", compute='_compute_has_post_errors')
     account_ids = fields.Many2many(domain="[('id', 'in', account_allowed_ids)]")
+    image_ids = fields.Many2many('ir.attachment', string='Attach Images',
+        relation='social_marketing_post_image_ids_rel',
+        column1='social_marketing_post_id', column2='ir_attachment_id')
     account_allowed_ids = fields.Many2many('social_marketing.account', string='Allowed Accounts',
                                            compute='_compute_account_allowed_ids',
                                            help='List of the accounts which can be selected for this post.')
