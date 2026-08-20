@@ -3,6 +3,7 @@
 
 import json
 import logging
+import subprocess
 
 from odoo import _, api, fields, models
 
@@ -230,3 +231,135 @@ class SocialPlannerAI(models.AbstractModel):
             pass
 
         return []
+
+    # ------------------------------------------------------------------
+    # Trend research via the last30days skill
+    # ------------------------------------------------------------------
+
+    @api.model
+    def research_trends(self, topic):
+        """ Run a last30days trend research for a listening topic.
+
+        Uses the pi CLI headless (with the last30days skill installed in
+        /usr/local/share/pi/skills) to produce a grounded 30-day research
+        report. The command is configurable via the ir.config_parameter
+        ``social_planner.research_command`` (default: ``pi -p --mode json``),
+        so it can be pointed at opencode/hermes or a remote runner.
+
+        Falls back to the ai.agent trigger_prompt when the CLI is not
+        available or fails.
+
+        :param topic: social_marketing.listening.topic record
+        :return: report text (HTML) or False
+        """
+        self.ensure_one()
+        if isinstance(topic, int):
+            topic = self.env['social_marketing.listening.topic'].browse(topic)
+        if not topic.exists():
+            return False
+
+        prompt = self._build_research_prompt(topic)
+        command = self._get_research_command()
+
+        report = self._run_research_command(command, prompt)
+        if report:
+            return report
+
+        # Fallback: ai.agent (plain LLM — no live sources, only methodology)
+        _logger.warning("Research CLI unavailable, falling back to ai.agent for topic %s", topic.name)
+        system_prompt = (
+            "You are a social media trend researcher. Use the last30days methodology: "
+            "search Reddit, X/Twitter, YouTube, Hacker News, Bluesky and the web for "
+            "what people actually say about the topic in the last 30 days, then produce "
+            "a grounded summary ranked by engagement signals. Be explicit about what "
+            "could not be verified live."
+        )
+        return self._call_ai_agent(system_prompt, prompt)
+
+    @api.model
+    def _get_research_command(self):
+        """ Return the research CLI command (list) from ir.config_parameter. """
+        raw = self.env['ir.config_parameter'].sudo().get_param(
+            'social_planner.research_command', 'pi -p --mode json')
+        parts = raw.split()
+        if not parts:
+            return ['pi', '-p', '--mode', 'json']
+        return parts
+
+    @api.model
+    def _build_research_prompt(self, topic):
+        """ Build the last30days prompt from the topic. """
+        keywords = (topic.keywords or '').strip()
+        exclude = (topic.exclude_keywords or '').strip()
+
+        parts = []
+        parts.append('Use the last30days skill to research what people actually say '
+                     'about this topic over the last 30 days.')
+        parts.append('Topic: %s' % topic.name)
+        if keywords:
+            parts.append('Keywords:\n%s' % keywords)
+        if exclude:
+            parts.append('Exclude these keywords:\n%s' % exclude)
+        if topic.policy_id:
+            parts.append('Brand context: %s' % (topic.policy_id.name or ''))
+        parts.append('Return the research report as structured text with sections and citations.')
+        return '\n\n'.join(parts)
+
+    @api.model
+    def _run_research_command(self, command, prompt):
+        """ Run the research CLI headless and capture the report.
+
+        Supports --mode json output (pi): the report is extracted from the
+        JSON response (message/result), otherwise raw stdout is used.
+        """
+        try:
+            proc = subprocess.run(
+                command + [prompt],
+                capture_output=True,
+                text=True,
+                timeout=600,
+            )
+        except FileNotFoundError:
+            _logger.warning("Research command not found: %s", command[0])
+            return False
+        except subprocess.TimeoutExpired:
+            _logger.warning("Research command timed out: %s", command[0])
+            return False
+        except Exception as e:
+            _logger.warning("Research command error: %s", str(e))
+            return False
+
+        if proc.returncode != 0:
+            _logger.warning("Research command exited %s: %s", proc.returncode, (proc.stderr or '')[:500])
+            # pi returns non-zero on some agent errors; keep stdout if present
+            if not proc.stdout.strip():
+                return False
+
+        out = (proc.stdout or '').strip()
+        if not out:
+            return False
+
+        # Try to extract report from JSON output (pi --mode json)
+        if '--mode' in command and 'json' in command:
+            try:
+                data = json.loads(out)
+                # pi json mode: the assistant text is usually in .message or .result
+                for key in ('message', 'result', 'text', 'output'):
+                    if isinstance(data, dict) and data.get(key):
+                        return '<pre>%s</pre>' % data[key]
+                if isinstance(data, dict) and data.get('messages'):
+                    msgs = data['messages']
+                    last = msgs[-1] if isinstance(msgs, list) else None
+                    if isinstance(last, dict) and last.get('content'):
+                        content = last['content']
+                        if isinstance(content, str):
+                            return '<pre>%s</pre>' % content
+                        if isinstance(content, list):
+                            text = '\n'.join(c.get('text', '') for c in content if isinstance(c, dict))
+                            if text:
+                                return '<pre>%s</pre>' % text
+            except json.JSONDecodeError:
+                pass
+
+        # Plain text output — escape for HTML field
+        return '<pre>%s</pre>' % out

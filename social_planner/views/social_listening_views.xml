@@ -20,11 +20,23 @@
         <field name="model">social_marketing.listening.topic</field>
         <field name="arch" type="xml">
             <form string="Listening Topic">
+                <header>
+                    <button name="action_research_trends" type="object"
+                            string="Research trends (last30days)"
+                            class="btn-primary"
+                            confirm="Run a last30days trend research for this topic? This may take a few minutes."
+                            invisible="research_state == 'running'"/>
+                    <button name="action_clear_report" type="object"
+                            string="Clear report"
+                            invisible="research_state in ('draft', 'running')"/>
+                </header>
                 <sheet>
                     <group>
                         <field name="name"/>
                         <field name="policy_id"/>
                         <field name="active"/>
+                        <field name="research_state"/>
+                        <field name="last_researched"/>
                     </group>
                     <group string="Keywords">
                         <field name="keywords" nolabel="1"
@@ -34,6 +46,10 @@
                     </group>
                     <group string="Streams">
                         <field name="stream_ids" widget="many2many_tags"/>
+                    </group>
+                    <group string="Trend Research Report (last 30 days)" col="1">
+                        <field name="trend_research_report" nolabel="1"
+                               invisible="not trend_research_report"/>
                     </group>
                 </sheet>
             </form>
