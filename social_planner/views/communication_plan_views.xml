@@ -91,7 +91,7 @@
 
                         <page string="Plan Lines" name="lines">
                             <field name="line_ids" nolabel="1"
-                                   context="{'default_plan_id': active_id}"/>
+                                   context="{'default_plan_id': id}"/>
                         </page>
                     </notebook>
                 </sheet>
