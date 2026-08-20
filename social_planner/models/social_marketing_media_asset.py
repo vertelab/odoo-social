@@ -22,6 +22,7 @@ class SocialMarketingMediaAsset(models.Model):
         ('image', 'Image'),
         ('video', 'Video'),
         ('document', 'Document'),
+        ('other', 'Other'),
     ], string='Asset Type', compute='_compute_asset_type', store=True)
     tags = fields.Char('Tags')
     category = fields.Selection([
