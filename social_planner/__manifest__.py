@@ -44,14 +44,6 @@ Social Planner — Kommunikationsplanering för sociala medier
         'views/menu_views.xml',
     ],
     'demo': [],
-    'assets': {
-        'web.assets_backend': [
-            'social_planner/static/src/js/communication_calendar.js',
-            'social_planner/static/src/js/plan_kanban.js',
-            'social_planner/static/src/js/policy_compliance_check.js',
-            'social_planner/static/src/scss/social_planner.scss',
-        ],
-    },
     'application': True,
     'installable': True,
     'auto_install': False,
