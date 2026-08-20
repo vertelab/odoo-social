@@ -42,12 +42,12 @@
                                 <div class="card-header"><strong>Unread Messages</strong></div>
                                 <div class="card-body">
                                     <field name="unread_message_ids" nolabel="1">
-                                        <tree>
+                                        <list>
                                             <field name="from_name"/>
                                             <field name="body"/>
                                             <field name="media_type" widget="badge"/>
                                             <field name="create_date" widget="relative_time"/>
-                                        </tree>
+                                        </list>
                                     </field>
                                 </div>
                             </div>
@@ -61,11 +61,11 @@
                                 <div class="card-header"><strong>Pending Approvals</strong></div>
                                 <div class="card-body">
                                     <field name="pending_approval_ids" nolabel="1">
-                                        <tree>
+                                        <list>
                                             <field name="display_name"/>
                                             <field name="plan_id"/>
                                             <field name="create_date" widget="relative_time"/>
-                                        </tree>
+                                        </list>
                                     </field>
                                 </div>
                             </div>
@@ -77,13 +77,13 @@
                                 <div class="card-header"><strong>Top Competitors</strong></div>
                                 <div class="card-body">
                                     <field name="top_competitor_ids" nolabel="1">
-                                        <tree>
+                                        <list>
                                             <field name="name"/>
                                             <field name="media_type" widget="badge"/>
                                             <field name="follower_count"/>
                                             <field name="engagement_rate"/>
                                             <field name="follower_trend" widget="float_time"/>
-                                        </tree>
+                                        </list>
                                     </field>
                                 </div>
                             </div>
@@ -97,12 +97,12 @@
                                 <div class="card-header"><strong>Recent Posts</strong></div>
                                 <div class="card-body">
                                     <field name="recent_post_ids" nolabel="1">
-                                        <tree>
+                                        <list>
                                             <field name="display_name"/>
                                             <field name="state" widget="badge"/>
                                             <field name="approval_state" widget="badge"/>
                                             <field name="create_date" widget="relative_time"/>
-                                        </tree>
+                                        </list>
                                     </field>
                                 </div>
                             </div>

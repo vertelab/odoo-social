@@ -5,7 +5,7 @@
         <field name="name">communication.policy.tree</field>
         <field name="model">communication.policy</field>
         <field name="arch" type="xml">
-            <tree string="Communication Policies" decoration-warning="state == 'draft'" decoration-muted="state == 'archived'">
+            <list string="Communication Policies" decoration-warning="state == 'draft'" decoration-muted="state == 'archived'">
                 <field name="name"/>
                 <field name="version" widget="badge"/>
                 <field name="state" widget="badge"
@@ -15,7 +15,7 @@
                 <field name="plan_count" string="Plans"/>
                 <field name="owner_id"/>
                 <field name="company_id" groups="base.group_multi_company"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -27,11 +27,11 @@
             <form string="Communication Policy">
                 <header>
                     <button name="action_draft" string="Set Draft" type="object"
-                            states="active,archived" class="btn-secondary"/>
+                            invisible="state not in ['active', 'archived']" class="btn-secondary"/>
                     <button name="action_activate" string="Activate" type="object"
-                            states="draft,archived" class="btn-primary"/>
+                            invisible="state not in ['draft', 'archived']" class="btn-primary"/>
                     <button name="action_archive" string="Archive" type="object"
-                            states="draft,active" class="btn-secondary"/>
+                            invisible="state not in ['draft', 'active']" class="btn-secondary"/>
                     <field name="state" widget="statusbar"
                            statusbar_visible="draft,active,archived"/>
                 </header>

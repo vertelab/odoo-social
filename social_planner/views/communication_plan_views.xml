@@ -5,7 +5,7 @@
         <field name="name">communication.plan.tree</field>
         <field name="model">communication.plan</field>
         <field name="arch" type="xml">
-            <tree string="Communication Plans"
+            <list string="Communication Plans"
                   decoration-warning="state == 'draft'"
                   decoration-muted="state == 'archived'"
                   decoration-success="state == 'completed'">
@@ -21,7 +21,7 @@
                 <field name="line_count" string="Lines"/>
                 <field name="post_count" string="Posts"/>
                 <field name="user_id"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -33,13 +33,13 @@
             <form string="Communication Plan">
                 <header>
                     <button name="action_draft" string="Set Draft" type="object"
-                            states="active,completed,archived" class="btn-secondary"/>
+                            invisible="state not in ['active', 'completed', 'archived']" class="btn-secondary"/>
                     <button name="action_activate" string="Activate" type="object"
-                            states="draft,archived" class="btn-primary"/>
+                            invisible="state not in ['draft', 'archived']" class="btn-primary"/>
                     <button name="action_complete" string="Complete" type="object"
-                            states="active" class="btn-success"/>
+                            invisible="state != 'active'" class="btn-success"/>
                     <button name="action_archive" string="Archive" type="object"
-                            states="draft,active,completed" class="btn-secondary"/>
+                            invisible="state not in ['draft', 'active', 'completed']" class="btn-secondary"/>
                     <field name="state" widget="statusbar"
                            statusbar_visible="draft,active,completed,archived"/>
                 </header>
@@ -52,7 +52,7 @@
                     </div>
 
                     <!-- Policy indicator -->
-                    <div class="alert alert-info" role="alert" attrs="{'invisible': [('policy_id', '=', False)]}">
+                    <div class="alert alert-info" role="alert" invisible="not policy_id">
                         Policy: <field name="policy_id"/> —
                         Status: <field name="policy_state" widget="badge"/>
                         <field name="completion_percentage" widget="progressbar"/>
@@ -113,12 +113,11 @@
             <form string="Plan Line">
                 <header>
                     <button name="action_create_post" string="Create Post" type="object"
-                            states="planned" class="btn-primary"
-                            attrs="{'invisible': [('post_count', '&gt;', 0)]}"/>
+                            invisible="status != 'planned' or post_count > 0" class="btn-primary"/>
                     <button name="action_cancel" string="Cancel" type="object"
-                            states="planned,in_progress" class="btn-secondary"/>
+                            invisible="status not in ['planned', 'in_progress']" class="btn-secondary"/>
                     <button name="action_replan" string="Re-plan" type="object"
-                            states="cancelled,completed" class="btn-secondary"/>
+                            invisible="status not in ['cancelled', 'completed']" class="btn-secondary"/>
                     <field name="status" widget="statusbar"
                            statusbar_visible="planned,in_progress,completed,cancelled"/>
                 </header>
@@ -139,14 +138,14 @@
                         <field name="theme"/>
                         <field name="notes"/>
                     </group>
-                    <group string="Posts" attrs="{'invisible': [('post_count', '=', 0)]}">
+                    <group string="Posts" invisible="post_count == 0">
                         <field name="post_ids" nolabel="1">
-                            <tree>
+                            <list>
                                 <field name="display_name"/>
                                 <field name="state"/>
                                 <field name="approval_state"/>
                                 <field name="scheduled_date"/>
-                            </tree>
+                            </list>
                         </field>
                     </group>
                 </sheet>
@@ -159,7 +158,7 @@
         <field name="name">communication.plan.line.tree</field>
         <field name="model">communication.plan.line</field>
         <field name="arch" type="xml">
-            <tree string="Plan Lines" editable="bottom"
+            <list string="Plan Lines" editable="bottom"
                   decoration-muted="status == 'cancelled'"
                   decoration-success="status == 'completed'">
                 <field name="sequence" widget="handle"/>
@@ -173,7 +172,7 @@
                        decoration-warning="status == 'in_progress'"
                        decoration-danger="status == 'cancelled'"/>
                 <field name="post_count" string="Posts"/>
-            </tree>
+            </list>
         </field>
     </record>
 

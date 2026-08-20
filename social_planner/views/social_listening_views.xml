@@ -5,12 +5,12 @@
         <field name="name">social_marketing.listening.topic.tree</field>
         <field name="model">social_marketing.listening.topic</field>
         <field name="arch" type="xml">
-            <tree string="Listening Topics">
+            <list string="Listening Topics">
                 <field name="name"/>
                 <field name="policy_id"/>
                 <field name="mention_count"/>
                 <field name="last_checked"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -52,14 +52,14 @@
         <field name="name">social_marketing.media.asset.tree</field>
         <field name="model">social_marketing.media.asset</field>
         <field name="arch" type="xml">
-            <tree string="Media Assets">
+            <list string="Media Assets">
                 <field name="name"/>
                 <field name="asset_type"/>
                 <field name="category"/>
                 <field name="tags"/>
                 <field name="policy_approved"/>
                 <field name="usage_count"/>
-            </tree>
+            </list>
         </field>
     </record>
 

@@ -7,7 +7,7 @@
         <field name="arch" type="xml">
             <xpath expr="//notebook" position="inside">
                 <page string="Instagram" name="instagram"
-                      attrs="{'invisible': [('is_split_per_media', '=', False)]}">
+                      invisible="not is_split_per_media">
                     <group>
                         <field name="instagram_message"/>
                         <field name="instagram_image_ids" widget="many2many_binary"/>

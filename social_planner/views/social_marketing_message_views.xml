@@ -76,7 +76,7 @@
         <field name="name">social_marketing.message.tree</field>
         <field name="model">social_marketing.message</field>
         <field name="arch" type="xml">
-            <tree string="Inbox" decoration-info="state == 'unread'" decoration-muted="state == 'archived'">
+            <list string="Inbox" decoration-info="state == 'unread'" decoration-muted="state == 'archived'">
                 <field name="state" widget="badge"
                        decoration-info="state == 'unread'"
                        decoration-success="state == 'replied'"/>
@@ -89,7 +89,7 @@
                 <field name="assigned_to"/>
                 <field name="response_time_minutes"/>
                 <field name="create_date" widget="relative_time"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -101,17 +101,17 @@
             <form string="Message">
                 <header>
                     <button name="action_mark_read" string="Mark Read" type="object"
-                            states="unread" class="btn-secondary"/>
+                            invisible="state != 'unread'" class="btn-secondary"/>
                     <button name="action_mark_unread" string="Mark Unread" type="object"
-                            states="read,replied" class="btn-secondary"/>
+                            invisible="state not in ['read', 'replied']" class="btn-secondary"/>
                     <button name="action_archive" string="Archive" type="object"
-                            states="unread,read,replied" class="btn-secondary"/>
+                            invisible="state not in ['unread', 'read', 'replied']" class="btn-secondary"/>
                     <button name="action_assign_to_me" string="Assign to Me" type="object"
                             class="btn-primary"
-                            attrs="{'invisible': [('assigned_to', '=', uid)]}"/>
+                            invisible="assigned_to == uid"/>
                     <button name="action_open_external" string="Open on Platform" type="object"
                             class="btn-secondary"
-                            attrs="{'invisible': [('external_url', '=', False)]}"/>
+                            invisible="not external_url"/>
                     <field name="state" widget="statusbar"
                            statusbar_visible="unread,read,replied,archived"/>
                 </header>
@@ -147,15 +147,15 @@
                     </group>
                     <!-- Threaded conversation -->
                     <group string="Conversation" name="conversation_group"
-                           attrs="{'invisible': [('child_ids', '=', [])]}">
+                           invisible="not child_ids">
                         <field name="child_ids" nolabel="1">
-                            <tree>
+                            <list>
                                 <field name="create_date" widget="relative_time"/>
                                 <field name="from_name"/>
                                 <field name="body"/>
                                 <field name="is_incoming" widget="boolean_toggle"/>
                                 <field name="state"/>
-                            </tree>
+                            </list>
                         </field>
                     </group>
                 </sheet>

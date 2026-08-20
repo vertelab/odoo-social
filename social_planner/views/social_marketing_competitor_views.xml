@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Competitor - Tree View -->
+    <!-- Competitor - List View -->
     <record id="view_social_marketing_competitor_tree" model="ir.ui.view">
         <field name="name">social_marketing.competitor.tree</field>
         <field name="model">social_marketing.competitor</field>
         <field name="arch" type="xml">
-            <tree string="Competitors">
+            <list string="Competitors">
                 <field name="name"/>
                 <field name="competitor_type" widget="badge"/>
                 <field name="media_type" widget="badge"/>
@@ -13,7 +13,7 @@
                 <field name="follower_count"/>
                 <field name="follower_trend" widget="float_time"
                        decoration-success="follower_trend > 0"
-                       decoration-danger="follower_trend < 0"/>
+                       decoration-danger="follower_trend &lt; 0"/>
                 <field name="engagement_rate"/>
                 <field name="post_frequency_weekly"/>
                 <field name="threat_level" widget="badge"
@@ -21,7 +21,7 @@
                        decoration-warning="threat_level == 'medium'"
                        decoration-danger="threat_level in ['high', 'critical']"/>
                 <field name="last_checked"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -36,7 +36,7 @@
                             class="btn-primary"/>
                     <button name="action_open_profile" string="Open Profile" type="object"
                             class="btn-secondary"
-                            attrs="{'invisible': [('profile_url', '=', False)]}"/>
+                            invisible="not profile_url"/>
                     <button name="action_compare" string="Compare" type="object"
                             class="btn-info"/>
                 </header>
@@ -96,7 +96,7 @@
 
                         <page string="Snapshots" name="snapshots">
                             <field name="snapshot_ids" nolabel="1">
-                                <tree editable="bottom">
+                                <list editable="bottom">
                                     <field name="snapshot_date"/>
                                     <field name="follower_count"/>
                                     <field name="engagement_rate"/>
@@ -105,7 +105,7 @@
                                     <field name="avg_shares"/>
                                     <field name="post_frequency_weekly"/>
                                     <field name="notes"/>
-                                </tree>
+                                </list>
                             </field>
                         </page>
 

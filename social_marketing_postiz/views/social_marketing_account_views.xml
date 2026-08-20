@@ -15,7 +15,7 @@
             </xpath>
             <xpath expr="//sheet//group[1]" position="after">
                 <group string="Postiz Integration"
-                       attrs="{'invisible': [('postiz_integration_id', '=', False)]}">
+                       invisible="not postiz_integration_id">
                     <field name="postiz_integration_id" readonly="1"/>
                     <div class="text-muted">
                         <p>This account is synced from Postiz. Publishing flows through
