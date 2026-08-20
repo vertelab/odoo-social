@@ -6,7 +6,7 @@
         <field name="model">communication.plan.line</field>
         <field name="arch" type="xml">
             <calendar string="Content Calendar" date_start="date" color="plan_id"
-                      quick_add="1" event_open_popup="1">
+                      quick_create="1" event_open_popup="1">
                 <field name="theme" string="Title"/>
                 <field name="channel"/>
                 <field name="plan_id"/>
