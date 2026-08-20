@@ -8,8 +8,8 @@
             Target: young professionals 25-40 in urban areas.
         </field>
         <field name="policy_id" ref="demo_policy_b2c_retail"/>
-        <field name="start_date" eval="(datetime.date.today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d')"/>
-        <field name="end_date" eval="(datetime.date.today() + datetime.timedelta(days=21)).strftime('%Y-%m-%d')"/>
+        <field name="start_date" eval="(date.today() - timedelta(days=7)).strftime('%Y-%m-%d')"/>
+        <field name="end_date" eval="(date.today() + timedelta(days=21)).strftime('%Y-%m-%d')"/>
         <field name="goal">
             - Increase social media reach by 30%
             - Generate 200+ leads through social channels
@@ -30,7 +30,7 @@
         <field name="sequence">10</field>
         <field name="channel">instagram</field>
         <field name="content_type">story</field>
-        <field name="date" eval="(datetime.date.today() - datetime.timedelta(days=3)).strftime('%Y-%m-%d')"/>
+        <field name="date" eval="(date.today() - timedelta(days=3)).strftime('%Y-%m-%d')"/>
         <field name="time">9.0</field>
         <field name="theme">Teaser — Sneak peek of summer collection</field>
         <field name="status">completed</field>
@@ -41,7 +41,7 @@
         <field name="sequence">20</field>
         <field name="channel">linkedin</field>
         <field name="content_type">article</field>
-        <field name="date" eval="(datetime.date.today() - datetime.timedelta(days=1)).strftime('%Y-%m-%d')"/>
+        <field name="date" eval="(date.today() - timedelta(days=1)).strftime('%Y-%m-%d')"/>
         <field name="time">10.0</field>
         <field name="theme">Thought leadership — Summer trends in sustainable fashion</field>
         <field name="status">completed</field>
@@ -52,7 +52,7 @@
         <field name="sequence">30</field>
         <field name="channel">instagram</field>
         <field name="content_type">post</field>
-        <field name="date" eval="datetime.date.today().strftime('%Y-%m-%d')"/>
+        <field name="date" eval="date.today().strftime('%Y-%m-%d')"/>
         <field name="time">8.5</field>
         <field name="theme">Launch day — Full product reveal with carousel</field>
         <field name="status">in_progress</field>
@@ -63,7 +63,7 @@
         <field name="sequence">40</field>
         <field name="channel">facebook</field>
         <field name="content_type">video</field>
-        <field name="date" eval="(datetime.date.today() + datetime.timedelta(days=2)).strftime('%Y-%m-%d')"/>
+        <field name="date" eval="(date.today() + timedelta(days=2)).strftime('%Y-%m-%d')"/>
         <field name="time">12.0</field>
         <field name="theme">Behind the scenes — Making of the collection</field>
         <field name="status">planned</field>
@@ -74,7 +74,7 @@
         <field name="sequence">50</field>
         <field name="channel">instagram</field>
         <field name="content_type">reel</field>
-        <field name="date" eval="(datetime.date.today() + datetime.timedelta(days=4)).strftime('%Y-%m-%d')"/>
+        <field name="date" eval="(date.today() + timedelta(days=4)).strftime('%Y-%m-%d')"/>
         <field name="time">17.0</field>
         <field name="theme">User-generated content — Customer styling tips</field>
         <field name="status">planned</field>
@@ -85,7 +85,7 @@
         <field name="sequence">60</field>
         <field name="channel">linkedin</field>
         <field name="content_type">post</field>
-        <field name="date" eval="(datetime.date.today() + datetime.timedelta(days=7)).strftime('%Y-%m-%d')"/>
+        <field name="date" eval="(date.today() + timedelta(days=7)).strftime('%Y-%m-%d')"/>
         <field name="time">9.5</field>
         <field name="theme">Results &amp; impact — First week numbers</field>
         <field name="status">planned</field>
@@ -96,7 +96,7 @@
         <field name="sequence">70</field>
         <field name="channel">youtube</field>
         <field name="content_type">video</field>
-        <field name="date" eval="(datetime.date.today() + datetime.timedelta(days=10)).strftime('%Y-%m-%d')"/>
+        <field name="date" eval="(date.today() + timedelta(days=10)).strftime('%Y-%m-%d')"/>
         <field name="time">15.0</field>
         <field name="theme">Full collection lookbook — Styled video</field>
         <field name="status">planned</field>
@@ -107,7 +107,7 @@
         <field name="sequence">80</field>
         <field name="channel">instagram</field>
         <field name="content_type">story</field>
-        <field name="date" eval="(datetime.date.today() + datetime.timedelta(days=14)).strftime('%Y-%m-%d')"/>
+        <field name="date" eval="(date.today() + timedelta(days=14)).strftime('%Y-%m-%d')"/>
         <field name="time">12.0</field>
         <field name="theme">Flash sale announcement — 24h only</field>
         <field name="status">planned</field>

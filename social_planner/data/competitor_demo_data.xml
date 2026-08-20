@@ -64,7 +64,7 @@
     <!-- Snapshots for TechCorp -->
     <record id="demo_snapshot_t1" model="social_marketing.competitor.snapshot">
         <field name="competitor_id" ref="demo_competitor_1"/>
-        <field name="snapshot_date" eval="(datetime.datetime.now() - datetime.timedelta(days=30)).strftime('%Y-%m-%d %H:%M:%S')"/>
+        <field name="snapshot_date" eval="(datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d %H:%M:%S')"/>
         <field name="follower_count">148000</field>
         <field name="engagement_rate">3.0</field>
         <field name="avg_likes">390</field>
@@ -75,7 +75,7 @@
 
     <record id="demo_snapshot_t2" model="social_marketing.competitor.snapshot">
         <field name="competitor_id" ref="demo_competitor_1"/>
-        <field name="snapshot_date" eval="(datetime.datetime.now() - datetime.timedelta(days=15)).strftime('%Y-%m-%d %H:%M:%S')"/>
+        <field name="snapshot_date" eval="(datetime.now() - timedelta(days=15)).strftime('%Y-%m-%d %H:%M:%S')"/>
         <field name="follower_count">150000</field>
         <field name="engagement_rate">3.1</field>
         <field name="avg_likes">410</field>
