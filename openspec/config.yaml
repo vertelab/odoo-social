@@ -1,0 +1,55 @@
+schema: spec-driven
+
+context: |
+  odoo-social: social media management for Odoo 18 Community Edition.
+  Joint work between Vertel Sverige AB (upstream, github.com/vertelab/odoo-social)
+  and ARC Gruppen AB. Licensed AGPL-3.
+
+  Tech stack: Odoo 18 CE (Python, OWL, QWeb XML), PostgreSQL, OCA/queue (queue_job)
+  for the publishing pipeline, Playwright and platform Graph APIs for the channel
+  integrations.
+
+  Module layout: social_marketing (core: posts, accounts, streams, UTM), per-channel
+  addons (linkedin, facebook, instagram, postiz), social_planner (planning, policy,
+  approval, AI, unified inbox), social_ai, social_keykeep, social_dashboard and
+  social_planner_dashboard (BI), social_marketing_agency (brands, customer portal).
+
+  Conventions:
+  - Community Edition only. Never rely on Odoo Enterprise features.
+  - Extend native Odoo models with _inherit rather than duplicating functionality.
+  - Odoo 18 XML uses <list>, not <tree>.
+  - Base branch is 18.0. Feature work happens on feat/* and fix/* branches.
+  - Written artifacts are in English.
+  - Do not use em dashes or en dashes in any artifact.
+
+
+# Project context (optional)
+# This is shown to AI when creating artifacts.
+# Add your tech stack, conventions, style guides, domain knowledge, etc.
+# Example:
+#   context: |
+#     Tech stack: TypeScript, React, Node.js
+#     We use conventional commits
+#     Domain: e-commerce platform
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always include a "Non-goals" section
+#     tasks:
+#       - Break tasks into chunks of max 2 hours
+
+# Per-operation guidance (optional)
+# Add advisory guidance for how apply and archive work should be conducted.
+# This is separate from artifact rules above.
+# Example:
+#   operations:
+#     apply:
+#       guidance:
+#         - Keep test summaries concise
+#     archive:
+#       guidance:
+#         - Summarize the archive outcome before finishing
