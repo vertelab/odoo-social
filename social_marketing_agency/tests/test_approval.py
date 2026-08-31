@@ -9,8 +9,8 @@ from odoo.exceptions import UserError
 from odoo.tests.common import TransactionCase
 
 
-class TestCustomerApproval(TransactionCase):
-    """Spec: social-agency-portal — customer approval step."""
+class ApprovalFixtures:
+    """Shared fixtures: a brand, its customer contact and a portal user."""
 
     def setUp(self):
         super().setUp()
@@ -65,6 +65,10 @@ class TestCustomerApproval(TransactionCase):
             'plan_line_id': line.id,
         })
 
+
+class TestCustomerApproval(ApprovalFixtures, TransactionCase):
+    """Spec: social-agency-portal — customer approval step."""
+
     def test_post_waits_for_customer_approval(self):
         policy = self._create_policy(with_customer_step=True)
         post = self._create_post(policy)
@@ -117,3 +121,77 @@ class TestCustomerApproval(TransactionCase):
         post.action_submit_for_approval()
         post.action_approve()
         self.assertEqual(post.approval_state, 'approved')
+
+
+class TestEditResetsApproval(ApprovalFixtures, TransactionCase):
+    """Editing the content a post was approved on has to void that approval.
+
+    An approval is an approval of a specific message on specific accounts. If
+    it survived an edit, the customer would have approved something other than
+    what goes out, which is the whole thing the gate exists to prevent.
+    """
+
+    def _awaiting_post(self):
+        policy = self._create_policy(with_customer_step=True)
+        post = self._create_post(policy)
+        post.action_submit_for_approval()
+        post.action_approve()
+        self.assertEqual(post.approval_state, 'awaiting_customer')
+        return post
+
+    def test_editing_message_resets_customer_approval(self):
+        post = self._awaiting_post()
+        post.write({'message': '<p>Something else entirely</p>'})
+        self.assertEqual(post.approval_state, 'draft')
+        self.assertFalse(post.compliance_check_passed)
+        self.assertFalse(post.compliance_snapshot)
+
+    def test_editing_message_after_customer_approved_resets_it(self):
+        post = self._awaiting_post()
+        post.with_user(self.customer_user).action_customer_approve()
+        self.assertEqual(post.approval_state, 'approved')
+        post.write({'message': '<p>Swapped after approval</p>'})
+        self.assertEqual(post.approval_state, 'draft')
+
+    def test_changing_accounts_resets_approval(self):
+        post = self._awaiting_post()
+        media = self.env['social_marketing.media'].create({
+            'name': 'Resetbook'})
+        account = self.env['social_marketing.account'].create({
+            'name': 'Reset Account', 'media_id': media.id})
+        post.write({'account_ids': [(6, 0, account.ids)]})
+        self.assertEqual(post.approval_state, 'draft')
+
+    def test_pending_approval_is_reset_too(self):
+        policy = self._create_policy(with_customer_step=True)
+        post = self._create_post(policy)
+        post.action_submit_for_approval()
+        self.assertEqual(post.approval_state, 'pending_approval')
+        post.write({'message': '<p>Changed while with the reviewer</p>'})
+        self.assertEqual(post.approval_state, 'draft')
+
+    def test_reset_drops_the_open_approval_activity(self):
+        post = self._awaiting_post()
+        self.assertTrue(post.activity_ids)
+        post.write({'message': '<p>Changed, so the activity is stale</p>'})
+        self.assertFalse(post.activity_ids)
+
+    def test_writing_the_same_message_does_not_reset(self):
+        post = self._awaiting_post()
+        post.write({'message': post.message})
+        self.assertEqual(post.approval_state, 'awaiting_customer')
+
+    def test_rescheduling_does_not_reset_approval(self):
+        post = self._awaiting_post()
+        post.write({
+            'post_method': 'scheduled',
+            'scheduled_date': fields.Datetime.now(),
+        })
+        self.assertEqual(post.approval_state, 'awaiting_customer')
+
+    def test_rejected_post_is_left_alone(self):
+        post = self._awaiting_post()
+        post.with_user(self.customer_user).action_customer_reject('No thanks')
+        self.assertEqual(post.approval_state, 'rejected')
+        post.write({'message': '<p>Reworked after the rejection</p>'})
+        self.assertEqual(post.approval_state, 'rejected')

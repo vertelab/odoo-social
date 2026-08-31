@@ -72,6 +72,12 @@
                                 <field name="social_marketing_render_service_token" widget="password"/>
                             </setting>
                         </block>
+                        <block title="Inbox Retention" name="social_inbox_retention_settings">
+                            <setting string="Direct Message Retention (days)"
+                                     help="Private inbox items (direct messages) older than this are deleted by the daily retention cron. Public comments and mentions are never deleted by it. Set to 0 to disable.">
+                                <field name="social_marketing_dm_retention_days"/>
+                            </setting>
+                        </block>
 </app>
                 </t>
             </xpath>

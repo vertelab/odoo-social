@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_report_social_brand_performance" model="ir.actions.report">
+        <field name="name">Brand Performance Report</field>
+        <field name="model">social.brand.report.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">social_marketing_agency.report_social_brand_performance</field>
+        <field name="report_file">social_marketing_agency.report_social_brand_performance</field>
+        <field name="print_report_name">'Social report - %s' % (object.brand_id.name or '')</field>
+        <field name="binding_model_id" eval="False"/>
+    </record>
+
+</odoo>

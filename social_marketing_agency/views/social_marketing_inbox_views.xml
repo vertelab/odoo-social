@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Brand column on the shared inbox views. Agency users work several
+         brands, so the brand has to be visible and groupable; the record
+         rules are what keep the rows out, not the view. -->
+    <record id="social_marketing_inbox_view_list_brand" model="ir.ui.view">
+        <field name="name">social_marketing.stream.post.view.list.inbox.brand</field>
+        <field name="model">social_marketing.stream.post</field>
+        <field name="inherit_id" ref="social_marketing.social_marketing_inbox_view_list"/>
+        <field name="arch" type="xml">
+            <field name="interaction_type" position="before">
+                <field name="brand_id" optional="show"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="social_marketing_inbox_view_form_brand" model="ir.ui.view">
+        <field name="name">social_marketing.stream.post.view.form.inbox.brand</field>
+        <field name="model">social_marketing.stream.post</field>
+        <field name="inherit_id" ref="social_marketing.social_marketing_inbox_view_form"/>
+        <field name="arch" type="xml">
+            <field name="stream_id" position="before">
+                <field name="brand_id" readonly="1"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="social_marketing_inbox_view_search_brand" model="ir.ui.view">
+        <field name="name">social_marketing.stream.post.view.search.inbox.brand</field>
+        <field name="model">social_marketing.stream.post</field>
+        <field name="inherit_id" ref="social_marketing.social_marketing_inbox_view_search"/>
+        <field name="arch" type="xml">
+            <field name="stream_id" position="after">
+                <field name="brand_id"/>
+            </field>
+            <filter name="group_by_inbox_state" position="before">
+                <filter name="group_by_brand" string="Brand"
+                        context="{'group_by': 'brand_id'}"/>
+            </filter>
+        </field>
+    </record>
+
+    <!-- Per brand inbox: one queue per brand, unhandled first. -->
+    <record id="action_social_agency_inbox" model="ir.actions.act_window">
+        <field name="name">Inbox</field>
+        <field name="res_model">social_marketing.stream.post</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="social_marketing.social_marketing_inbox_view_search"/>
+        <field name="context">{'search_default_filter_unhandled': 1, 'search_default_group_by_brand': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Nothing waiting for this brand
+            </p>
+            <p>
+                Comments, mentions and messages arriving on the brand's social
+                accounts land here.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_social_agency_inbox_view_list" model="ir.actions.act_window.view">
+        <field name="sequence">1</field>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="social_marketing.social_marketing_inbox_view_list"/>
+        <field name="act_window_id" ref="action_social_agency_inbox"/>
+    </record>
+
+    <record id="action_social_agency_inbox_view_form" model="ir.actions.act_window.view">
+        <field name="sequence">2</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="social_marketing.social_marketing_inbox_view_form"/>
+        <field name="act_window_id" ref="action_social_agency_inbox"/>
+    </record>
+
+    <menuitem id="menu_social_agency_inbox"
+              parent="menu_social_agency_root"
+              action="action_social_agency_inbox"
+              name="Inbox"
+              sequence="15"/>
+
+    <menuitem id="menu_social_customer_inbox"
+              parent="menu_social_customer_root"
+              action="action_social_agency_inbox"
+              name="Inbox"
+              sequence="6"
+              groups="social_marketing_agency.group_social_customer_approver,social_marketing_agency.group_social_customer_editor"/>
+
+</odoo>

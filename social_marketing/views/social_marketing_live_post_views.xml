@@ -8,13 +8,25 @@
             <form string="Social Post">
                 <header>
                     <button name="action_retry_post" string="Retry" type="object" class="oe_highlight" invisible="state != 'failed'"/>
+                    <button name="action_retract" string="Retract" type="object"
+                            class="btn-secondary" invisible="state != 'posted'"
+                            confirm="This removes the published post from the social network. Continue?"/>
                     <field name="state" widget="statusbar"/>
                 </header>
                 <sheet>
                     <group>
-                        <group name="social_marketing_live_post_global">
+                        <group name="social_marketing_live_post_global" string="Publication">
                             <field name="social_account_id" options="{'no_open': True}" />
+                            <field name="platform_post_id" />
+                            <field name="permalink" widget="url" />
                             <field name="failure_reason" />
+                        </group>
+                        <group name="social_marketing_live_post_retry" string="Delivery">
+                            <field name="idempotency_key" groups="base.group_no_one" />
+                            <field name="attempt_count" />
+                            <field name="max_attempts" />
+                            <field name="failure_category" />
+                            <field name="next_retry_date" />
                         </group>
                     </group>
                 </sheet>

@@ -33,6 +33,7 @@ class SocialPublishPipelineStep(models.Model):
         ('failed', 'Failed'),
         ('completed', 'Completed'),
         ('needs_recheck', 'Needs Recheck'),
+        ('retracted', 'Retracted'),
     ], string='Stage', required=True)
     state = fields.Selection([
         ('pending', 'Pending'),
