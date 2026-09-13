@@ -269,6 +269,22 @@ class SocialPost(models.Model):
         ]
         return action
 
+    def _pipeline_log(self, stage, state='done', result=None, live_post_id=None):
+        """ Create an audit step record for the post (system-level, sudo).
+
+        policy_id is optional: it only exists when social_planner is installed,
+        so it is read defensively. """
+        self.ensure_one()
+        policy = self.policy_id if 'policy_id' in self._fields else False
+        self.env['social.publish.pipeline.step'].sudo().create({
+            'post_id': self.id,
+            'live_post_id': live_post_id.id if live_post_id else False,
+            'stage': stage,
+            'state': state,
+            'result': result or False,
+            'policy_version': policy.version if policy else False,
+        })
+
     def _action_post(self):
         """ Called when the post is published on its social_marketing.accounts.
         It will create one social_marketing.live.post per social_marketing.account and call '_post' on each of them. """

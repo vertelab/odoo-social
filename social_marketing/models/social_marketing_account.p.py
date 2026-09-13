@@ -5,7 +5,11 @@ from odoo import _, models, fields, api
 from odoo.http import request
 
 import logging
+import time
 import requests
+from datetime import timedelta
+
+from odoo.addons.social_marketing.models.social_marketing_provider_response import classify_response
 
 _logger = logging.getLogger(__name__)
 
@@ -75,6 +79,12 @@ class SocialAccount(models.Model):
     company_id = fields.Many2one('res.company', 'Company', default=_get_default_company,
                                  domain=lambda self: [('id', 'in', self.env.companies.ids)],
                                  help="Link an account to a company to restrict its usage or keep empty to let all companies use it.")
+    reach = fields.Integer("Reach", readonly=True,
+        help="Number of unique people who saw any of the account's content.")
+    impressions = fields.Integer("Impressions", readonly=True,
+        help="Total number of times the account's content was displayed.")
+    last_backfilled_date = fields.Date('Last Backfilled Date', readonly=True,
+        help="Tracks the most recent date covered by the historical statistics backfill.")
 
     def _compute_statistics(self):
         """ Every social module should override this method if it 'has_account_stats'.
@@ -146,6 +156,8 @@ class SocialAccount(models.Model):
         # and/or a slow response from their side.
         try:
             all_accounts._compute_statistics()
+            all_accounts._snapshot_statistics()
+            all_accounts._compute_snapshot_trends()
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
             _logger.warning("Failed to refresh social account statistics.", exc_info=True)
         return [{
@@ -166,6 +178,148 @@ class SocialAccount(models.Model):
 
     def _compute_trend(self, value, delta_30d):
         return 0.0 if value - delta_30d <= 0 else (delta_30d / (value - delta_30d)) * 100
+
+    def _compute_trend_from_snapshots(self, metric, days=30):
+        """Compute a metric trend from stored snapshots (no extra API fetch).
+
+        Trend is ``(latest - past) / past * 100`` comparing the latest snapshot
+        against the snapshot from ``days`` ago.
+        """
+        self.ensure_one()
+        stat_model = self.env['social_marketing.account.stat']
+        latest = stat_model.search([
+            ('social_account_id', '=', self.id),
+            ('metric', '=', metric),
+        ], order='date desc', limit=1)
+        if not latest:
+            return 0.0
+        past = stat_model.search([
+            ('social_account_id', '=', self.id),
+            ('metric', '=', metric),
+            ('date', '<=', latest.date - timedelta(days=days)),
+        ], order='date desc', limit=1)
+        if not past or not past.value:
+            return 0.0
+        return (latest.value - past.value) / past.value * 100
+
+    def _compute_snapshot_trends(self):
+        """Populate the ``*_trend`` fields from stored snapshots."""
+        for account in self:
+            account.audience_trend = account._compute_trend_from_snapshots('audience')
+            account.engagement_trend = account._compute_trend_from_snapshots('engagement')
+            account.stories_trend = account._compute_trend_from_snapshots('stories')
+
+    def _snapshot_statistics(self):
+        """Append daily snapshots of the account's current metric values.
+
+        Idempotent: the UNIQUE(social_account_id, metric, date) constraint plus a
+        search-first write means a same-day re-run updates the row rather
+        than duplicating it.
+        """
+        stat_model = self.env['social_marketing.account.stat']
+        today = fields.Date.context_today(self)
+        metrics = (
+            ('audience', 'audience'),
+            ('engagement', 'engagement'),
+            ('stories', 'stories'),
+            ('reach', 'reach'),
+            ('impressions', 'impressions'),
+        )
+        for account in self:
+            for metric, field_name in metrics:
+                value = account[field_name]
+                if value is False or value is None:
+                    continue
+                existing = stat_model.search([
+                    ('social_account_id', '=', account.id),
+                    ('metric', '=', metric),
+                    ('date', '=', today),
+                ], limit=1)
+                if existing:
+                    existing.write({'value': value})
+                else:
+                    stat_model.create({
+                        'social_account_id': account.id,
+                        'metric': metric,
+                        'value': value,
+                        'date': today,
+                    })
+
+    def _backfill_statistics(self, window_start, window_end):
+        """Fetch historical statistics for a window — overridden per platform.
+
+        Platform modules implement this to call their analytics API for the
+        given (inclusive) date window and create ``social_marketing.account.stat``
+        rows. The base implementation is a no-op.
+        """
+        pass
+
+    def _backfill_get(self, url, params=None, headers=None, timeout=30):
+        """GET helper for backfill with one rate-limit backoff retry.
+
+        On a rate-limit response, waits ``retry_after`` (capped at 60s) and
+        retries once. ``last_backfilled_date`` only advances on success, so a
+        give-up here is still resumable on the next cron run.
+        """
+        for attempt in (1, 2):
+            response = requests.get(url, params=params, headers=headers, timeout=timeout)
+            classified = classify_response(response)
+            if classified.has_exceeded_rate_limit() and attempt == 1:
+                _logger.warning(
+                    "Backfill rate-limited, backing off %s s.",
+                    min(classified.retry_after, 60))
+                time.sleep(min(classified.retry_after, 60))
+                continue
+            return response
+        return response
+
+    def _create_stat_snapshot(self, metric, value, date):
+        """Find-or-create a single account.stat snapshot (idempotent)."""
+        self.ensure_one()
+        stat_model = self.env['social_marketing.account.stat']
+        existing = stat_model.search([
+            ('social_account_id', '=', self.id),
+            ('metric', '=', metric),
+            ('date', '=', date),
+        ], limit=1)
+        if existing:
+            existing.write({'value': value})
+        else:
+            stat_model.create({
+                'social_account_id': self.id,
+                'metric': metric,
+                'value': value,
+                'date': date,
+            })
+
+    @api.model
+    def _cron_backfill_statistics(self, retention_days=730, window_days=30):
+        """One-time backfill across accounts, windowed oldest-first and resumable.
+
+        Iterates 30-day windows per account, advancing ``last_backfilled_date``
+        so an interrupted run resumes without duplicating completed windows.
+        """
+        accounts = self.search([('has_account_stats', '=', True)])
+        end = fields.Date.today()
+        for account in accounts:
+            account._backfill_account_statistics(retention_days, window_days, end)
+
+    def _backfill_account_statistics(self, retention_days, window_days, end):
+        self.ensure_one()
+        start = end - timedelta(days=retention_days)
+        cursor = self.last_backfilled_date or start
+        while cursor < end:
+            window_end = min(cursor + timedelta(days=window_days), end)
+            self._backfill_statistics(cursor, window_end)
+            self.write({'last_backfilled_date': window_end})
+            cursor = window_end
+
+    def action_backfill_statistics(self, retention_days=730, window_days=30):
+        """Manually trigger backfill for a single account (from the UI)."""
+        self.ensure_one()
+        self._backfill_account_statistics(
+            retention_days, window_days, fields.Date.today())
+        return True
 
     def _filter_by_media_types(self, media_types):
         return self.filtered(lambda account: account.media_type in media_types)
