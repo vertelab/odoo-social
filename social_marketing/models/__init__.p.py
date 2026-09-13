@@ -13,7 +13,6 @@ from . import social_marketing_stream_post
 from . import social_marketing_stream_post_image
 from . import social_marketing_stream_type
 from . import social_marketing_live_post
-from . import social_marketing_provider_response
 from . import social_marketing_account_stat
 from . import social_marketing_live_post_stat
 from . import social_publish_rate_limit
