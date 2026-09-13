@@ -69,8 +69,17 @@ app.post('/render', requireAuth, async (req, res) => {
         }
 
         const wantSvg = format === 'svg'
+        // Låt INTE applyBindingsToScene XML-escapra åt oss.
+        //
+        // canvas.toSVG() escaprar redan texten när den serialiserar till XML.
+        // Att escapra dessförinnan gav dubbel escaping: '&' blev '&amp;amp;'
+        // och '<' blev '&amp;lt;', alltså bokstavliga '&amp;' och '&lt;' för
+        // den som öppnar SVG:n. Raster-vägen påverkas inte — den läser samma
+        // text utan serialisering.
+        //
+        // Escaping sker därför på exakt ett ställe: i Fabric.
         const json = applyBindingsToScene(scene_json, bindings, {
-            escapeXml: wantSvg,
+            escapeXml: false,
             apiBase: API_BASE,
         })
 

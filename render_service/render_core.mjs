@@ -36,8 +36,13 @@ function isEmptyValue(v) {
  *  - layers with `_hideIfEmpty: {placeholder}` are hidden when the bound
  *    value is empty
  *  - image layer srcs are absolutized for /web/image/... paths
- * When `escapeXml` is true the substituted text is XML-escaped (used for
- * SVG output so values can never inject markup).
+ * When `escapeXml` is true the substituted text is XML-escaped.
+ *
+ * Do NOT pass `escapeXml: true` for the SVG path in server.mjs: Fabric's
+ * `canvas.toSVG()` escapes the text itself when it serializes, so escaping
+ * beforehand produces `&amp;amp;` and `&lt;` shown literally to whoever opens
+ * the file. Escaping belongs to whoever writes the XML, and for SVG that is
+ * Fabric. This option exists for callers that build XML without Fabric.
  */
 export function applyBindingsToScene(sceneJson, bindings = {}, { escapeXml = false, apiBase = '' } = {}) {
     const json = JSON.parse(JSON.stringify(sceneJson))

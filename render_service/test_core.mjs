@@ -14,6 +14,30 @@ assert.equal(xmlEscape('a & b'), 'a &amp; b')
 assert.equal(xmlEscape('"quoted" \'single\''), '&quot;quoted&quot; &apos;single&apos;')
 console.log('✓ xml escaping')
 
+// 2b. Escaping must happen exactly once.
+//
+// server.mjs used to pass escapeXml: true for SVG, and canvas.toSVG() then
+// escaped the same text again: '&' became '&amp;amp;', '<' became '&lt;',
+// shown literally to whoever opened the file. The SVG path must therefore not
+// pre-escape, and this asserts the interaction the two used to get wrong.
+{
+    const s = { version: '6.9.1', objects: [{ type: 'textbox', text: '{{h}}' }] }
+    const preEscaped = applyBindingsToScene(s, { h: 'a & b' }, { escapeXml: true })
+    assert.equal(preEscaped.objects[0].text, 'a &amp; b', 'escapeXml: true escapes once')
+
+    const raw = applyBindingsToScene(s, { h: 'a & b' }, { escapeXml: false })
+    assert.equal(raw.objects[0].text, 'a & b', 'escapeXml: false leaves it for Fabric')
+
+    // What the bug looked like: one more pass over already-escaped text.
+    assert.equal(xmlEscape(raw.objects[0].text), 'a &amp; b', 'raw needs exactly one pass')
+    assert.equal(
+        xmlEscape(preEscaped.objects[0].text),
+        'a &amp;amp; b',
+        'double escaping is visible, which is why the SVG path must not pre-escape'
+    )
+    console.log('✓ escaping happens exactly once')
+}
+
 // 3. applyBindingsToScene: substitution + hide-if-empty + escaping + image absolutize
 const scene = {
     version: '6.9.1',
