@@ -51,6 +51,12 @@ class SocialPost(models.Model):
                                  help="The social medias linked to the selected social accounts.")
     live_post_ids = fields.One2many('social_marketing.live.post', 'post_id', string="Posts By Account", readonly=True,
                                     help="Sub-posts that will be published on each selected social accounts.")
+    pipeline_step_ids = fields.One2many(
+        'social.publish.pipeline.step', 'post_id',
+        string='Pipeline Log', readonly=True,
+        help="Ordered audit trail of this post's publishing stages. One record "
+             "per stage transition, including compliance checks, approval, "
+             "per-channel dispatch and completion.")
     live_posts_by_media = fields.Char('Live Posts by Social Media', compute='_compute_live_posts_by_media',
                                       readonly=True,
                                       help="Special technical field that holds a dict containing the live posts names by media ids (used for kanban view).")
