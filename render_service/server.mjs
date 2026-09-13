@@ -27,9 +27,27 @@ const TOKEN = process.env.RENDER_TOKEN || ''
 // must be able to reach the Odoo instance (docker network name or host).
 const API_BASE = process.env.API_BASE_URL || 'http://odoo:8069'
 
+// An empty token used to mean "no auth configured, allow everything". That is
+// the wrong failure mode for a service that renders whatever it is given:
+// if the token is ever missing -- a stale process, a bad EnvironmentFile, a
+// unit that was never restarted -- the service silently becomes an open
+// renderer instead of refusing. It also makes a misconfigured deployment
+// indistinguishable from a correct one, because every request succeeds.
+//
+// Set RENDER_ALLOW_NO_AUTH=1 to opt back in for local development.
+const ALLOW_NO_AUTH = process.env.RENDER_ALLOW_NO_AUTH === '1'
+
+if (!TOKEN && !ALLOW_NO_AUTH) {
+    console.error(
+        'render-odoo: RENDER_TOKEN is empty or unset. Refusing to start. ' +
+            'Set RENDER_TOKEN, or set RENDER_ALLOW_NO_AUTH=1 for local development.'
+    )
+    process.exit(1)
+}
+
 function requireAuth(req, res, next) {
     if (!TOKEN) {
-        return next() // no token configured: allow (local/dev mode)
+        return next() // explicitly opted in via RENDER_ALLOW_NO_AUTH=1
     }
     const header = req.headers.authorization || ''
     if (header === `Bearer ${TOKEN}`) {
