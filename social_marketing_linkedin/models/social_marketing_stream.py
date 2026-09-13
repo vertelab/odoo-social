@@ -420,6 +420,7 @@ class SocialStreamLinkedIn(models.Model):
     # (LinkedIn serves an empty shell to headless Chromium).
     _LINKEDIN_PLAYWRIGHT_SCRIPT = r'''
 import json
+import random
 import sys
 import time
 from playwright.sync_api import sync_playwright
@@ -481,11 +482,11 @@ def main():
             page.add_init_script(
                 "Object.defineProperty(navigator, 'webdriver', { get: () => undefined });")
             page.goto(URL, wait_until='domcontentloaded', timeout=45000)
-            time.sleep(10)
+            time.sleep(random.uniform(8, 14))
             for _ in range(MAX_SCROLLS):
                 page.mouse.wheel(0, 1400)
-                time.sleep(2.5)
-            time.sleep(4)
+                time.sleep(random.uniform(2.5, 5.5))
+            time.sleep(random.uniform(3, 6))
             posts = page.evaluate(EXTRACT_JS)
             result['posts'] = posts
             result['url'] = page.url

@@ -16,6 +16,13 @@ class SocialMarketingCompetitor(models.Model):
     name = fields.Char('Competitor Name', required=True)
     active = fields.Boolean('Active', default=True)
 
+    partner_id = fields.Many2one(
+        'res.partner', string='Partner (res.partner)',
+        ondelete='set null',
+        help='Linked res.partner record. Customers and competitors live in '
+             'res.partner (with LinkedIn URL/URN/ID) and are referenced here.',
+    )
+
     media_type = fields.Selection([
         ('linkedin', 'LinkedIn'),
         ('facebook', 'Facebook'),

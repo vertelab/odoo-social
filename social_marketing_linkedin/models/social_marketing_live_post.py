@@ -74,17 +74,34 @@ class SocialLivePostLinkedin(models.Model):
         linkedin_live_posts = self._filter_by_media_types(['linkedin'])
         super(SocialLivePostLinkedin, (self - linkedin_live_posts))._post()
 
-        # Split by auth method
-        api_posts = linkedin_live_posts.filtered(
-            lambda p: p.social_account_id.linkedin_auth_method == 'api')
-        cookie_posts = linkedin_live_posts.filtered(
-            lambda p: p.social_account_id.linkedin_auth_method == 'cookie')
-        playwright_posts = linkedin_live_posts.filtered(
-            lambda p: p.social_account_id.linkedin_auth_method == 'playwright')
+        # Capability-based split: each account picks the posting path that is
+        # actually configured (preferred method honoured when available,
+        # otherwise API token > Playwright session > cookies).
+        api_posts = self.env['social_marketing.live.post']
+        cookie_posts = self.env['social_marketing.live.post']
+        playwright_posts = self.env['social_marketing.live.post']
+        no_method = self.env['social_marketing.live.post']
+        for live_post in linkedin_live_posts:
+            method = live_post.social_account_id._get_linkedin_post_method()
+            if method == 'api':
+                api_posts |= live_post
+            elif method == 'cookie':
+                cookie_posts |= live_post
+            elif method == 'playwright':
+                playwright_posts |= live_post
+            else:
+                no_method |= live_post
 
         api_posts._post_linkedin()
         cookie_posts._post_linkedin_cookie()
         playwright_posts._post_linkedin_playwright()
+
+        if no_method:
+            _logger.warning(
+                'LinkedIn: no auth method available for %s — configure an '
+                'API token, Playwright session or cookie login on the account.',
+                ', '.join(no_method.mapped('social_account_id.display_name')),
+            )
 
     def _post_linkedin(self):
         for live_post in self:
