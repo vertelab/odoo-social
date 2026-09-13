@@ -234,3 +234,54 @@ to `base.group_user` and full rights to social marketing managers.
 - LinkedIn bot-detection: headless → tom sida; hög frekvens → 429 (cooldown ~30-60 min).
 - DOM-selectors kan ändras → isolerade i `_LINKEDIN_PLAYWRIGHT_SCRIPT`.
 - Sessionen dör när li_at löper ut → kör "Browser Login — Playwright" på kontot igen.
+
+## Filhantering: p-filer (parallel development)
+
+Detta repo underhålls med **p-file-metodiken**. En `*.p.<ext>`-fil är
+källan, och den genererade grenfilen `*.<ext>` skapas FRÅN den av
+`odoobranchpfile`/`preprocess`.
+
+```
+social_marketing/__manifest__.p.py          ← källan (source of truth)
+social_marketing/__manifest__.py            ← genererad, det Odoo laddar
+social_marketing/models/__init__.p.py       ← källan
+social_marketing/models/__init__.py         ← genererad
+```
+
+### Regeln
+
+**Ändra BÅDA filerna i samma commit.** Redigerar du bara den genererade
+filen ser det rätt ut i Odoo, men nästa `odoobranchpfile`-körning skriver
+över den med innehållet från p-filen och ändringen försvinner tyst.
+
+Detta har hänt tre gånger i detta repo: `0d4f797` strippade registreringen,
+`886962f` återställde den, och arbetskopian som blev `18cdd73` var en tredje
+återställning. Därför finns en grind.
+
+**Ta inte bort p-filerna.** De är källan per gren. En p-fil utan
+preprocessordirektiv (`# #if VERSION >= "18.0"`) är versionsneutral och
+preprocessar till sig själv — då ska p-filen och grenfilen vara
+**byte-identiska**. En p-fil *med* direktiv skiljer sig med avsikt från varje
+gren, eftersom grenfilen är den versionens utvärderade resultat.
+
+### Grinden
+
+```bash
+make check-pfiles          # kontrollera (exit 1 vid avvikelse)
+make check-pfiles-pairs    # lista alla par och deras status
+make install-hooks         # installera pre-commit-hook (en gång per klon)
+
+# granska ett annat repo härifrån
+python3 scripts/check_pfile_sync.py --repo /usr/share/odoo-base
+```
+
+`scripts/check_pfile_sync.py` läser bara filer — den kräver varken
+`preprocess`, `odoobranchpfile` eller något virtualenv, vilket är avsiktligt:
+verktygen är inte installerade på någon host, så en grind som kräver dem
+skulle aldrig köra.
+
+Hooken i `scripts/git-hooks/pre-commit` installeras till `.git/hooks/` av
+`make install-hooks`. Git distribuerar inte hooks med en klon, så en färsk
+klon har ingen grind förrän skriptet körs — därför finns samma kontroll även
+som `make`-mål. Hoppa över hooken medvetet med `git commit --no-verify`
+endast när avvikelsen är avsedd.
