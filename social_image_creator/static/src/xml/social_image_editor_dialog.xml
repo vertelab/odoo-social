@@ -1,0 +1,673 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <div t-name="social.SocialImageEditorDialog" class="o_social_image_editor_dialog position-fixed top-0 start-0 w-100 h-100 d-flex flex-column">
+
+        <!-- Header -->
+        <div class="o_social_image_editor_dialog_header d-flex align-items-center gap-2 px-3 py-2 border-bottom bg-white">
+            <strong class="me-1">Edit Design</strong>
+            <span class="text-muted small" t-esc="state.templateName"/>
+            <span class="badge text-bg-light border" t-esc="state.variantName"/>
+            <div class="btn-group btn-group-sm ms-2">
+                <button type="button" class="btn btn-outline-secondary" t-on-click="undo" title="Undo" t-att-disabled="!state.fabricVersion || !state.canUndo">
+                    <i class="fa fa-undo"/>
+                </button>
+                <button type="button" class="btn btn-outline-secondary" t-on-click="redo" title="Redo" t-att-disabled="!state.fabricVersion || !state.canRedo">
+                    <i class="fa fa-repeat"/>
+                </button>
+            </div>
+            <span class="ms-auto d-flex align-items-center gap-3">
+                <span class="small o_social_image_editor_save_state">
+                    <span t-if="state.saveState === 'dirty'" class="text-muted"><i class="fa fa-circle-o"/> Unsaved changes</span>
+                    <span t-elif="state.saveState === 'saving'" class="text-muted"><i class="fa fa-circle-o-notch fa-spin"/> Saving...</span>
+                    <span t-elif="state.saveState === 'saved'" class="text-success"><i class="fa fa-check"/> Saved</span>
+                    <span t-elif="state.saveState === 'error'" class="text-danger"><i class="fa fa-exclamation-triangle"/> Save failed</span>
+                </span>
+                <span class="text-muted small" t-if="state.fabricVersion">
+                    Fabric <t t-esc="state.fabricVersion"/>
+                </span>
+                <button type="button" class="btn-close" t-on-click="close" title="Close" aria-label="Close"/>
+            </span>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="o_social_image_editor_dialog_toolbar d-flex flex-wrap align-items-center gap-1 px-3 py-2 border-bottom bg-white">
+            <button type="button" class="btn btn-sm btn-secondary" t-on-click="addText" title="Add text" t-att-disabled="!state.fabricVersion">
+                <i class="fa fa-font"/>
+            </button>
+            <button type="button" class="btn btn-sm btn-secondary" t-on-click="addRect" title="Add rectangle" t-att-disabled="!state.fabricVersion">
+                <i class="fa fa-square-o"/>
+            </button>
+            <button type="button" class="btn btn-sm btn-secondary" t-on-click="addCircle" title="Add circle" t-att-disabled="!state.fabricVersion">
+                <i class="fa fa-circle-o"/>
+            </button>
+            <button type="button" class="btn btn-sm btn-secondary" t-on-click="addTriangle" title="Add triangle" t-att-disabled="!state.fabricVersion">
+                <i class="fa fa-caret-up"/>
+            </button>
+            <button type="button" class="btn btn-sm btn-secondary" t-on-click="addLine" title="Add line" t-att-disabled="!state.fabricVersion">
+                <i class="fa fa-minus"/>
+            </button>
+            <button type="button" class="btn btn-sm btn-secondary" t-on-click="addArrow" title="Add arrow" t-att-disabled="!state.fabricVersion">
+                <i class="fa fa-long-arrow-right"/>
+            </button>
+            <div class="position-relative" t-ref="shapesMenuRef">
+                <button type="button" class="btn btn-sm btn-secondary" t-on-click="toggleShapesMenu" title="Add shape" t-att-disabled="!state.fabricVersion">
+                    <i class="fa fa-star-o"/>
+                </button>
+                <div t-if="state.shapesOpen" class="o_social_image_editor_shapes_menu position-absolute top-100 start-0 mt-1 bg-white border shadow rounded p-2" style="z-index: 10;">
+                    <div class="small text-muted text-uppercase px-1 pb-1">Shapes</div>
+                    <div class="d-flex flex-wrap gap-1" style="width: 270px;">
+                        <button t-foreach="menuShapes()" t-as="shape" t-key="shape.kind"
+                            type="button"
+                            class="btn btn-sm btn-outline-secondary o_social_image_editor_shape_btn"
+                            t-esc="shape.label"
+                            t-on-click="() => this.addShapeFromLibrary(shape.kind)"/>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn btn-sm btn-secondary" t-att-class="state.penMode ? 'active' : ''" t-on-click="togglePen" title="Pen tool: click to place anchors, Enter or double-click to close, Esc to cancel" t-att-disabled="!state.fabricVersion">
+                <i class="fa fa-pencil"/>
+            </button>
+            <FileUploader inputName="'image'" acceptedFileExtensions="'image/png,image/jpeg,image/gif,image/webp'" onUploaded.bind="onImageUploaded">
+                <t t-set-slot="toggler">
+                    <i class="fa fa-image" title="Add image"/>
+                </t>
+            </FileUploader>
+            <FileUploader inputName="'svg'" acceptedFileExtensions="'image/svg+xml'" onUploaded.bind="onSvgUploaded">
+                <t t-set-slot="toggler">
+                    <i class="fa fa-file-code-o" title="Add SVG"/>
+                </t>
+            </FileUploader>
+            <button type="button" class="btn btn-sm btn-secondary" t-on-click="toggleIconPicker" title="Add icon" t-att-disabled="!state.fabricVersion">
+                <i class="fa fa-smile-o"/>
+            </button>
+            <button type="button" class="btn btn-sm btn-secondary" t-on-click="toggleMediaPicker" title="Media library: brand images and logos" t-att-disabled="!state.fabricVersion">
+                <i class="fa fa-folder-open-o"/>
+            </button>
+            <button t-if="state.bindingModelName" type="button"
+                class="btn btn-sm"
+                t-att-class="state.previewMode ? 'btn-primary' : 'btn-secondary'"
+                t-on-click="onTogglePreview"
+                title="Live data preview: resolve tokens against a real record"
+                t-att-disabled="!state.fabricVersion || state.previewBusy">
+                <i class="fa fa-eye"/>
+            </button>
+            <div t-if="state.previewMode" class="position-relative d-flex align-items-center gap-1 ms-1">
+                <i class="fa fa-database text-muted" title="Preview record"/>
+                <input type="text" class="form-control form-control-sm" style="width: 200px;" placeholder="Search records..." t-att-value="state.previewSearch" t-on-input="onPreviewSearchInput"/>
+                <span t-if="state.previewRecordName" class="small text-success text-truncate" style="max-width: 240px;" t-esc="state.previewRecordName"/>
+                <div t-if="state.previewResults.length" class="position-absolute bg-white border shadow rounded mt-1" style="top: 100%; left: 0; width: 320px; max-height: 260px; overflow-y: auto; z-index: 20;">
+                    <button t-foreach="state.previewResults" t-as="res" t-key="res.id"
+                        type="button"
+                        class="dropdown-item small text-truncate"
+                        t-esc="res.name"
+                        t-on-click="() => this.onPreviewRecordPicked(res)"/>
+                </div>
+            </div>
+            <span class="mx-2 o_social_image_editor_sep"/>
+            <label class="d-flex align-items-center gap-1 small text-muted mb-0" title="Opacity">
+                <i class="fa fa-adjust"/>
+                <input type="range" min="0" max="100" step="1" style="width: 90px;" t-att-value="state.opacity" t-on-change="onOpacityChange" t-att-disabled="!state.fabricVersion || !state.hasSelection"/>
+            </label>
+            <button type="button" class="btn btn-sm btn-danger" t-on-click="deleteSelected" title="Delete selection" t-att-disabled="!state.fabricVersion || !state.hasSelection">
+                <i class="fa fa-trash-o"/>
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-danger" t-on-click="clearCanvas" title="Clear canvas" t-att-disabled="!state.fabricVersion">
+                <i class="fa fa-eraser"/>
+            </button>
+        </div>
+
+        <!-- Body: layers / canvas / properties -->
+        <div class="o_social_image_editor_dialog_body flex-grow-1 d-flex overflow-hidden">
+
+            <!-- Layer panel (topmost first) -->
+            <div class="o_social_image_editor_layers border-end bg-white overflow-auto" style="width: 260px;">
+                <div class="px-2 py-1 small text-uppercase text-muted border-bottom">Layers</div>
+                <t t-foreach="state.layers" t-as="layer" t-key="layer.id">
+                    <div t-attf-class="o_social_image_editor_layer d-flex align-items-center gap-1 px-2 py-1 border-bottom {{ state.selectedIds.includes(layer.id) ? 'active' : '' }} {{ layer.locked ? 'locked' : '' }} {{ state.dropTargetIndex === layer_index ? 'drop-target' : '' }}"
+                        t-att-data-index="layer_index"
+                        t-att-draggable="state.editingLayerId !== layer.id ? 'true' : 'false'"
+                        t-on-click="() => this.onSelectLayer(layer)"
+                        t-on-dblclick="() => this.startRename(layer)"
+                        t-on-dragstart="(ev) => this.onLayerDragStart(ev, layer_index)"
+                        t-on-dragover="(ev) => this.onLayerDragOver(ev, layer_index)"
+                        t-on-dragleave="() => this.onLayerDragLeave()"
+                        t-on-drop="(ev) => this.onLayerDrop(ev, layer_index)"
+                        t-on-dragend="() => this.onLayerDragEnd()">
+                        <i class="fa fa-ellipsis-v o_social_image_editor_layer_grip text-muted"/>
+                        <span class="o_social_image_editor_layer_label flex-grow-1 text-truncate small" t-att-title="layer.label">
+                            <input t-if="state.editingLayerId === layer.id"
+                                t-ref="renameInputRef"
+                                type="text"
+                                class="form-control form-control-sm py-0"
+                                t-model="state.renameDraft"
+                                t-on-keydown="(ev) => this.onRenameKeyDown(ev, layer)"
+                                t-on-blur="() => this.commitRename(layer)"/>
+                            <t t-else="" t-esc="layer.label"/>
+                        </span>
+                        <button type="button" class="o_social_image_editor_layer_btn" t-att-title="layer.visible ? 'Hide layer' : 'Show layer'" t-on-click.stop="() => this.onToggleVisible(layer)">
+                            <i t-attf-class="fa {{ layer.visible ? 'fa-eye' : 'fa-eye-slash text-muted' }}"/>
+                        </button>
+                        <button type="button" class="o_social_image_editor_layer_btn" title="Duplicate layer" t-on-click.stop="() => this.onDuplicateLayer(layer)">
+                            <i class="fa fa-files-o"/>
+                        </button>
+                        <button type="button" class="o_social_image_editor_layer_btn text-danger" title="Delete layer" t-on-click.stop="() => this.onDeleteLayer(layer)">
+                            <i class="fa fa-trash-o"/>
+                        </button>
+                        <button type="button" class="o_social_image_editor_layer_btn" t-att-title="layer.locked ? 'Unlock layer' : 'Lock layer'" t-on-click.stop="() => this.onToggleLock(layer)">
+                            <i t-attf-class="fa {{ layer.locked ? 'fa-lock text-warning' : 'fa-unlock-alt' }}"/>
+                        </button>
+                    </div>
+                </t>
+                <div t-if="!state.layers.length and !state.busy" class="p-3 text-muted small">
+                    No layers yet. Use the toolbar above to add objects.
+                </div>
+            </div>
+
+            <!-- Canvas area, pixel-exact canvas CSS-scaled to fit, with
+                 the multi-select align bar above it -->
+            <div class="flex-grow-1 d-flex flex-column overflow-hidden">
+                <div t-if="state.selectionCount >= 2" class="o_social_image_editor_alignbar d-flex flex-wrap align-items-center gap-1 px-3 py-1 border-bottom bg-white">
+                    <span class="small text-muted me-1" t-esc="state.selectionCount + ' selected'"/>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" t-on-click="() => this.alignSelection('left')" title="Align left">
+                        <i class="fa fa-align-left"/>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" t-on-click="() => this.alignSelection('cx')" title="Align center horizontally">
+                        <i class="fa fa-align-center"/>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" t-on-click="() => this.alignSelection('right')" title="Align right">
+                        <i class="fa fa-align-right"/>
+                    </button>
+                    <span class="mx-1 o_social_image_editor_sep"/>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" t-on-click="() => this.alignSelection('top')" title="Align top">
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><rect x="2" y="1" width="12" height="2"/><rect x="3" y="4" width="3" height="6"/><rect x="10" y="4" width="3" height="9"/></svg>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" t-on-click="() => this.alignSelection('cy')" title="Align center vertically">
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="7" width="14" height="2"/><rect x="3" y="3" width="3" height="10"/><rect x="10" y="1.5" width="3" height="13"/></svg>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" t-on-click="() => this.alignSelection('bottom')" title="Align bottom">
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><rect x="2" y="13" width="12" height="2"/><rect x="3" y="6" width="3" height="6"/><rect x="10" y="3" width="3" height="9"/></svg>
+                    </button>
+                    <span class="mx-1 o_social_image_editor_sep"/>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" t-att-disabled="state.selectionCount &lt; 3" t-on-click="() => this.distributeSelection('h')" title="Distribute horizontally (3+ objects)">
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="3" width="3" height="10"/><rect x="6.5" y="4" width="3" height="8"/><rect x="12" y="3" width="3" height="10"/></svg>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" t-att-disabled="state.selectionCount &lt; 3" t-on-click="() => this.distributeSelection('v')" title="Distribute vertically (3+ objects)">
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="1" width="10" height="3"/><rect x="4" y="6.5" width="8" height="3"/><rect x="3" y="12" width="10" height="3"/></svg>
+                    </button>
+                    <span class="mx-1 o_social_image_editor_sep"/>
+                    <button type="button" class="btn btn-sm btn-outline-primary" t-on-click="groupSelection" title="Group selection (Ctrl+G)">
+                        <i class="fa fa-object-group"/> Group
+                    </button>
+                </div>
+                <div class="o_social_image_editor_canvas_area flex-grow-1 overflow-auto bg-light d-flex align-items-center justify-content-center p-3" t-ref="canvasAreaRef">
+                    <canvas t-ref="canvasRef" class="o_social_image_editor_canvas bg-white shadow-sm"/>
+                </div>
+            </div>
+
+            <!-- Properties panel: text inspector + common basics + morph -->
+            <div class="o_social_image_editor_props border-start bg-white d-flex flex-column overflow-hidden" style="width: 280px;">
+                <div class="px-2 py-1 small text-uppercase text-muted border-bottom">Properties</div>
+                <div t-if="!state.hasSelection" class="p-3 text-muted small">
+                    Select an object to edit its properties.
+                </div>
+                <div t-else="" class="o_social_image_editor_props_body p-2 overflow-auto flex-grow-1">
+
+                    <!-- Text inspector -->
+                    <div t-if="state.inspector.isText" class="o_social_image_editor_props_section mb-3">
+                        <div class="o_social_image_editor_props_heading">Text</div>
+
+                        <!-- Font family picker (searchable, lazy Google Fonts) -->
+                        <div class="position-relative mb-2" t-ref="fontPickerRef">
+                            <button type="button" class="btn btn-sm btn-outline-secondary w-100 d-flex align-items-center gap-1"
+                                t-att-disabled="state.fontLoading"
+                                t-on-click="toggleFontPicker">
+                                <span class="flex-grow-1 text-truncate text-start" t-attf-style="font-family: {{ state.inspector.fontFamily }}" t-esc="state.inspector.fontFamily"/>
+                                <i t-attf-class="fa {{ state.fontLoading ? 'fa-circle-o-notch fa-spin' : 'fa-caret-down' }}"/>
+                            </button>
+                            <div t-if="state.fontPickerOpen" class="o_social_image_editor_font_menu position-absolute top-100 start-0 w-100 mt-1 bg-white border shadow rounded">
+                                <div class="p-1 border-bottom">
+                                    <input type="text" class="form-control form-control-sm" placeholder="Search fonts" t-model="state.fontFilter"/>
+                                </div>
+                                <div class="o_social_image_editor_font_list overflow-auto">
+                                    <div class="o_social_image_editor_font_group">System fonts</div>
+                                    <button t-foreach="filteredSystemFonts()" t-as="font" t-key="font"
+                                        type="button"
+                                        class="o_social_image_editor_font_option"
+                                        t-att-class="font === state.inspector.fontFamily ? 'active' : ''"
+                                        t-attf-style="font-family: {{ font }}"
+                                        t-esc="font"
+                                        t-on-click="() => this.onFontFamilyChange(font)"/>
+                                    <div t-if="state.brandFonts.length" class="o_social_image_editor_font_group">Brand fonts</div>
+                                    <button t-foreach="state.brandFonts" t-as="font" t-key="font.family"
+                                        type="button"
+                                        class="o_social_image_editor_font_option"
+                                        t-att-class="font.family === state.inspector.fontFamily ? 'active' : ''"
+                                        t-attf-style="font-family: {{ font.family }}"
+                                        t-esc="font.name"
+                                        t-on-click="() => this.onFontFamilyChange(font.family)"/>
+                                    <div class="o_social_image_editor_font_group">
+                                        Google Fonts <i t-if="!state.fontsCssLoaded" class="fa fa-circle-o-notch fa-spin" title="Loading font previews"/>
+                                    </div>
+                                    <button t-foreach="filteredGoogleFonts()" t-as="font" t-key="font"
+                                        type="button"
+                                        class="o_social_image_editor_font_option"
+                                        t-att-class="font === state.inspector.fontFamily ? 'active' : ''"
+                                        t-attf-style="font-family: {{ font }}, sans-serif"
+                                        t-esc="font"
+                                        t-on-click="() => this.onFontFamilyChange(font)"/>
+                                </div>
+                                <div t-if="state.fontLoading" class="px-2 py-1 small text-muted border-top">
+                                    <i class="fa fa-circle-o-notch fa-spin"/> Loading font...
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Size + style -->
+                        <div class="d-flex align-items-center gap-1 mb-2">
+                            <input type="number" class="form-control form-control-sm" style="width: 64px;" min="1" max="500"
+                                t-att-value="state.inspector.fontSize"
+                                t-on-change="onFontSizeChange" title="Font size"/>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" t-att-class="state.inspector.bold ? 'active' : ''" t-on-click="toggleBold" title="Bold">
+                                <strong>B</strong>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" t-att-class="state.inspector.italic ? 'active' : ''" t-on-click="toggleItalic" title="Italic">
+                                <em>I</em>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" t-att-class="state.inspector.underline ? 'active' : ''" t-on-click="toggleUnderline" title="Underline">
+                                <u>U</u>
+                            </button>
+                        </div>
+
+                        <!-- Text color + background color -->
+                        <div class="d-flex align-items-center gap-2 mb-2 small">
+                            <label class="d-flex align-items-center gap-1 mb-0" title="Text color">
+                                <i class="fa fa-font"/>
+                                <input type="color" class="o_social_image_editor_color_input" t-att-value="state.inspector.fill" t-on-change="onTextFillChange"/>
+                            </label>
+                            <label class="d-flex align-items-center gap-1 mb-0" title="Background color (white = none)">
+                                <i class="fa fa-square"/>
+                                <input type="color" class="o_social_image_editor_color_input" t-att-value="state.inspector.textBackgroundColor || '#ffffff'" t-on-change="onTextBackgroundChange"/>
+                            </label>
+                        </div>
+                        <div t-if="state.brandColors.length" class="o_social_image_editor_brand_swatches d-flex align-items-center flex-wrap gap-1 mb-2">
+                            <span class="text-muted o_social_image_editor_brand_swatches_label">Brand</span>
+                            <button t-foreach="state.brandColors" t-as="swatch" t-key="swatch.color"
+                                type="button" class="o_social_image_editor_brand_swatch"
+                                t-att-title="swatch.name + ' (text)'"
+                                t-attf-style="background-color: {{ swatch.color }};"
+                                t-on-click="() => this.applyBrandColor('text', swatch.color)"/>
+                            <button t-foreach="state.brandColors" t-as="swatch" t-key="swatch.color + '-bg'"
+                                type="button" class="o_social_image_editor_brand_swatch o_social_image_editor_brand_swatch_bg"
+                                t-att-title="swatch.name + ' (background)'"
+                                t-attf-style="background-color: {{ swatch.color }};"
+                                t-on-click="() => this.applyBrandColor('textBackground', swatch.color)"/>
+                        </div>
+
+                        <!-- Alignment -->
+                        <div class="d-flex align-items-center gap-1 mb-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" t-att-class="state.inspector.textAlign === 'left' ? 'active' : ''" t-on-click="() => this.onTextAlignChange('left')" title="Align left">
+                                <i class="fa fa-align-left"/>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" t-att-class="state.inspector.textAlign === 'center' ? 'active' : ''" t-on-click="() => this.onTextAlignChange('center')" title="Align center">
+                                <i class="fa fa-align-center"/>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" t-att-class="state.inspector.textAlign === 'right' ? 'active' : ''" t-on-click="() => this.onTextAlignChange('right')" title="Align right">
+                                <i class="fa fa-align-right"/>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" t-att-class="state.inspector.textAlign === 'justify' ? 'active' : ''" t-on-click="() => this.onTextAlignChange('justify')" title="Justify">
+                                <i class="fa fa-align-justify"/>
+                            </button>
+                        </div>
+
+                        <!-- Line height + char spacing -->
+                        <label class="o_social_image_editor_prop_row" title="Line height">
+                            <span>Line height</span>
+                            <span class="o_social_image_editor_prop_value" t-esc="Number(state.inspector.lineHeight).toFixed(2)"/>
+                            <input type="range" class="w-100" min="0.5" max="3" step="0.05" t-att-value="state.inspector.lineHeight" t-on-change="onLineHeightChange"/>
+                        </label>
+                        <label class="o_social_image_editor_prop_row" title="Character spacing">
+                            <span>Char spacing</span>
+                            <span class="o_social_image_editor_prop_value" t-esc="state.inspector.charSpacing"/>
+                            <input type="range" class="w-100" min="-100" max="800" step="5" t-att-value="state.inspector.charSpacing" t-on-change="onCharSpacingChange"/>
+                        </label>
+
+                        <!-- Case transform + autofit -->
+                        <label class="d-flex align-items-center gap-2 mb-2 small" title="Case transform">
+                            <span class="text-muted">Case</span>
+                            <select class="form-select form-select-sm" t-att-value="state.inspector.textTransform" t-on-change="onTextTransformChange">
+                                <option value="none">No transform</option>
+                                <option value="upper">UPPERCASE</option>
+                                <option value="lower">lowercase</option>
+                            </select>
+                        </label>
+                        <label class="d-flex align-items-center gap-2 mb-0 small" title="Shrink the font until the text fits the box width">
+                            <input type="checkbox" t-att-checked="state.inspector.overflow === 'autofit'" t-on-change="onOverflowChange"/>
+                            <span>Autofit (shrink to fit)</span>
+                        </label>
+                    </div>
+
+                    <!-- Data binding: field chips, image binding,
+                         hide-if-empty and required (template model set) -->
+                    <div t-if="state.bindingFields.length" class="o_social_image_editor_props_section mb-3">
+                        <div class="o_social_image_editor_props_heading">Data</div>
+                        <div t-if="!state.inspector.isText and !state.inspector.isImage" class="small text-muted mb-2">
+                            Select a text or image layer to bind it to a field.
+                        </div>
+                        <div t-if="state.inspector.isText" class="small text-muted mb-2">
+                            Click a field to insert its token at the cursor.
+                        </div>
+                        <div t-if="state.inspector.isImage" class="small text-muted mb-2">
+                            Click a field to bind this image (cover-fitted at render).
+                        </div>
+                        <input type="text" class="form-control form-control-sm mb-2" placeholder="Search fields" t-model="state.bindingFieldFilter"/>
+                        <div class="d-flex flex-wrap gap-1 mb-2">
+                            <button t-foreach="filteredBindingFields()" t-as="field" t-key="field.name"
+                                type="button"
+                                class="btn btn-sm btn-outline-secondary o_social_image_editor_field_chip"
+                                t-att-class="state.inspector.isImage and state.inspector.dataBindingField === field.name ? 'active' : ''"
+                                t-att-title="field.field_description + ' (' + field.type + ')'"
+                                t-att-disabled="(!state.inspector.isText and !state.inspector.isImage) or (state.inspector.isImage and field.type !== 'binary') or state.previewMode"
+                                t-esc="field.name"
+                                t-on-click="() => this.onFieldChipClick(field)"/>
+                        </div>
+                        <label t-if="state.inspector.isImage" class="d-flex align-items-center gap-2 mb-2 small" title="Bind this image to a binary field of the record">
+                            <span class="text-muted">Bind to field</span>
+                            <select class="form-select form-select-sm" t-att-value="state.inspector.dataBindingField || ''" t-att-disabled="state.previewMode" t-on-change="onDataBindingChange">
+                                <option value="">Not bound</option>
+                                <option t-foreach="bindingImageFields()" t-as="field" t-key="field.name" t-att-value="field.name" t-esc="field.field_description"/>
+                            </select>
+                        </label>
+                        <label class="d-flex align-items-center gap-2 mb-2 small" title="Hide this layer when the field resolves to empty">
+                            <span class="text-muted">Hide if empty</span>
+                            <select class="form-select form-select-sm" t-att-value="state.inspector.hideIfEmptyField || ''" t-att-disabled="state.previewMode" t-on-change="onHideIfEmptyChange">
+                                <option value="">Never</option>
+                                <option t-foreach="state.bindingFields" t-as="field" t-key="field.name" t-att-value="field.name" t-esc="field.field_description"/>
+                            </select>
+                        </label>
+                        <label class="d-flex align-items-center gap-2 mb-0 small" title="Abort the render with a clear error when the bound field is empty">
+                            <input type="checkbox" t-att-checked="state.inspector.required" t-att-disabled="!state.inspector.bindField or state.previewMode" t-on-change="onRequiredChange"/>
+                            <span>Required (fail render if empty)</span>
+                        </label>
+                    </div>
+
+                    <!-- Common basics: fill, stroke, opacity -->
+                    <div class="o_social_image_editor_props_section mb-3">
+                        <div class="o_social_image_editor_props_heading">Style</div>
+                        <div t-if="!state.inspector.isText" class="d-flex align-items-center gap-2 mb-2 small">
+                            <span class="text-muted">Fill</span>
+                            <input type="color" class="o_social_image_editor_color_input" t-att-value="state.inspector.fill" t-on-change="onFillChange"/>
+                        </div>
+                        <div t-if="!state.inspector.isText and state.brandColors.length" class="o_social_image_editor_brand_swatches d-flex align-items-center flex-wrap gap-1 mb-2">
+                            <span class="text-muted o_social_image_editor_brand_swatches_label">Brand</span>
+                            <button t-foreach="state.brandColors" t-as="swatch" t-key="swatch.color"
+                                type="button" class="o_social_image_editor_brand_swatch"
+                                t-att-title="swatch.name"
+                                t-attf-style="background-color: {{ swatch.color }};"
+                                t-on-click="() => this.applyBrandColor('fill', swatch.color)"/>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 mb-2 small">
+                            <span class="text-muted">Stroke</span>
+                            <input type="color" class="o_social_image_editor_color_input" t-att-value="state.inspector.stroke || '#000000'" t-on-change="onStrokeColorChange"/>
+                            <input type="number" class="form-control form-control-sm" style="width: 56px;" min="0" max="100"
+                                t-att-value="state.inspector.strokeWidth"
+                                t-on-change="onStrokeWidthChange" title="Stroke width"/>
+                        </div>
+                        <div t-if="state.brandColors.length" class="o_social_image_editor_brand_swatches d-flex align-items-center flex-wrap gap-1 mb-2">
+                            <span class="text-muted o_social_image_editor_brand_swatches_label">Brand</span>
+                            <button t-foreach="state.brandColors" t-as="swatch" t-key="swatch.color"
+                                type="button" class="o_social_image_editor_brand_swatch"
+                                t-att-title="swatch.name"
+                                t-attf-style="background-color: {{ swatch.color }};"
+                                t-on-click="() => this.applyBrandColor('stroke', swatch.color)"/>
+                        </div>
+                        <label class="d-flex align-items-center gap-2 mb-2 small" title="Stroke style">
+                            <span class="text-muted">Line</span>
+                            <select class="form-select form-select-sm" t-att-value="state.inspector.strokePattern" t-on-change="onStrokePatternChange">
+                                <option value="solid">Solid</option>
+                                <option value="dashed">Dashed</option>
+                                <option value="dotted">Dotted</option>
+                            </select>
+                        </label>
+                        <label t-if="state.inspector.isRect" class="d-flex align-items-center gap-2 mb-2 small" title="Corner radius">
+                            <span class="text-muted">Radius</span>
+                            <input type="number" class="form-control form-control-sm" style="width: 64px;" min="0" max="500"
+                                t-att-value="state.inspector.cornerRadius"
+                                t-on-change="onCornerRadiusChange"/>
+                        </label>
+                        <label class="o_social_image_editor_prop_row mb-0" title="Opacity">
+                            <span>Opacity</span>
+                            <span class="o_social_image_editor_prop_value" t-esc="state.opacity + '%'"/>
+                            <input type="range" class="w-100" min="0" max="100" step="1" t-att-value="state.opacity" t-on-change="onOpacityChange"/>
+                        </label>
+                    </div>
+
+                    <!-- Gradient fill -->
+                    <div t-if="!state.inspector.isImage" class="o_social_image_editor_props_section mb-3">
+                        <div class="o_social_image_editor_props_heading">Gradient</div>
+                        <div class="d-flex gap-1 mb-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary flex-fill"
+                                t-att-class="gradientType() === 'solid' ? 'active' : ''"
+                                t-on-click="() => this.onGradientTypeChange('solid')">Solid</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary flex-fill"
+                                t-att-class="gradientType() === 'linear' ? 'active' : ''"
+                                t-on-click="() => this.onGradientTypeChange('linear')">Linear</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary flex-fill"
+                                t-att-class="gradientType() === 'radial' ? 'active' : ''"
+                                t-on-click="() => this.onGradientTypeChange('radial')">Radial</button>
+                        </div>
+                        <div class="o_social_image_editor_gradient_preview rounded border mb-2" t-att-style="gradientPreviewStyle()"/>
+                        <div t-if="gradientType() !== 'solid'" class="d-flex align-items-center gap-2 mb-2 small">
+                            <input type="color" class="o_social_image_editor_color_input flex-fill" t-att-value="gradientStartColor()" t-on-change="onGradientStartColorChange" title="Start color"/>
+                            <input type="color" class="o_social_image_editor_color_input flex-fill" t-att-value="gradientEndColor()" t-on-change="onGradientEndColorChange" title="End color"/>
+                        </div>
+                        <div t-if="gradientType() !== 'solid' and state.brandColors.length" class="o_social_image_editor_brand_swatches d-flex align-items-center flex-wrap gap-1 mb-2">
+                            <span class="text-muted o_social_image_editor_brand_swatches_label">Brand</span>
+                            <button t-foreach="state.brandColors" t-as="swatch" t-key="swatch.color"
+                                type="button" class="o_social_image_editor_brand_swatch"
+                                t-att-title="swatch.name + ' (start)'"
+                                t-attf-style="background-color: {{ swatch.color }};"
+                                t-on-click="() => this.applyBrandColor('gradientStart', swatch.color)"/>
+                            <button t-foreach="state.brandColors" t-as="swatch" t-key="swatch.color + '-end'"
+                                type="button" class="o_social_image_editor_brand_swatch o_social_image_editor_brand_swatch_end"
+                                t-att-title="swatch.name + ' (end)'"
+                                t-attf-style="background-color: {{ swatch.color }};"
+                                t-on-click="() => this.applyBrandColor('gradientEnd', swatch.color)"/>
+                        </div>
+                        <label t-if="gradientType() !== 'solid'" class="o_social_image_editor_prop_row" title="Start stop position">
+                            <span>Start</span>
+                            <span class="o_social_image_editor_prop_value" t-esc="gradientStartPosPct() + '%'"/>
+                            <input type="range" class="w-100" min="0" max="1" step="0.02" t-att-value="gradientStartPos()" t-on-input="onGradientStartPosChange"/>
+                        </label>
+                        <label t-if="gradientType() !== 'solid'" class="o_social_image_editor_prop_row" title="End stop position">
+                            <span>End</span>
+                            <span class="o_social_image_editor_prop_value" t-esc="gradientEndPosPct() + '%'"/>
+                            <input type="range" class="w-100" min="0" max="1" step="0.02" t-att-value="gradientEndPos()" t-on-input="onGradientEndPosChange"/>
+                        </label>
+                        <label t-if="gradientType() === 'linear'" class="o_social_image_editor_prop_row mb-0" title="Gradient angle">
+                            <span>Angle</span>
+                            <span class="o_social_image_editor_prop_value" t-esc="gradientAngle() + '°'"/>
+                            <input type="range" class="w-100" min="0" max="360" step="1" t-att-value="gradientAngle()" t-on-input="onGradientAngleChange"/>
+                        </label>
+                    </div>
+
+                    <!-- Drop shadow -->
+                    <div class="o_social_image_editor_props_section mb-3">
+                        <div class="o_social_image_editor_props_heading">Shadow</div>
+                        <label class="d-flex align-items-center gap-2 mb-2 small">
+                            <input type="checkbox" t-att-checked="state.inspector.shadow.enabled" t-on-change="onShadowToggle"/>
+                            <span>Drop shadow</span>
+                        </label>
+                        <div t-if="state.inspector.shadow.enabled">
+                            <div class="d-flex align-items-center gap-2 mb-2 small">
+                                <input type="color" class="o_social_image_editor_color_input" t-att-value="state.inspector.shadow.hex" t-on-change="(ev) => this.onShadowChange({hex: ev.target.value})" title="Shadow color"/>
+                                <label class="d-flex align-items-center gap-1 mb-0 flex-grow-1" title="Shadow opacity">
+                                    <input type="range" class="w-100" min="0" max="100" step="1" t-att-value="state.inspector.shadow.alpha" t-on-input="(ev) => this.onShadowChange({alpha: Number(ev.target.value)})"/>
+                                    <span class="o_social_image_editor_prop_value" t-esc="state.inspector.shadow.alpha + '%'"/>
+                                </label>
+                            </div>
+                            <div t-if="state.brandColors.length" class="o_social_image_editor_brand_swatches d-flex align-items-center flex-wrap gap-1 mb-2">
+                                <span class="text-muted o_social_image_editor_brand_swatches_label">Brand</span>
+                                <button t-foreach="state.brandColors" t-as="swatch" t-key="swatch.color"
+                                    type="button" class="o_social_image_editor_brand_swatch"
+                                    t-att-title="swatch.name"
+                                    t-attf-style="background-color: {{ swatch.color }};"
+                                    t-on-click="() => this.applyBrandColor('shadow', swatch.color)"/>
+                            </div>
+                            <div class="d-flex align-items-center gap-2 small">
+                                <label class="d-flex align-items-center gap-1 mb-0" title="Blur">
+                                    <span class="text-muted">B</span>
+                                    <input type="number" class="form-control form-control-sm" style="width: 56px;" min="0" max="100"
+                                        t-att-value="state.inspector.shadow.blur"
+                                        t-on-change="(ev) => this.onShadowChange({blur: Number(ev.target.value)})"/>
+                                </label>
+                                <label class="d-flex align-items-center gap-1 mb-0" title="Offset X">
+                                    <span class="text-muted">X</span>
+                                    <input type="number" class="form-control form-control-sm" style="width: 56px;" min="-100" max="100"
+                                        t-att-value="state.inspector.shadow.offsetX"
+                                        t-on-change="(ev) => this.onShadowChange({offsetX: Number(ev.target.value)})"/>
+                                </label>
+                                <label class="d-flex align-items-center gap-1 mb-0" title="Offset Y">
+                                    <span class="text-muted">Y</span>
+                                    <input type="number" class="form-control form-control-sm" style="width: 56px;" min="-100" max="100"
+                                        t-att-value="state.inspector.shadow.offsetY"
+                                        t-on-change="(ev) => this.onShadowChange({offsetY: Number(ev.target.value)})"/>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Raster image filters -->
+                    <div t-if="state.inspector.isImage" class="o_social_image_editor_props_section mb-3">
+                        <div class="o_social_image_editor_props_heading">Image filters</div>
+                        <label class="o_social_image_editor_prop_row" title="Brightness">
+                            <span>Brightness</span>
+                            <span class="o_social_image_editor_prop_value" t-esc="Number(state.inspector.filters.brightness).toFixed(2)"/>
+                            <input type="range" class="w-100" min="-1" max="1" step="0.05" t-att-value="state.inspector.filters.brightness" t-on-input="(ev) => this.onImageFilterChange('brightness', Number(ev.target.value))"/>
+                        </label>
+                        <label class="o_social_image_editor_prop_row" title="Contrast">
+                            <span>Contrast</span>
+                            <span class="o_social_image_editor_prop_value" t-esc="Number(state.inspector.filters.contrast).toFixed(2)"/>
+                            <input type="range" class="w-100" min="-1" max="1" step="0.05" t-att-value="state.inspector.filters.contrast" t-on-input="(ev) => this.onImageFilterChange('contrast', Number(ev.target.value))"/>
+                        </label>
+                        <label class="o_social_image_editor_prop_row" title="Blur">
+                            <span>Blur</span>
+                            <span class="o_social_image_editor_prop_value" t-esc="Number(state.inspector.filters.blur).toFixed(2)"/>
+                            <input type="range" class="w-100" min="0" max="1" step="0.02" t-att-value="state.inspector.filters.blur" t-on-input="(ev) => this.onImageFilterChange('blur', Number(ev.target.value))"/>
+                        </label>
+                        <label class="d-flex align-items-center gap-2 mb-0 small">
+                            <input type="checkbox" t-att-checked="state.inspector.filters.grayscale" t-on-change="(ev) => this.onImageFilterChange('grayscale', ev.target.checked)"/>
+                            <span>Grayscale</span>
+                        </label>
+                    </div>
+
+                    <!-- Shape actions: fill with image / revert / ungroup -->
+                    <div t-if="state.inspector.canFillWithImage or state.inspector.isFilledWithImage or state.inspector.isGroup" class="o_social_image_editor_props_section mb-3">
+                        <div class="o_social_image_editor_props_heading">Actions</div>
+                        <FileUploader t-if="state.inspector.canFillWithImage" inputName="'shapefill'" acceptedFileExtensions="'image/png,image/jpeg,image/gif,image/webp'" onUploaded.bind="onShapeFillImage">
+                            <t t-set-slot="toggler">
+                                <button type="button" class="btn btn-sm btn-outline-secondary w-100" title="Fill the shape with an image, clipped to its outline">
+                                    <i class="fa fa-picture-o"/> Fill with image
+                                </button>
+                            </t>
+                        </FileUploader>
+                        <button t-if="state.inspector.isFilledWithImage" type="button" class="btn btn-sm btn-outline-secondary w-100" t-on-click="onRevertToShape" title="Back to a solid color shape">
+                            <i class="fa fa-undo"/> Revert to color
+                        </button>
+                        <button t-if="state.inspector.isGroup" type="button" class="btn btn-sm btn-outline-secondary w-100" t-on-click="ungroupSelection" title="Ungroup (Ctrl+Shift+G)">
+                            <i class="fa fa-object-ungroup"/> Ungroup
+                        </button>
+                    </div>
+
+                    <!-- Parametric shape morph sliders -->
+                    <div t-if="state.shapeParamDefs.length" class="o_social_image_editor_props_section mb-3">
+                        <div class="o_social_image_editor_props_heading">Shape</div>
+                        <label t-foreach="state.shapeParamDefs" t-as="param" t-key="param.key" class="o_social_image_editor_prop_row">
+                            <span t-esc="param.label"/>
+                            <span class="o_social_image_editor_prop_value" t-esc="formatShapeParam(param)"/>
+                            <input type="range" class="w-100"
+                                t-att-min="param.min" t-att-max="param.max" t-att-step="param.step"
+                                t-att-value="state.inspector.shapeParams[param.key]"
+                                t-on-input="(ev) => this.onShapeParamChange(param.key, Number(ev.target.value))"/>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Icon picker (Lucide static library) -->
+        <div t-if="state.iconPickerOpen" class="o_social_image_editor_picker_overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center">
+            <div class="o_social_image_editor_picker_backdrop position-absolute top-0 start-0 w-100 h-100" t-on-click="toggleIconPicker"/>
+            <div class="o_social_image_editor_icon_picker position-relative bg-white border shadow rounded d-flex flex-column">
+                <div class="d-flex align-items-center gap-2 px-3 py-2 border-bottom">
+                    <strong class="flex-grow-1">Insert icon</strong>
+                    <button type="button" class="btn-close" t-on-click="toggleIconPicker" title="Close" aria-label="Close"/>
+                </div>
+                <div class="d-flex align-items-center gap-2 px-3 py-2 border-bottom">
+                    <input type="text" class="form-control form-control-sm" placeholder="Search icons" t-model="state.iconFilter"/>
+                    <input type="color" class="o_social_image_editor_color_input" t-att-value="state.iconColor" t-on-change="(ev) => this.state.iconColor = ev.target.value" title="Icon color"/>
+                </div>
+                <div class="o_social_image_editor_icon_grid overflow-auto p-2 flex-grow-1">
+                    <div class="d-flex flex-wrap">
+                        <button t-foreach="iconPreviews()" t-as="preview" t-key="preview.icon.name"
+                            type="button" class="o_social_image_editor_icon_btn"
+                            t-att-title="preview.icon.name"
+                            t-on-click="() => this.insertIcon(preview.icon)">
+                            <t t-out="preview.svg"/>
+                        </button>
+                    </div>
+                    <div t-if="!iconPreviews().length" class="text-muted small text-center py-4">
+                        No icons match your search.
+                    </div>
+                    <div t-if="iconResultCount() > 400" class="text-muted small text-center py-2">
+                        Showing the first 400 of <t t-esc="iconResultCount()"/> icons, keep typing to narrow down.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Media library (company brand images + logo) -->
+        <div t-if="state.mediaPickerOpen" class="o_social_image_editor_picker_overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center">
+            <div class="o_social_image_editor_picker_backdrop position-absolute top-0 start-0 w-100 h-100" t-on-click="toggleMediaPicker"/>
+            <div class="o_social_image_editor_media_picker position-relative bg-white border shadow rounded d-flex flex-column">
+                <div class="d-flex align-items-center gap-2 px-3 py-2 border-bottom">
+                    <strong class="flex-grow-1">Media library</strong>
+                    <FileUploader inputName="'media'" acceptedFileExtensions="'image/png,image/jpeg,image/gif,image/webp'" onUploaded.bind="onMediaUploaded">
+                        <t t-set-slot="toggler">
+                            <button type="button" class="btn btn-sm btn-outline-primary" title="Upload an image into the company media library">
+                                <i class="fa fa-upload"/> Upload
+                            </button>
+                        </t>
+                    </FileUploader>
+                    <button type="button" class="btn-close" t-on-click="toggleMediaPicker" title="Close" aria-label="Close"/>
+                </div>
+                <div class="px-3 py-2 border-bottom">
+                    <input type="text" class="form-control form-control-sm" placeholder="Search images" t-model="state.mediaFilter"/>
+                </div>
+                <div class="o_social_image_editor_media_grid overflow-auto p-2 flex-grow-1">
+                    <div t-if="state.mediaLoading" class="text-muted small text-center py-4">
+                        <i class="fa fa-circle-o-notch fa-spin"/> Loading media...
+                    </div>
+                    <div t-elif="!filteredMediaItems().length" class="text-muted small text-center py-4">
+                        No images in the media library yet. Upload one with the button above.
+                    </div>
+                    <div t-else="" class="d-flex flex-wrap gap-2">
+                        <button t-foreach="filteredMediaItems()" t-as="item" t-key="item.id"
+                            type="button" class="o_social_image_editor_media_item"
+                            t-att-title="item.name"
+                            t-on-click="() => this.onMediaPicked(item)">
+                            <img t-att-src="item.url" t-att-alt="item.name" loading="lazy"/>
+                            <span class="o_social_image_editor_media_name small text-truncate px-1" t-esc="item.name"/>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div t-if="state.message" class="px-3 py-1 small text-danger border-top bg-white" t-esc="state.message"/>
+        <div t-if="state.busy" class="position-absolute top-50 start-50 translate-middle text-muted">
+            <i class="fa fa-circle-o-notch fa-spin"/> Loading editor...
+        </div>
+    </div>
+
+</templates>

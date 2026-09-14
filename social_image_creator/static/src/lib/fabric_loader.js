@@ -11,7 +11,7 @@
  * UMD set during module evaluation.
  *
  * Usage:
- *   import { loadFabric } from "@social_marketing/lib/fabric_loader";
+ *   import { loadFabric } from "@social_image_creator/lib/fabric_loader";
  *   const fabric = await loadFabric();
  *   const canvas = new fabric.Canvas(el);
  */
@@ -20,7 +20,7 @@ let _fabricPromise = null;
 export async function loadFabric() {
     if (!_fabricPromise) {
         _fabricPromise = import(
-            "/social_marketing/static/lib/fabric/index.min.js"
+            "/social_image_creator/static/lib/fabric/index.min.js"
         ).then((mod) => mod.default || window.fabric);
     }
     return _fabricPromise;
