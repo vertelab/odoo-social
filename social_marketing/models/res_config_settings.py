@@ -17,18 +17,6 @@ class ResConfigSettings(models.TransientModel):
              'Per-media overrides can be set on the Publish Rate Limits '
              'model.')
 
-    social_marketing_render_service_url = fields.Char(
-        string='Render Service URL',
-        config_parameter='social_marketing.render_service_url',
-        help='Base URL of the Node render service for image templates, '
-             'e.g. http://render-odoo:8600')
-
-    social_marketing_render_service_token = fields.Char(
-        string='Render Service Token',
-        config_parameter='social_marketing.render_service_token',
-        help='Bearer token used to authenticate render service calls. '
-             'Stored via ir.config_parameter; set from pillar in production.')
-
 
 # ────────────────────────────────────────────────────────────────────────
 # Background Jobs — cron-administration (samma mönster som ai_agent_core)

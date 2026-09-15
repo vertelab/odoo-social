@@ -179,7 +179,7 @@
                     <button name="action_schedule" string="Schedule" type="object" class="oe_highlight"
                         invisible="state != 'draft' or post_method == 'now'"
                         groups="social_marketing.group_social_marketing_user" data-hotkey="q" />
-                    <button name="%(social_marketing.action_social_image_render_wizard)d"
+                    <button name="%(social_image_creator.action_social_image_render_wizard)d"
                         string="Create Image from Template" type="action"
                         class="btn-secondary"
                         invisible="state != 'draft'"

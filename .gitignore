@@ -18,12 +18,12 @@ eggs/
 lib/
 
 # Vertel: odoo-social vendored libs MUST be committed (fabric editor)
-!social_marketing/static/lib/
-!social_marketing/static/lib/fabric/
-!social_marketing/static/lib/fabric/index.min.js
-!social_marketing/static/lib/fabric/LICENSE
-!social_marketing/static/src/lib/
-!social_marketing/static/src/lib/fabric_loader.js
+!social_image_creator/static/lib/
+!social_image_creator/static/lib/fabric/
+!social_image_creator/static/lib/fabric/index.min.js
+!social_image_creator/static/lib/fabric/LICENSE
+!social_image_creator/static/src/lib/
+!social_image_creator/static/src/lib/fabric_loader.js
 lib64/
 parts/
 sdist/
