@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Vertel AB AGPL-3
+# Vertel Sverige AB AGPL-3
 
 import logging
 import requests
@@ -24,10 +24,17 @@ class SocialLivePostFacebook(models.Model):
         super(SocialLivePostFacebook, (self - facebook_live_posts))._post()
         facebook_live_posts._post_facebook()
 
+    def _get_facebook_token(self, account):
+        """Resolve Facebook page access token (keykeep credential → legacy fallback)."""
+        token = account.facebook_page_access_token
+        if 'credential_id' in account._fields and account.credential_id:
+            token = account.credential_id._read_encrypted('key_value', system=True) or token
+        return token
+
     def _post_facebook(self):
         for live_post in self:
-            account = live_post.account_id
-            if not account.facebook_page_id or not account.facebook_page_access_token:
+            account = live_post.social_account_id
+            if not account.facebook_page_id or not self._get_facebook_token(account):
                 live_post.write({
                     'state': 'failed',
                     'failure_reason': _('Facebook page not configured.')
@@ -37,7 +44,7 @@ class SocialLivePostFacebook(models.Model):
             # Bygg payload
             data = {
                 'message': live_post.message or '',
-                'access_token': account.facebook_page_access_token,
+                'access_token': self._get_facebook_token(account),
             }
 
             # Hantera bilder
@@ -85,7 +92,7 @@ class SocialLivePostFacebook(models.Model):
     def _facebook_post_photos(self, live_post):
         """ Post images to Facebook. Facebook supports multi-image posts
         via the /photos endpoint with published=false, then /feed with attached_media. """
-        account = live_post.account_id
+        account = live_post.social_account_id
         images = live_post.post_id.image_ids
 
         if len(images) == 1:
@@ -94,7 +101,7 @@ class SocialLivePostFacebook(models.Model):
             data = {
                 'url': f'/web/image/{images[0].id}',
                 'caption': live_post.message or '',
-                'access_token': account.facebook_page_access_token,
+                'access_token': self._get_facebook_token(account),
             }
             response = requests.post(endpoint, data=data, timeout=15)
             if response.ok:
@@ -109,7 +116,7 @@ class SocialLivePostFacebook(models.Model):
             data = {
                 'url': f'/web/image/{img.id}',
                 'published': 'false',
-                'access_token': account.facebook_page_access_token,
+                'access_token': self._get_facebook_token(account),
             }
             response = requests.post(endpoint, data=data, timeout=15)
             if response.ok:
@@ -125,7 +132,7 @@ class SocialLivePostFacebook(models.Model):
         data = {
             'message': live_post.message or '',
             'attached_media': photo_ids,
-            'access_token': account.facebook_page_access_token,
+            'access_token': self._get_facebook_token(account),
         }
         response = requests.post(endpoint, json=data, timeout=15)
         if response.ok:
@@ -138,18 +145,18 @@ class SocialLivePostFacebook(models.Model):
     def _refresh_statistics(self):
         super(SocialLivePostFacebook, self)._refresh_statistics()
         facebook_posts = self.env['social_marketing.live.post'].sudo().search([
-            ('account_id.media_type', '=', 'facebook'),
+            ('social_account_id.media_type', '=', 'facebook'),
             ('facebook_post_id', '!=', False),
             ('state', '=', 'posted'),
         ], order='create_date DESC', limit=500)
 
         for post in facebook_posts:
-            account = post.account_id
+            account = post.social_account_id
             try:
                 endpoint = url_join(FACEBOOK_ENDPOINT, post.facebook_post_id)
                 params = {
                     'fields': 'reactions.summary(true),comments.summary(true),shares',
-                    'access_token': account.facebook_page_access_token,
+                    'access_token': self._get_facebook_token(account),
                 }
                 response = requests.get(endpoint, params=params, timeout=10)
                 if response.ok:

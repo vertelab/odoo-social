@@ -5,11 +5,18 @@
         <field name="model">social_marketing.post.template</field>
         <field name="inherit_id" ref="social_marketing.social_marketing_post_template_view_form"/>
         <field name="arch" type="xml">
+            <xpath expr="//group[@name='previews_placeholder']" position="inside">
+                <field name="display_facebook_preview" invisible="1" />
+                <field name="facebook_preview" nolabel="1" colspan="2" widget="social_marketing_post_preview" media_type="facebook"
+                    readonly="1"
+                    invisible="not display_facebook_preview"
+                    class="o_social_preview_wrapper m-0 px-4 py-4 bg-200"/>
+            </xpath>
             <xpath expr="//notebook" position="inside">
                 <page string="Facebook" name="facebook"
                       invisible="not is_split_per_media">
                     <group>
-                        <field name="facebook_message"/>
+                        <field name="facebook_message" widget="html"/>
                         <field name="facebook_image_ids" widget="many2many_binary"/>
                     </group>
                 </page>

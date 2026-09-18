@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <div t-name="social.SocialImageEditorField" class="o_social_image_editor">
+        <div class="o_social_image_editor_toolbar d-flex flex-wrap align-items-center gap-1 mb-2">
+            <button type="button" class="btn btn-sm btn-secondary" t-on-click="addText" title="Add text" t-att-disabled="!state.fabricVersion">
+                <i class="fa fa-font"/>
+            </button>
+            <button type="button" class="btn btn-sm btn-secondary" t-on-click="addRect" title="Add rectangle" t-att-disabled="!state.fabricVersion">
+                <i class="fa fa-square-o"/>
+            </button>
+            <button type="button" class="btn btn-sm btn-secondary" t-on-click="addCircle" title="Add circle" t-att-disabled="!state.fabricVersion">
+                <i class="fa fa-circle-o"/>
+            </button>
+            <button type="button" class="btn btn-sm btn-secondary" t-on-click="addTriangle" title="Add triangle" t-att-disabled="!state.fabricVersion">
+                <i class="fa fa-caret-up"/>
+            </button>
+            <button type="button" class="btn btn-sm btn-secondary" t-on-click="addLine" title="Add line" t-att-disabled="!state.fabricVersion">
+                <i class="fa fa-minus"/>
+            </button>
+            <FileUploader inputName="'image'" acceptedFileExtensions="'image/png,image/jpeg,image/gif,image/webp'" onUploaded.bind="onImageUploaded">
+                <t t-set-slot="toggler">
+                    <i class="fa fa-image" title="Add image"/>
+                </t>
+            </FileUploader>
+            <FileUploader inputName="'svg'" acceptedFileExtensions="'image/svg+xml'" onUploaded.bind="onSvgUploaded">
+                <t t-set-slot="toggler">
+                    <i class="fa fa-file-code-o" title="Add SVG"/>
+                </t>
+            </FileUploader>
+            <span class="mx-2 o_social_image_editor_sep"/>
+            <button type="button" class="btn btn-sm btn-secondary" t-on-click="layerUp" title="Bring forward" t-att-disabled="!state.fabricVersion || !state.hasSelection">
+                <i class="fa fa-arrow-up"/>
+            </button>
+            <button type="button" class="btn btn-sm btn-secondary" t-on-click="layerDown" title="Send backward" t-att-disabled="!state.fabricVersion || !state.hasSelection">
+                <i class="fa fa-arrow-down"/>
+            </button>
+            <button type="button" class="btn btn-sm btn-danger" t-on-click="deleteSelected" title="Delete selection" t-att-disabled="!state.fabricVersion || !state.hasSelection">
+                <i class="fa fa-trash-o"/>
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-danger" t-on-click="clearCanvas" title="Clear canvas" t-att-disabled="!state.fabricVersion">
+                <i class="fa fa-eraser"/>
+            </button>
+            <span class="ms-auto d-flex align-items-center gap-2">
+                <span class="text-muted small" t-if="state.fabricVersion">
+                    Fabric <t t-esc="state.fabricVersion"/>
+                </span>
+                <button type="button" class="btn btn-sm btn-primary" t-on-click="onSave" title="Save scene + SVG master" t-att-disabled="!state.fabricVersion">
+                    <i class="fa fa-save"/> Save
+                </button>
+            </span>
+        </div>
+        <div class="o_social_image_editor_canvas_wrap border rounded p-2 bg-light" style="overflow: auto;">
+            <canvas t-ref="canvasRef" class="o_social_image_editor_canvas"/>
+        </div>
+        <div t-if="state.message" class="text-danger small mt-1" t-esc="state.message"/>
+        <div t-if="state.busy" class="text-muted small mt-1">
+            <i class="fa fa-circle-o-notch fa-spin"/> Loading editor...
+        </div>
+    </div>
+
+</templates>

@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-# Vertel AB AGPL-3
+# Vertel Sverige AB AGPL-3
 
 import json
 import logging
+import os
 import subprocess
 
 from odoo import _, api, fields, models
@@ -96,8 +97,8 @@ class SocialPlannerAI(models.AbstractModel):
             if line.notes:
                 parts.append(f"Additional notes: {line.notes}")
 
-        if post and post.message:
-            parts.append(f"Draft content to refine: {post.message}")
+        if post and post.message_plain:
+            parts.append(f"Draft content to refine: {post.message_plain}")
 
         parts.append("Write engaging, platform-appropriate content ready to post.")
         parts.append("Include relevant emojis if the brand voice allows it.")
@@ -166,27 +167,33 @@ class SocialPlannerAI(models.AbstractModel):
         if not plan.exists():
             return {}
 
-        # Analysera historisk engagement per kanal (senaste 90 dagar)
+        # Analyse historical engagement per channel from stored snapshots
+        # (social_marketing.live_post.stat) instead of overwritten values.
         suggestions = {}
         channels = ['linkedin', 'facebook', 'instagram', 'twitter', 'youtube']
 
-        for channel in channels:
-            posts = self.env['social_marketing.post'].search([
-                ('plan_line_id.plan_id.policy_id', '=', plan.policy_id.id),
-                ('state', '=', 'posted'),
-                ('create_date', '>=', fields.Datetime.now() - fields.Datetime.timedelta(days=90)),
-            ])
+        live_posts = self.env['social_marketing.live.post'].search([
+            ('state', '=', 'posted'),
+            ('post_id.create_date', '>=', fields.Datetime.now() - fields.Datetime.timedelta(days=90)),
+        ])
 
-            if not posts:
+        for channel in channels:
+            channel_live_posts = live_posts.filtered(
+                lambda lp: lp.social_account_id.media_type == channel)
+            if not channel_live_posts:
                 suggestions[channel] = 10.0  # Default 10:00
                 continue
 
-            # Enkel heuristik — hitta timmen med högst average engagement
-            # (I verklig produktion skulle detta vara mer sofistikerat)
             engagement_by_hour = {}
-            for post in posts:
-                hour = post.scheduled_date.hour if post.scheduled_date else 10
-                engagement_by_hour[hour] = engagement_by_hour.get(hour, 0) + post.engagement
+            for live_post in channel_live_posts:
+                stat = self.env['social_marketing.live_post.stat'].search([
+                    ('live_post_id', '=', live_post.id),
+                    ('metric', '=', 'engagement'),
+                ], order='date desc', limit=1)
+                engagement = stat.value if stat else live_post.engagement
+                published = live_post.post_id.published_date or live_post.post_id.scheduled_date
+                hour = published.hour if published else 10
+                engagement_by_hour[hour] = engagement_by_hour.get(hour, 0) + engagement
 
             if engagement_by_hour:
                 best_hour = max(engagement_by_hour, key=engagement_by_hour.get)
@@ -200,7 +207,7 @@ class SocialPlannerAI(models.AbstractModel):
     def suggest_hashtags(self, post_id):
         """ Föreslå hashtags baserat på innehåll och policy. """
         post = self.env['social_marketing.post'].browse(post_id)
-        if not post.exists() or not post.message:
+        if not post.exists() or not post.message_plain:
             return []
 
         system_prompt = (
@@ -209,7 +216,7 @@ class SocialPlannerAI(models.AbstractModel):
             "Respond with ONLY a JSON array: [\"#tag1\", \"#tag2\", ...]"
         )
 
-        user_prompt = f"Content: {post.message}\n"
+        user_prompt = f"Content: {post.message_plain}\n"
         if post.policy_id and post.policy_id.hashtag_policy:
             user_prompt += f"Hashtag rules: {post.policy_id.hashtag_policy}"
 
@@ -252,7 +259,6 @@ class SocialPlannerAI(models.AbstractModel):
         :param topic: social_marketing.listening.topic record
         :return: report text (HTML) or False
         """
-        self.ensure_one()
         if isinstance(topic, int):
             topic = self.env['social_marketing.listening.topic'].browse(topic)
         if not topic.exists():
@@ -261,7 +267,12 @@ class SocialPlannerAI(models.AbstractModel):
         prompt = self._build_research_prompt(topic)
         command = self._get_research_command()
 
-        report = self._run_research_command(command, prompt)
+        # Per-brand credentials (social_marketing_agency): materialize the
+        # brand's last30days .env and set LAST30DAYS_CONFIG_DIR so the engine
+        # uses the brand's logged-in accounts (X, Bluesky, ScrapeCreators...).
+        env = self._get_brand_env(topic)
+
+        report = self._run_research_command(command, prompt, env=env)
         if report:
             return report
 
@@ -306,18 +317,64 @@ class SocialPlannerAI(models.AbstractModel):
         return '\n\n'.join(parts)
 
     @api.model
-    def _run_research_command(self, command, prompt):
+    def _get_brand_env(self, topic):
+        """Return the process env with per-brand last30days credentials.
+
+        When the topic is brand-scoped (social_marketing_agency installed)
+        and the brand has social.brand.credential records, materialize the
+        brand's .env files and point LAST30DAYS_CONFIG_DIR at the brand's
+        config directory. Returns None (inherit os.environ) otherwise.
+        """
+        if 'brand_id' not in topic._fields:
+            return None
+        brand = topic.brand_id
+        if not brand:
+            return None
+        cred_model = self.env.get('social.brand.credential')
+        # NB: env.get returns an EMPTY recordset (falsy) for a registered
+        # model — check identity, not truthiness, or credentials are skipped.
+        if cred_model is None or not brand.credential_ids:
+            return None
+        try:
+            cred_model.write_brand_env_files(brand_ids=brand.ids)
+            env_dir = brand.credential_ids[:1]._env_dir()
+            env = dict(os.environ)
+            env['LAST30DAYS_CONFIG_DIR'] = env_dir
+            return env
+        except Exception as e:
+            _logger.warning(
+                'Could not prepare brand env for %s: %s', brand.name, e)
+            return None
+
+    @api.model
+    def _run_research_command(self, command, prompt, env=None):
         """ Run the research CLI headless and capture the report.
 
         Supports --mode json output (pi): the report is extracted from the
-        JSON response (message/result), otherwise raw stdout is used.
+        JSON response (single-object legacy format) or the NDJSON session
+        event stream (pi v3 — one JSON object per line; the final assistant
+        message carries the synthesized report). Otherwise raw stdout is
+        used.
         """
+        # pi (node) needs more virtual memory than Odoo's limit_memory_hard
+        # (RLIMIT_AS) allows — raise the soft limit when the hard limit
+        # permits so the Wasm/llhttp allocation does not fail.
+        try:
+            import resource as _resource
+            _soft, _hard = _resource.getrlimit(_resource.RLIMIT_AS)
+            if _hard in (-1, _resource.RLIM_INFINITY):
+                _resource.setrlimit(
+                    _resource.RLIMIT_AS, (_resource.RLIM_INFINITY, _hard))
+        except (ImportError, ValueError, OSError):
+            pass
+
         try:
             proc = subprocess.run(
                 command + [prompt],
                 capture_output=True,
                 text=True,
                 timeout=600,
+                env=env,
             )
         except FileNotFoundError:
             _logger.warning("Research command not found: %s", command[0])
@@ -341,25 +398,74 @@ class SocialPlannerAI(models.AbstractModel):
 
         # Try to extract report from JSON output (pi --mode json)
         if '--mode' in command and 'json' in command:
-            try:
-                data = json.loads(out)
-                # pi json mode: the assistant text is usually in .message or .result
+            report = self._extract_report_from_json(out)
+            if report:
+                return '<pre>%s</pre>' % report
+
+        # Plain text output — escape for HTML field
+        return '<pre>%s</pre>' % out
+
+    @api.model
+    def _extract_report_from_json(self, out):
+        """Extract the assistant report from pi JSON output.
+
+        Handles two formats:
+        - Legacy single JSON object: keys message/result/text/output, or a
+          messages array whose last message carries content.
+        - pi v3 NDJSON session stream: one JSON object per line; every
+          assistant message (role='assistant') contributes text, and the
+          last assistant message carries the final synthesized report.
+
+        Returns the report text or False when nothing usable is found.
+        """
+        # Single-JSON legacy format
+        try:
+            data = json.loads(out)
+            if isinstance(data, dict):
                 for key in ('message', 'result', 'text', 'output'):
-                    if isinstance(data, dict) and data.get(key):
-                        return '<pre>%s</pre>' % data[key]
-                if isinstance(data, dict) and data.get('messages'):
+                    if data.get(key):
+                        return data[key]
+                if data.get('messages'):
                     msgs = data['messages']
                     last = msgs[-1] if isinstance(msgs, list) else None
                     if isinstance(last, dict) and last.get('content'):
                         content = last['content']
                         if isinstance(content, str):
-                            return '<pre>%s</pre>' % content
+                            return content
                         if isinstance(content, list):
-                            text = '\n'.join(c.get('text', '') for c in content if isinstance(c, dict))
+                            text = '\n'.join(
+                                c.get('text', '') for c in content
+                                if isinstance(c, dict))
                             if text:
-                                return '<pre>%s</pre>' % text
-            except json.JSONDecodeError:
-                pass
+                                return text
+        except json.JSONDecodeError:
+            pass
 
-        # Plain text output — escape for HTML field
-        return '<pre>%s</pre>' % out
+        # NDJSON session event stream: keep the LAST assistant text
+        assistant_texts = []
+        for line in out.splitlines():
+            line = line.strip()
+            if not line.startswith('{'):
+                continue
+            try:
+                ev = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if not isinstance(ev, dict):
+                continue
+            msg = ev.get('message') or {}
+            if not isinstance(msg, dict) or msg.get('role') != 'assistant':
+                continue
+            content = msg.get('content')
+            text = ''
+            if isinstance(content, str):
+                text = content
+            elif isinstance(content, list):
+                text = '\n'.join(
+                    c.get('text', '') for c in content
+                    if isinstance(c, dict) and c.get('text'))
+            if text.strip():
+                assistant_texts.append(text)
+        if assistant_texts:
+            return assistant_texts[-1]
+        return False

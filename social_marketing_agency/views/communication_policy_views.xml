@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_communication_policy_brand" model="ir.ui.view">
+        <field name="name">communication.policy.brand</field>
+        <field name="model">communication.policy</field>
+        <field name="inherit_id" ref="social_planner.view_communication_policy_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="brand_id" groups="social_marketing.group_social_marketing_manager"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_communication_policy_brand_list" model="ir.ui.view">
+        <field name="name">communication.policy.brand.list</field>
+        <field name="model">communication.policy</field>
+        <field name="inherit_id" ref="social_planner.view_communication_policy_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="brand_id" groups="social_marketing.group_social_marketing_manager"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_communication_plan_brand" model="ir.ui.view">
+        <field name="name">communication.plan.brand</field>
+        <field name="model">communication.plan</field>
+        <field name="inherit_id" ref="social_planner.view_communication_plan_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='policy_id']" position="after">
+                <field name="brand_id" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_communication_plan_brand_list" model="ir.ui.view">
+        <field name="name">communication.plan.brand.list</field>
+        <field name="model">communication.plan</field>
+        <field name="inherit_id" ref="social_planner.view_communication_plan_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="brand_id" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

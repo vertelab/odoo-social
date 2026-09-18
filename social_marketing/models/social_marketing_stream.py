@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Vertel AB AGPL-3
+# Vertel Sverige AB AGPL-3
 
 import logging
 import requests
@@ -24,17 +24,17 @@ class SocialStream(models.Model):
     media_id = fields.Many2one('social_marketing.media', string="Social Media", required=True)
     media_image = fields.Binary(related='media_id.image', string="The related Social Media's image")
     sequence = fields.Integer('Sequence', help="Sequence used to order streams (mainly for the 'Feed' kanban view)")
-    account_id = fields.Many2one('social_marketing.account', 'Social Account', required=True, ondelete='cascade')
+    social_account_id = fields.Many2one('social_marketing.account', 'Social Account', required=True, ondelete='cascade', oldname='account_id')
     stream_type_id = fields.Many2one('social_marketing.stream.type', string="Type", required=True, ondelete='cascade')
     stream_type_type = fields.Char(related='stream_type_id.stream_type')
     stream_post_ids = fields.One2many('social_marketing.stream.post', 'stream_id', 'Posts')
-    company_id = fields.Many2one('res.company', 'Company', related='account_id.company_id', store=True)
+    company_id = fields.Many2one('res.company', 'Company', related='social_account_id.company_id', store=True)
 
-    @api.onchange('media_id', 'account_id')
+    @api.onchange('media_id', 'social_account_id')
     def _onchange_media_id(self):
         for stream in self:
-            if stream.account_id and stream.account_id.media_id != stream.media_id:
-                stream.account_id = False
+            if stream.social_account_id and stream.social_account_id.media_id != stream.media_id:
+                stream.social_account_id = False
             # Set stream_type_ids by default if only one type for the media.
             stream_type_ids = self.env['social_marketing.stream.type'].search([('media_id', '=', stream.media_id.id)], limit=2)
             stream.stream_type_id = stream_type_ids.id if len(stream_type_ids) == 1 else False

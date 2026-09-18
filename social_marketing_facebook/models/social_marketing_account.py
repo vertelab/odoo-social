@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Vertel AB AGPL-3
+# Vertel Sverige AB AGPL-3
 
 import logging
 import requests
@@ -7,6 +7,7 @@ import requests
 from werkzeug.urls import url_join
 from odoo import _, models, fields, api
 from odoo.addons.social_marketing.controllers.main import SocialValidationException
+from odoo.addons.social_marketing.models.social_marketing_provider_response import parse_usage_headers
 
 _logger = logging.getLogger(__name__)
 
@@ -145,5 +146,89 @@ class SocialAccountFacebook(models.Model):
                     data = response.json()
                     account.audience = data.get('fan_count', 0)
                     account.engagement = data.get('engagement', {}).get('count', 0)
+                about_to_exceed, retry_after = parse_usage_headers(response)
+                if about_to_exceed:
+                    _logger.warning(
+                        "Facebook rate limit about to be exceeded for %s (retry after %s s).",
+                        account.display_name, retry_after)
+                # Best-effort reach/impressions from the insights endpoint.
+                insights = account._fetch_facebook_insights()
+                if insights.get('reach'):
+                    account.reach = insights['reach']
+                if insights.get('impressions'):
+                    account.impressions = insights['impressions']
             except Exception as e:
                 _logger.warning("Facebook stats fetch error for %s: %s", account.display_name, str(e))
+
+    def _fetch_facebook_insights(self):
+        """Best-effort fetch of reach/impressions insights.
+
+        Facebook deprecates individual page insights over time; failures here
+        are non-fatal and simply leave reach/impressions unpopulated.
+        """
+        self.ensure_one()
+        try:
+            endpoint = url_join(FACEBOOK_ENDPOINT, f'{self.facebook_page_id}/insights')
+            params = {
+                'metric': 'page_impressions,page_reach',
+                'period': 'day',
+                'access_token': self.facebook_page_access_token,
+            }
+            response = requests.get(endpoint, params=params, timeout=10)
+            if not response.ok:
+                return {}
+            result = {}
+            for entry in response.json().get('data', []):
+                metric = entry.get('name')
+                total = sum(v.get('value', 0) for v in entry.get('values', []))
+                if metric == 'page_impressions':
+                    result['impressions'] = total
+                elif metric == 'page_reach':
+                    result['reach'] = total
+            return result
+        except Exception:
+            return {}
+
+    def _backfill_statistics(self, window_start, window_end):
+        facebook_accounts = self._filter_by_media_types(['facebook'])
+        super(SocialAccountFacebook, (self - facebook_accounts))._backfill_statistics(window_start, window_end)
+
+        for account in facebook_accounts:
+            if not account.facebook_page_id or not account.facebook_page_access_token:
+                continue
+            endpoint = url_join(FACEBOOK_ENDPOINT, f'{account.facebook_page_id}/insights')
+            params = {
+                'metric': 'page_fans,page_impressions,page_engaged_users',
+                'period': 'day',
+                'since': int(window_start.timestamp()),
+                'until': int(window_end.timestamp()),
+                'access_token': account.facebook_page_access_token,
+            }
+            try:
+                response = account._backfill_get(endpoint, params=params)
+                if not response.ok:
+                    _logger.warning(
+                        "Facebook backfill failed for %s: %s",
+                        account.display_name, response.text[:200])
+                    continue
+                # Normalize daily values into date -> {metric: value}.
+                by_date = {}
+                for entry in response.json().get('data', []):
+                    name = entry.get('name')
+                    for value in entry.get('values', []):
+                        date = (value.get('end_time') or '')[:10]
+                        if not date:
+                            continue
+                        by_date.setdefault(date, {})[name] = value.get('value', 0)
+                metric_map = {
+                    'page_fans': 'audience',
+                    'page_impressions': 'impressions',
+                    'page_engaged_users': 'engagement',
+                }
+                for date, values in by_date.items():
+                    for fb_metric, stat_metric in metric_map.items():
+                        if fb_metric in values:
+                            account._create_stat_snapshot(stat_metric, values[fb_metric], date)
+            except Exception as e:
+                _logger.warning(
+                    "Facebook backfill error for %s: %s", account.display_name, str(e))

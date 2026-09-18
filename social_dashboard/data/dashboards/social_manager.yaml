@@ -1,0 +1,95 @@
+dashboard:
+  key: social_manager
+  name: "Social Media Manager"
+  description: "Cross-channel reach, engagement, clicks and ROI overview."
+  icon: fa-chart-line
+  category: Social
+  auto_refresh: 300000
+  cache_ttl: 300
+
+filters:
+  - key: period
+    type: date_range
+    label: Period
+    optional: true
+    default:
+      from: this_month_start
+      to: today
+
+  - key: brand
+    type: many2one
+    label: Brand
+    model: social.brand
+    field: brand_id
+    optional: true
+
+metrics:
+  - key: social.reach
+    label: "Reach"
+    source_type: model
+    model: social_marketing.account
+    field: audience
+    aggregation: sum
+    unit: integer
+
+  - key: social.engagement_total
+    label: "Engagement"
+    source_type: model
+    model: social_marketing.live.post
+    field: engagement
+    aggregation: sum
+    unit: integer
+
+  - key: social.clicks_total
+    label: "Clicks"
+    source_type: service
+    service_model: dashboard.source.social.roi
+    service_method: get_clicks_total
+    unit: integer
+
+  - key: social.engagement_by_channel
+    label: "Engagement by Channel"
+    source_type: service
+    service_model: dashboard.source.social.engagement
+    service_method: get_data
+    unit: integer
+
+  - key: social.roi
+    label: "ROI Attribution"
+    source_type: service
+    service_model: dashboard.source.social.roi
+    service_method: get_data
+    unit: integer
+
+charts:
+  - key: kpi_reach
+    type: kpi
+    metric: social.reach
+    label: "Reach"
+    layout: {x: 0, y: 0, w: 3, h: 2}
+
+  - key: kpi_engagement
+    type: kpi
+    metric: social.engagement_total
+    label: "Engagement"
+    layout: {x: 3, y: 0, w: 3, h: 2}
+
+  - key: kpi_clicks
+    type: kpi
+    metric: social.clicks_total
+    label: "Clicks"
+    layout: {x: 6, y: 0, w: 3, h: 2}
+
+  - key: chart_engagement_channel
+    type: column_chart
+    metric: social.engagement_by_channel
+    label: "Engagement by Channel"
+    layout: {x: 0, y: 2, w: 6, h: 4}
+    config:
+      filter_field: social_account_id.media_type
+
+  - key: chart_roi
+    type: table
+    metric: social.roi
+    label: "ROI per Source"
+    layout: {x: 6, y: 2, w: 6, h: 4}

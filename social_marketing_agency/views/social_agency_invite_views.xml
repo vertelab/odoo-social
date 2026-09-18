@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_social_agency_invite_form" model="ir.ui.view">
+        <field name="name">social.agency.invite.form</field>
+        <field name="model">social.agency.invite</field>
+        <field name="arch" type="xml">
+            <form string="Invite Customer Contact">
+                <group>
+                    <group>
+                        <field name="brand_id"/>
+                        <field name="partner_id"/>
+                        <field name="email"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_invite" type="object"
+                            string="Invite" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_social_agency_invite" model="ir.actions.act_window">
+        <field name="name">Invite Customer Contact</field>
+        <field name="res_model">social.agency.invite</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

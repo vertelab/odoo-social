@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Vertel AB AGPL-3
+# Vertel Sverige AB AGPL-3
 
 import json
 import requests
@@ -28,6 +28,12 @@ class SocialLinkedinController(SocialController):
                                   {'error_message': _('Unauthorized. Please contact your administrator.')})
 
         if kw.get('error') not in ('user_cancelled_authorize', 'user_cancelled_login'):
+            if kw.get('error'):
+                # Visa LinkedIn:s eget fel (t.ex. unauthorized_scope_error) i
+                # stället för ett generiskt meddelande.
+                return request.render('social_marketing.social_marketing_http_error_view',
+                                      {'error_message': _('LinkedIn error: %s') % (
+                                          kw.get('error_description') or kw.get('error'))})
             if not access_token and not code:
                 return request.render('social_marketing.social_marketing_http_error_view',
                                       {'error_message': _('LinkedIn did not provide a valid access token.')})

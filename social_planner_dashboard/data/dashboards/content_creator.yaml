@@ -1,0 +1,59 @@
+dashboard:
+  key: content_creator
+  name: "Content Creator"
+  description: "My posts, approval status and best time to post."
+  icon: fa-edit
+  category: Social
+  auto_refresh: 300000
+  cache_ttl: 300
+
+metrics:
+  - key: social.my_posts
+    label: "My Posts"
+    source_type: service
+    service_model: dashboard.source.social.approval_queue
+    service_method: get_my_posts
+    kanban:
+      state_field: approval_state
+      state_colors:
+        draft: "#6c757d"
+        pending_approval: "#ffc107"
+        approved: "#28a745"
+        rejected: "#dc3545"
+      state_icons:
+        draft: fa-pencil
+        pending_approval: fa-clock
+        approved: fa-check-circle
+        rejected: fa-times-circle
+      card_title_field: name
+      card_subtitle_field: plan
+      card_body_fields:
+        - approval_state
+        - state
+      group_field: approval_state
+      card_actions:
+        - name: open_post
+          label: Open Post
+          icon: fa-external-link
+          action: ir.actions.act_window
+          params:
+            res_model: social_marketing.post
+
+  - key: social.best_time
+    label: "Best Time to Post"
+    source_type: service
+    service_model: dashboard.source.social.best_time
+    service_method: get_data
+
+charts:
+  - key: kanban_my_posts
+    type: kanban
+    metric: social.my_posts
+    label: "My Posts"
+    layout: {x: 0, y: 0, w: 12, h: 5}
+
+  - key: table_best_time
+    type: table
+    metric: social.best_time
+    label: "Best Time to Post (hour)"
+    layout: {x: 0, y: 5, w: 6, h: 4}

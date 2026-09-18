@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Per-brand dashboard: brand_id on the dashboard form -->
+    <record id="view_dashboard_brand" model="ir.ui.view">
+        <field name="name">dashboard.dashboard.brand</field>
+        <field name="model">dashboard.dashboard</field>
+        <field name="inherit_id" ref="dashboard_vrtl.dashboard_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <group groups="social_marketing.group_social_marketing_manager">
+                    <field name="brand_id"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

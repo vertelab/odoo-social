@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Vertel AB AGPL-3
+# Vertel Sverige AB AGPL-3
 
 import json
 import logging
@@ -22,7 +22,7 @@ class SocialLivePostPostiz(models.Model):
     def _post(self):
         """ Route posts through Postiz API when account has a Postiz integration. """
         postiz_live_posts = self.filtered(
-            lambda p: p.account_id.postiz_integration_id)
+            lambda p: p.social_account_id.postiz_integration_id)
         super(SocialLivePostPostiz, (self - postiz_live_posts))._post()
         postiz_live_posts._post_postiz()
 
@@ -30,7 +30,7 @@ class SocialLivePostPostiz(models.Model):
         """ Post to the actual platform via Postiz Public API.
         POST /public/v1/posts with platform-specific settings. """
         for live_post in self:
-            account = live_post.account_id
+            account = live_post.social_account_id
             post = live_post.post_id
 
             # Build the API payload
@@ -125,7 +125,7 @@ class SocialLivePostPostiz(models.Model):
             }]
         }
         """
-        account = live_post.account_id
+        account = live_post.social_account_id
         post = live_post.post_id
         provider = account.media_id.postiz_provider or account.media_type
 

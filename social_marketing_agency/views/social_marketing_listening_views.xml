@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_social_listening_topic_brand" model="ir.ui.view">
+        <field name="name">social.listening.topic.brand</field>
+        <field name="model">social_marketing.listening.topic</field>
+        <field name="inherit_id" ref="social_planner.view_social_listening_topic_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="brand_id" groups="social_marketing.group_social_marketing_manager"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_social_listening_topic_brand_list" model="ir.ui.view">
+        <field name="name">social.listening.topic.brand.list</field>
+        <field name="model">social_marketing.listening.topic</field>
+        <field name="inherit_id" ref="social_planner.view_social_listening_topic_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="brand_id" groups="social_marketing.group_social_marketing_manager"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_social_marketing_stream_brand" model="ir.ui.view">
+        <field name="name">social.marketing.stream.brand</field>
+        <field name="model">social_marketing.stream</field>
+        <field name="inherit_id" ref="social_marketing.social_marketing_stream_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="brand_id" groups="social_marketing.group_social_marketing_manager"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_social_marketing_account_brand" model="ir.ui.view">
+        <field name="name">social.marketing.account.brand</field>
+        <field name="model">social_marketing.account</field>
+        <field name="inherit_id" ref="social_marketing.social_marketing_account_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="brand_id" groups="social_marketing.group_social_marketing_manager"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_social_marketing_account_brand_list" model="ir.ui.view">
+        <field name="name">social.marketing.account.brand.list</field>
+        <field name="model">social_marketing.account</field>
+        <field name="inherit_id" ref="social_marketing.social_marketing_account_view_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="brand_id" groups="social_marketing.group_social_marketing_manager"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

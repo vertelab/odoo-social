@@ -14,6 +14,7 @@
         'views/social_marketing_post_template_views.xml',
         'views/social_marketing_linkedin_preview.xml',
         'views/social_marketing_stream_posts_views.xml',
+        'views/social_marketing_stream_views.xml',
         'views/social_marketing_account_views.xml',
         'views/res_config_settings_views.xml',
     ],

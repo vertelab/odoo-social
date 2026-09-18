@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Vertel AB AGPL-3
+# Vertel Sverige AB AGPL-3
 
 from odoo import _, api, fields, models
 
@@ -15,6 +15,13 @@ class SocialMarketingCompetitor(models.Model):
 
     name = fields.Char('Competitor Name', required=True)
     active = fields.Boolean('Active', default=True)
+
+    partner_id = fields.Many2one(
+        'res.partner', string='Partner (res.partner)',
+        ondelete='set null',
+        help='Linked res.partner record. Customers and competitors live in '
+             'res.partner (with LinkedIn URL/URN/ID) and are referenced here.',
+    )
 
     media_type = fields.Selection([
         ('linkedin', 'LinkedIn'),
@@ -61,6 +68,57 @@ class SocialMarketingCompetitor(models.Model):
     snapshot_count = fields.Integer('Snapshots', compute='_compute_snapshot_count')
     last_checked = fields.Datetime('Last Checked', readonly=True)
     top_content_theme = fields.Char('Top Content Theme', readonly=True)
+
+    # LinkedIn streams (posts fetched via Playwright scraping)
+    stream_ids = fields.One2many(
+        'social_marketing.stream', 'competitor_id',
+        string='Streams',
+        domain=[('media_id.media_type', '=', 'linkedin')],
+    )
+    stream_count = fields.Integer(
+        'Streams', compute='_compute_stream_count',
+    )
+    stream_post_count = fields.Integer(
+        'Posts', compute='_compute_stream_post_count',
+    )
+
+    @api.depends('stream_ids')
+    def _compute_stream_count(self):
+        for comp in self:
+            comp.stream_count = len(comp.stream_ids)
+
+    @api.depends('stream_ids.stream_post_ids')
+    def _compute_stream_post_count(self):
+        for comp in self:
+            comp.stream_post_count = sum(
+                len(s.stream_post_ids) for s in comp.stream_ids)
+
+    def action_open_stream_posts(self):
+        """Open the LinkedIn posts collected for this competitor."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Posts — %s' % self.name,
+            'res_model': 'social_marketing.stream.post',
+            'view_mode': 'list,form',
+            'domain': [('stream_id.competitor_id', '=', self.id)],
+            'context': {
+                'default_stream_id': self.stream_ids[:1].id or False,
+                'search_default_group_by_author': 1,
+            },
+        }
+
+    def action_view_streams(self):
+        """Open the LinkedIn streams monitoring this competitor."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Streams — %s' % self.name,
+            'res_model': 'social_marketing.stream',
+            'view_mode': 'list,form',
+            'domain': [('competitor_id', '=', self.id)],
+            'context': {'default_competitor_id': self.id},
+        }
 
     @api.depends('snapshot_ids')
     def _compute_snapshot_count(self):

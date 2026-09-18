@@ -107,7 +107,7 @@
         <field name="model">social_marketing.post</field>
         <field name="arch" type="xml">
             <search>
-                <field name="message" string="Post Message"/>
+                <field name="message_plain" string="Post Message"/>
                 <field name="create_uid" string="Published By"/>
                 <field name="utm_campaign_id" string="Campaign"/>
                 <field name="company_id" groups="base.group_multi_company"/>
@@ -153,7 +153,7 @@
         <field name="arch" type="xml">
             <list decoration-info="state == 'draft'">
                 <field name="account_ids" widget="many2many_tags" />
-                <field name="message" />
+                <field name="message_plain" />
                 <field name="state" decoration-info="state == 'draft'" decoration-warning="state == 'posting'" decoration-success="state == 'scheduled' or state == 'posted'" widget="badge"/>
             </list>
         </field>
@@ -179,6 +179,11 @@
                     <button name="action_schedule" string="Schedule" type="object" class="oe_highlight"
                         invisible="state != 'draft' or post_method == 'now'"
                         groups="social_marketing.group_social_marketing_user" data-hotkey="q" />
+                    <button name="%(social_marketing.action_social_image_render_wizard)d"
+                        string="Create Image from Template" type="action"
+                        class="btn-secondary"
+                        invisible="state != 'draft'"
+                        groups="social_marketing.group_social_marketing_user"/>
                     <field name="state" widget="statusbar"/>
                 </header>
             </xpath>
@@ -205,7 +210,9 @@
             </xpath>
 
             <xpath expr="//field[@name='message']" position="attributes">
-                <attribute name="readonly">not has_active_accounts or state in ['posting', 'posted']</attribute>
+                <!-- Only lock the message once posting has started; users must be
+                     able to write it before selecting accounts. -->
+                <attribute name="readonly">state in ['posting', 'posted']</attribute>
                 <attribute name="required">True</attribute>
             </xpath>
 
@@ -221,19 +228,23 @@
             </xpath>
 
             <xpath expr="//field[@name='image_ids']" position="after">
-                <field name="source_id"/>
-                <field string="Campaign" name="utm_campaign_id"
-                    readonly="state in ['posting', 'posted']"
-                    context="{'form_view_ref': 'social.utm_campaign_view_form_quick_create_social'}"/>
+                <!-- When: send now / schedule later -->
                 <field name="post_method" widget="radio" invisible="state != 'draft'"/>
-                <field name="scheduled_date" invisible="post_method == 'now' or state in ['posting', 'posted']" required="post_method != 'now'" />
+                <field name="scheduled_date" invisible="post_method == 'now' or state in ['posting', 'posted']" required="post_method != 'now'"/>
+                <!-- Uppföljning: source + campaign for click tracking -->
+                <group string="Uppföljning">
+                    <field name="source_id"/>
+                    <field string="Campaign" name="utm_campaign_id"
+                        readonly="state in ['posting', 'posted']"
+                        context="{'form_view_ref': 'social.utm_campaign_view_form_quick_create_social'}"/>
+                </group>
             </xpath>
 
 <!--            <xpath expr="//group[@name='previews_placeholder']" position="after">-->
 <!--                <group name="live_posts" colspan="2" string="Posts By Accounts" nvisible="state not in ['posting', 'posted']">-->
 <!--                    <field name="live_post_ids" colspan="2" nolabel="1">-->
 <!--                        <kanban>-->
-<!--                            <field name="account_id"/>-->
+<!--                            <field name="social_account_id"/>-->
 <!--                            <field name="state"/>-->
 <!--                            <field name="failure_reason" />-->
 <!--                            <field name="live_post_link" />-->
@@ -242,7 +253,7 @@
 <!--                                    <div class="o_social_marketing_live_post_kanban ms-0 me-3">-->
 <!--                                        <div class="row">-->
 <!--                                            <div class="col-md-8 o_social_marketing_live_post_kanban_account">-->
-<!--                                                <field name="account_id" />-->
+<!--                                                <field name="social_account_id" />-->
 <!--                                                <t t-if="record.live_post_link.raw_value"><a t-att-href="record.live_post_link.raw_value" target="blank"><i class="fa fa-globe ms-1" title="See the post"/></a></t>-->
 <!--                                            </div>-->
 <!--                                            <div class="col-md-4 text-end">-->
@@ -268,13 +279,9 @@
 
             <xpath expr="//sheet" position="after">
                 <chatter/>
-<!--                <div class="oe_chatter">-->
-<!--                    <field name="message_follower_ids" groups="base.group_user"/>-->
-<!--                    <field name="activity_ids"/>-->
-<!--                    <field name="message_ids"/>-->
-<!--                </div>-->
             </xpath>
         </field>
     </record>
-</data>
+
+    </data>
 </odoo>

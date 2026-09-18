@@ -40,9 +40,4 @@
               parent="social_marketing.menu_social_marketing_global"
               sequence="3"/>
 
-    <menuitem id="menu_dashboard"
-              action="action_social_planner_dashboard"
-              parent="social_marketing.menu_social_marketing_global"
-              sequence="1"/>
-
 </odoo>

@@ -1,17 +1,2465 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
-#   * social_planner
+# 	* social_planner
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 18.0\n"
+"Project-Id-Version: Odoo Server 18.0-20260815\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-27 00:00+0000\n"
-"PO-Revision-Date: 2026-06-27 00:00+0000\n"
-"Last-Translator: Vertel AB <info@vertel.se>\n"
-"Language-Team: Swedish <info@vertel.se>\n"
-"Language: sv\n"
+"POT-Creation-Date: 2026-08-24 13:57+0000\n"
+"PO-Revision-Date: 2026-08-24 13:57+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_post_form_inherit
+msgid "# Suggest Hashtags"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_post_form_inherit
+msgid ""
+"<br/>\n"
+"                    <strong>Policy:</strong>"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_post_form_inherit
+msgid "<span class=\"badge badge-danger\">⚠ Compliance issues</span>"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_post_form_inherit
+msgid "<strong>Communication Plan:</strong>"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_media_asset_form
+msgid "AI Analysis"
+msgstr ""
+
+#. module: social_planner
+#. odoo-python
+#: code:addons/social_planner/models/social_marketing_post.py:0
+msgid "AI Content Generated"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_media_asset__ai_description
+msgid "AI Description"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.res_config_settings_view_form
+msgid "AI Features"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_post__ai_generated
+msgid "AI Generated"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_post_form_inherit
+msgid "AI Generation"
+msgstr ""
+
+#. module: social_planner
+#. odoo-python
+#: code:addons/social_planner/models/social_marketing_post.py:0
+msgid "AI Generation Failed"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_post__ai_prompt
+msgid "AI Prompt"
+msgstr ""
+
+#. module: social_planner
+#. odoo-python
+#: code:addons/social_planner/models/social_marketing_post.py:0
+msgid "AI Sentiment Analysis: %(sentiment)s (score: %(score).2f)"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_media_asset__ai_tags
+msgid "AI Tags"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__message_needaction
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__message_needaction
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__message_needaction
+msgid "Action Needed"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_form
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_policy_form
+msgid "Activate"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__active
+#: model:ir.model.fields,field_description:social_planner.field_communication_policy__active
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__active
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_listening_topic__active
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_media_asset__active
+#: model:ir.model.fields.selection,name:social_planner.selection__communication_plan__state__active
+#: model:ir.model.fields.selection,name:social_planner.selection__communication_policy__state__active
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_search
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_policy_search
+msgid "Active"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_search
+msgid "Active Today"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__activity_ids
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__activity_ids
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__activity_ids
+msgid "Activities"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__activity_exception_decoration
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__activity_exception_decoration
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__activity_exception_decoration
+msgid "Activity Exception Decoration"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__activity_state
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__activity_state
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__activity_state
+msgid "Activity State"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__activity_type_icon
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__activity_type_icon
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__activity_type_icon
+msgid "Activity Type Icon"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__user_id
+msgid "Analyst"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_policy__approval_chain
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_policy_form
+msgid "Approval Chain"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_post__approval_state
+msgid "Approval Status"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_policy_form
+msgid "Approval Steps"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_post_form_inherit
+msgid "Approve"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_post__approval_state__approved
+msgid "Approved"
+msgstr "Godkänd"
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_form
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_policy_form
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_message_form
+msgid "Archive"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__communication_plan__state__archived
+#: model:ir.model.fields.selection,name:social_planner.selection__communication_policy__state__archived
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_message__state__archived
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_search
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_policy_search
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_message_search
+msgid "Archived"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_post_form_inherit
+msgid "Are you sure you want to reject this post? You can add a reason below."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__communication_plan_line__content_type__article
+msgid "Article"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_competitor_search
+msgid "Aspirational"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_competitor__competitor_type__aspirational
+msgid "Aspirational / Benchmark"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_media_asset__asset_type
+msgid "Asset Type"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_message_form
+msgid "Assign to Me"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__assigned_to
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_message_search
+msgid "Assigned To"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_message_search
+msgid "Assigned to Me"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__assignment_note
+msgid "Assignment Note"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__message_attachment_count
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__message_attachment_count
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__message_attachment_count
+msgid "Attachment Count"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.res_config_settings_view_form
+msgid "Auto-approve AI Content"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_res_config_settings__social_planner_auto_approve_ai
+msgid "Auto-approve AI-generated content"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__from_avatar_url
+msgid "Avatar URL"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__avg_comments
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor_snapshot__avg_comments
+msgid "Avg Comments"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__avg_likes
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor_snapshot__avg_likes
+msgid "Avg Likes"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__avg_shares
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor_snapshot__avg_shares
+msgid "Avg Shares"
+msgstr ""
+
+#. module: social_planner
+#: model:communication.policy,name:social_planner.demo_policy_b2b_tech
+msgid "B2B Technology — Formal & Professional"
+msgstr ""
+
+#. module: social_planner
+#: model:communication.policy,name:social_planner.demo_policy_b2c_retail
+msgid "B2C Retail — Warm & Engaging"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_media_asset__category__behind_scenes
+msgid "Behind the Scenes"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_policy__brand_voice_guidelines
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_policy_form
+msgid "Brand Voice Guidelines"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_line_form
+msgid "Cancel"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__communication_plan_line__status__cancelled
+msgid "Cancelled"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_media_asset__category
+msgid "Category"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan_line__channel
+#: model_terms:ir.ui.view,arch_db:social_planner.view_content_calendar_search
+msgid "Channel"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_listening_topic_form
+msgid "Clear report"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__color
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor_tag__color
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message_tag__color
+msgid "Color"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_communication_plan__color
+msgid "Color for calendar display."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_message__message_type__comment
+msgid "Comment"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_message_search
+msgid "Comments"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model,name:social_planner.model_communication_plan
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_form
+msgid "Communication Plan"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model,name:social_planner.model_communication_plan_line
+msgid "Communication Plan Line"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.res_config_settings_view_form
+msgid "Communication Planner"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.actions.act_window,name:social_planner.action_communication_plan
+#: model:ir.model.fields,field_description:social_planner.field_communication_policy__plan_ids
+#: model:ir.ui.menu,name:social_planner.menu_communication_plan
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_calendar
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_tree
+msgid "Communication Plans"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.actions.act_window,name:social_planner.action_communication_policy
+#: model:ir.ui.menu,name:social_planner.menu_communication_policy
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_policy_tree
+msgid "Communication Policies"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model,name:social_planner.model_communication_policy
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__policy_id
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_policy_form
+msgid "Communication Policy"
+msgstr "Kommunikationspolicy"
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__company_id
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan_line__company_id
+#: model:ir.model.fields,field_description:social_planner.field_communication_policy__company_id
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__company_id
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor_snapshot__company_id
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_listening_topic__company_id
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_media_asset__company_id
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__company_id
+msgid "Company"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_competitor_form
+msgid "Compare"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model,name:social_planner.model_social_marketing_competitor
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor_snapshot__competitor_id
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_competitor_form
+msgid "Competitor"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.actions.act_window,name:social_planner.action_social_marketing_competitor
+#: model:ir.ui.menu,name:social_planner.menu_competitor
+msgid "Competitor Analysis"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_competitor_graph
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_competitor_pivot
+msgid "Competitor Comparison"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__name
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_competitor_form
+msgid "Competitor Name"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model,name:social_planner.model_social_marketing_competitor_snapshot
+msgid "Competitor Snapshot"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model,name:social_planner.model_social_marketing_competitor_tag
+msgid "Competitor Tag"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_competitor_tree
+msgid "Competitors"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_form
+msgid "Complete"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__communication_plan__state__completed
+#: model:ir.model.fields.selection,name:social_planner.selection__communication_plan_line__status__completed
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_search
+#: model_terms:ir.ui.view,arch_db:social_planner.view_content_calendar_search
+msgid "Completed"
+msgstr "Slutförd"
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__completion_percentage
+msgid "Completion %"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_post__compliance_check_passed
+msgid "Compliance Check Passed"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_post__compliance_checked_at
+msgid "Compliance Checked At"
+msgstr "Compliance-kontrollerad den"
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_post__compliance_snapshot
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_post_form_pipeline_snapshot
+msgid "Compliance Snapshot"
+msgstr "Compliance-ögonblicksbild"
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_post__compliance_warnings
+msgid "Compliance Warnings"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model,name:social_planner.model_res_config_settings
+msgid "Config Settings"
+msgstr "Inställningar"
+
+#. module: social_planner
+#: model_terms:ir.actions.act_window,help:social_planner.action_social_marketing_message
+msgid ""
+"Connect social media accounts to start receiving messages here.\n"
+"                All DMs, comments, and mentions will appear in this unified inbox."
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_line_form
+msgid "Content"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.actions.act_window,name:social_planner.action_content_calendar
+#: model:ir.ui.menu,name:social_planner.menu_content_calendar
+#: model_terms:ir.ui.view,arch_db:social_planner.view_content_calendar_calendar
+msgid "Content Calendar"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan_line__content_type
+#: model_terms:ir.ui.view,arch_db:social_planner.view_content_calendar_search
+msgid "Content Type"
+msgstr ""
+
+#. module: social_planner
+#. odoo-python
+#: code:addons/social_planner/models/social_marketing_post.py:0
+msgid "Content has been generated and filled into the post."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_social_marketing_post__ai_generated
+msgid "Content was generated by AI."
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_message_form
+msgid "Conversation"
+msgstr ""
+
+#. module: social_planner
+#. odoo-python
+#: code:addons/social_planner/models/social_marketing_post.py:0
+msgid "Could not generate content. Make sure an AI agent is configured."
+msgstr ""
+
+#. module: social_planner
+#. odoo-python
+#: code:addons/social_planner/models/social_marketing_listening_topic.py:0
+msgid "Could not research \"%s\": %s"
+msgstr ""
+
+#. module: social_planner
+#. odoo-python
+#: code:addons/social_planner/models/communication_plan_line.py:0
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_line_form
+msgid "Create Post"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.actions.act_window,help:social_planner.action_communication_plan
+msgid ""
+"Create a communication plan to organize your social media campaigns\n"
+"                across multiple channels, guided by your communication policy."
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.actions.act_window,help:social_planner.action_communication_policy
+msgid ""
+"Create a communication policy to define how your organization communicates\n"
+"                — tone of voice, brand voice, approval chains, and crisis protocols."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__create_uid
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan_line__create_uid
+#: model:ir.model.fields,field_description:social_planner.field_communication_policy__create_uid
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__create_uid
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor_snapshot__create_uid
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor_tag__create_uid
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_listening_topic__create_uid
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_media_asset__create_uid
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__create_uid
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message_tag__create_uid
+msgid "Created by"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__create_date
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan_line__create_date
+#: model:ir.model.fields,field_description:social_planner.field_communication_policy__create_date
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__create_date
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor_snapshot__create_date
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor_tag__create_date
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_listening_topic__create_date
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_media_asset__create_date
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__create_date
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message_tag__create_date
+msgid "Created on"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_policy_form
+msgid "Crisis Protocol"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_policy_form
+msgid "Crisis Response"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_policy__crisis_response_protocol
+msgid "Crisis Response Protocol"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_competitor__threat_level__critical
+msgid "Critical"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan_line__date
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor_snapshot__snapshot_date
+msgid "Date"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_res_config_settings__social_planner_default_policy_id
+#: model_terms:ir.ui.view,arch_db:social_planner.res_config_settings_view_form
+msgid "Default Communication Policy"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_res_config_settings__social_planner_default_policy_id
+msgid "Default policy applied to new communication plans."
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_policy_form
+msgid "Describe the desired tone of voice..."
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_form
+msgid "Describe your target audience..."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__description
+#: model:ir.model.fields,field_description:social_planner.field_communication_policy__description
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__description
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_form
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_policy_form
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_competitor_form
+msgid "Description"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_communication_plan__target_audience
+msgid "Description of the target audience for this plan."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_social_marketing_post__compliance_snapshot
+msgid ""
+"Deterministic compliance snapshot (policy version, verdict, warnings) "
+"recorded at compliance check time. Never overwritten."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_competitor__competitor_type__direct
+msgid "Direct Competitor"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_competitor_search
+msgid "Direct Competitors"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_message__message_type__dm
+msgid "Direct Message"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_message_search
+msgid "Direct Messages"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__display_name
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan_line__display_name
+#: model:ir.model.fields,field_description:social_planner.field_communication_policy__display_name
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__display_name
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor_snapshot__display_name
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor_tag__display_name
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_listening_topic__display_name
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_media_asset__display_name
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__display_name
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message_tag__display_name
+msgid "Display Name"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_media_asset__asset_type__document
+msgid "Document"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_listening_topic__research_state__done
+msgid "Done"
+msgstr "Klar"
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__communication_plan__state__draft
+#: model:ir.model.fields.selection,name:social_planner.selection__communication_policy__state__draft
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_listening_topic__research_state__draft
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_post__approval_state__draft
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_search
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_policy_search
+msgid "Draft"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_res_config_settings__social_planner_ai_enabled
+msgid "Enable AI Features"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_res_config_settings__social_planner_ai_enabled
+msgid ""
+"Enable AI-powered content generation, sentiment analysis, and hashtag "
+"suggestions."
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.res_config_settings_view_form
+msgid ""
+"Enable AI-powered content generation, sentiment analysis, and hashtag suggestions.\n"
+"                            Requires the <strong>ai_agent</strong> module to be installed and configured with at least one LLM provider."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__end_date
+msgid "End Date"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_competitor_form
+msgid "Engagement Breakdown"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__engagement_rate
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor_snapshot__engagement_rate
+msgid "Engagement Rate %"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_listening_topic_form
+msgid "Enter keywords one per line. Use # for hashtags."
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_policy_form
+msgid "Enter prohibited words or phrases, one per line..."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_listening_topic__research_state__error
+msgid "Error"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_policy_form
+msgid ""
+"Escalation procedures, channel freeze protocols, contact persons, response "
+"times..."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_media_asset__category__event
+msgid "Event"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_listening_topic__exclude_keywords
+msgid "Exclude Keywords"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__external_id
+msgid "External ID"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__external_url
+msgid "External URL"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__communication_plan_line__channel__facebook
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_competitor__media_type__facebook
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_message__media_type__facebook
+#: model_terms:ir.ui.view,arch_db:social_planner.view_content_calendar_search
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_competitor_search
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_message_search
+msgid "Facebook"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_post__compliance_recheck_verdict__fail
+msgid "Fail"
+msgstr "Underkänd"
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_media_asset__attachment_id
+msgid "File"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__follower_trend
+msgid "Follower Trend %"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_competitor_snapshot_graph
+msgid "Follower Trends"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__message_follower_ids
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__follower_count
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__message_follower_ids
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor_snapshot__follower_count
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__message_follower_ids
+msgid "Followers"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__message_partner_ids
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__message_partner_ids
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__message_partner_ids
+msgid "Followers (Partners)"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_communication_plan__activity_type_icon
+#: model:ir.model.fields,help:social_planner.field_social_marketing_competitor__activity_type_icon
+#: model:ir.model.fields,help:social_planner.field_social_marketing_message__activity_type_icon
+msgid "Font awesome icon e.g. fa-tasks"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_communication_policy__prohibited_content
+msgid ""
+"Forbidden topics, words or phrases — one per line. Posts containing these "
+"are automatically flagged."
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_policy_form
+msgid "Format, size, brand colors, alt-text requirements..."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__from_name
+msgid "From"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_post_form_inherit
+msgid ""
+"Generate post content using AI based on your communication policy and plan "
+"context."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__goal
+msgid "Goal"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_form
+msgid "Goals"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_form
+msgid "Goals & Audience"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_search
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_policy_search
+#: model_terms:ir.ui.view,arch_db:social_planner.view_content_calendar_search
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_competitor_search
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_message_search
+msgid "Group By"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_communication_policy__hashtag_policy
+msgid "Guidelines for hashtag usage — brand-specific, industry, max per post."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_communication_policy__image_guidelines
+msgid ""
+"Guidelines for images — format, size, brand colors, alt-text requirements."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_communication_policy__tone_of_voice
+msgid "Guidelines for tone — formal, personal, humorous, etc."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__from_handle
+msgid "Handle"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__social_handle
+msgid "Handle / URL"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__has_message
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__has_message
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__has_message
+msgid "Has Message"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_policy__hashtag_policy
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_policy_form
+msgid "Hashtag Policy"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_policy_form
+msgid "Hashtag rules, branded hashtags, max per post..."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_competitor__threat_level__high
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_message__priority__2
+msgid "High"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_competitor_search
+msgid "High Threat"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.res_config_settings_view_form
+msgid "How often the system checks connected platforms for new messages."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_res_config_settings__social_planner_inbox_refresh_interval
+msgid ""
+"How often the unified inbox checks for new messages from connected "
+"platforms."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__id
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan_line__id
+#: model:ir.model.fields,field_description:social_planner.field_communication_policy__id
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__id
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor_snapshot__id
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor_tag__id
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_listening_topic__id
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_media_asset__id
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__id
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message_tag__id
+msgid "ID"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__activity_exception_icon
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__activity_exception_icon
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__activity_exception_icon
+msgid "Icon"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_communication_plan__activity_exception_icon
+#: model:ir.model.fields,help:social_planner.field_social_marketing_competitor__activity_exception_icon
+#: model:ir.model.fields,help:social_planner.field_social_marketing_message__activity_exception_icon
+msgid "Icon to indicate an exception activity."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_communication_plan__message_needaction
+#: model:ir.model.fields,help:social_planner.field_social_marketing_competitor__message_needaction
+#: model:ir.model.fields,help:social_planner.field_social_marketing_message__message_needaction
+msgid "If checked, new messages require your attention."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_communication_plan__message_has_error
+#: model:ir.model.fields,help:social_planner.field_communication_plan__message_has_sms_error
+#: model:ir.model.fields,help:social_planner.field_social_marketing_competitor__message_has_error
+#: model:ir.model.fields,help:social_planner.field_social_marketing_competitor__message_has_sms_error
+#: model:ir.model.fields,help:social_planner.field_social_marketing_message__message_has_error
+#: model:ir.model.fields,help:social_planner.field_social_marketing_message__message_has_sms_error
+msgid "If checked, some messages have a delivery error."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_media_asset__asset_type__image
+msgid "Image"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_policy__image_guidelines
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_policy_form
+msgid "Image Guidelines"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__communication_plan_line__status__in_progress
+#: model_terms:ir.ui.view,arch_db:social_planner.view_content_calendar_search
+msgid "In Progress"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_message_tree
+msgid "Inbox"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_message_pivot
+msgid "Inbox Analytics"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_res_config_settings__social_planner_inbox_refresh_interval
+msgid "Inbox Refresh Interval (minutes)"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__is_incoming
+msgid "Incoming"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_competitor_search
+msgid "Indirect"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_competitor__competitor_type__indirect
+msgid "Indirect Competitor"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__communication_plan_line__channel__instagram
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_competitor__media_type__instagram
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_message__media_type__instagram
+#: model_terms:ir.ui.view,arch_db:social_planner.view_content_calendar_search
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_competitor_search
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_message_search
+msgid "Instagram"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_communication_plan_line__notes
+msgid "Internal notes — not shown in the published post."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__message_is_follower
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__message_is_follower
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__message_is_follower
+msgid "Is Follower"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_listening_topic__keywords
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_listening_topic_form
+msgid "Keywords"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_social_marketing_listening_topic__keywords
+msgid ""
+"Keywords or phrases to monitor, one per line. Supports hashtags with #."
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_listening_topic_form
+msgid "Keywords to exclude..."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__last_checked
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_listening_topic__last_checked
+msgid "Last Checked"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_listening_topic__last_researched
+msgid "Last Researched"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__write_uid
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan_line__write_uid
+#: model:ir.model.fields,field_description:social_planner.field_communication_policy__write_uid
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__write_uid
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor_snapshot__write_uid
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor_tag__write_uid
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_listening_topic__write_uid
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_media_asset__write_uid
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__write_uid
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message_tag__write_uid
+msgid "Last Updated by"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__write_date
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan_line__write_date
+#: model:ir.model.fields,field_description:social_planner.field_communication_policy__write_date
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__write_date
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor_snapshot__write_date
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor_tag__write_date
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_listening_topic__write_date
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_media_asset__write_date
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__write_date
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message_tag__write_date
+msgid "Last Updated on"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_competitor_form
+msgid "Latest Metrics"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_media_asset__category__lifestyle
+msgid "Lifestyle"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_tree
+msgid "Lines"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_social_marketing_message__company_id
+msgid ""
+"Link an account to a company to restrict its usage or keep empty to let all "
+"companies use it."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_social_marketing_post__plan_line_id
+msgid "Link to the plan line in the communication plan."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__communication_plan_line__channel__linkedin
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_competitor__media_type__linkedin
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_message__media_type__linkedin
+#: model_terms:ir.ui.view,arch_db:social_planner.view_content_calendar_search
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_competitor_search
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_message_search
+msgid "LinkedIn"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_listening_topic_form
+msgid "Listening Topic"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.actions.act_window,name:social_planner.action_social_listening_topic
+#: model:ir.ui.menu,name:social_planner.menu_listening_topic
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_listening_topic_tree
+msgid "Listening Topics"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_competitor__threat_level__low
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_message__priority__1
+msgid "Low"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_message_form
+msgid "Mark Read"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_message_form
+msgid "Mark Unread"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_policy__posting_frequency_max_daily
+msgid "Max Daily Posts"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_policy__posting_frequency_max_weekly
+msgid "Max Weekly Posts"
+msgstr ""
+
+#. module: social_planner
+#. odoo-python
+#: code:addons/social_planner/models/social_marketing_post.py:0
+msgid "Maximum daily posts (%(max)s) exceeded for this plan."
+msgstr ""
+
+#. module: social_planner
+#. odoo-python
+#: code:addons/social_planner/models/communication_plan_line.py:0
+msgid ""
+"Maximum daily posts (%(max)s) reached for this plan. Please adjust the "
+"schedule or the policy."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_communication_policy__posting_frequency_max_daily
+msgid "Maximum posts per channel per day. 0 = no limit."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_communication_policy__posting_frequency_max_weekly
+msgid "Maximum posts per channel per week. 0 = no limit."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_communication_plan__goal
+msgid ""
+"Measurable goals for the plan (e.g. increase reach by 25%, generate 50 "
+"leads)."
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_form
+msgid "Measurable goals: e.g. 'Increase reach by 25%, generate 50 leads'..."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model,name:social_planner.model_social_marketing_media_asset
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_media_asset_form
+msgid "Media Asset"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.actions.act_window,name:social_planner.action_social_media_asset
+#: model:ir.ui.menu,name:social_planner.menu_media_asset
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_media_asset_tree
+msgid "Media Assets"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_competitor__threat_level__medium
+msgid "Medium"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_message__message_type__mention
+msgid "Mention"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_listening_topic__mention_count
+msgid "Mentions (24h)"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__body
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_message_form
+msgid "Message"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__message_has_error
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__message_has_error
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__message_has_error
+msgid "Message Delivery error"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model,name:social_planner.model_social_marketing_message_tag
+msgid "Message Tag"
+msgstr ""
+
+#. module: social_planner
+#. odoo-python
+#: code:addons/social_planner/models/social_marketing_post.py:0
+msgid "Message contains prohibited content: %(words)s"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__message_ids
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__message_ids
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__message_ids
+msgid "Messages"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_competitor_form
+msgid "Metrics"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__communication_plan_line__channel__multi
+msgid "Multi-platform"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__my_activity_date_deadline
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__my_activity_date_deadline
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__my_activity_date_deadline
+msgid "My Activity Deadline"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_search
+msgid "My Plans"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_policy_search
+msgid "My Policies"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_media_asset__name
+msgid "Name"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_post__needs_recheck
+msgid "Needs Recheck"
+msgstr "Kräver omkontroll"
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_stream_post__needs_review
+msgid "Needs Review"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_stream_post__sentiment__negative
+msgid "Negative"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_stream_post__sentiment__neutral
+msgid "Neutral"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.res_config_settings_view_form
+msgid "New communication plans will use this policy by default."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__activity_calendar_event_id
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__activity_calendar_event_id
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__activity_calendar_event_id
+msgid "Next Activity Calendar Event"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__activity_date_deadline
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__activity_date_deadline
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__activity_date_deadline
+msgid "Next Activity Deadline"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__activity_summary
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__activity_summary
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__activity_summary
+msgid "Next Activity Summary"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__activity_type_id
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__activity_type_id
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__activity_type_id
+msgid "Next Activity Type"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.actions.act_window,help:social_planner.action_communication_plan
+msgid "No communication plans yet"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.actions.act_window,help:social_planner.action_communication_policy
+msgid "No communication policies found"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.actions.act_window,help:social_planner.action_social_marketing_competitor
+msgid "No competitors tracked yet"
+msgstr ""
+
+#. module: social_planner
+#. odoo-python
+#: code:addons/social_planner/models/social_marketing_message.py:0
+msgid "No external URL available for this message."
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.actions.act_window,help:social_planner.action_content_calendar
+msgid "No planned content yet"
+msgstr ""
+
+#. module: social_planner
+#. odoo-python
+#: code:addons/social_planner/models/social_marketing_competitor.py:0
+msgid "No profile URL set for this competitor."
+msgstr ""
+
+#. module: social_planner
+#. odoo-python
+#: code:addons/social_planner/models/communication_plan_line.py:0
+msgid ""
+"No social accounts found for channel \"%(channel)s\". Please add an account "
+"for this channel first."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_message__priority__0
+msgid "Normal"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan_line__notes
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor_snapshot__notes
+msgid "Notes"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_competitor_form
+msgid "Notes & Strategy"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_competitor_form
+msgid ""
+"Notes about the competitor's strategy, market position, strengths, "
+"weaknesses..."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__message_needaction_counter
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__message_needaction_counter
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__message_needaction_counter
+msgid "Number of Actions"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__line_count
+msgid "Number of Lines"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_policy__plan_count
+msgid "Number of Plans"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__post_count
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan_line__post_count
+msgid "Number of Posts"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__message_has_error_counter
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__message_has_error_counter
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__message_has_error_counter
+msgid "Number of errors"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_communication_plan__message_needaction_counter
+#: model:ir.model.fields,help:social_planner.field_social_marketing_competitor__message_needaction_counter
+#: model:ir.model.fields,help:social_planner.field_social_marketing_message__message_needaction_counter
+msgid "Number of messages requiring action"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_communication_plan__message_has_error_counter
+#: model:ir.model.fields,help:social_planner.field_social_marketing_competitor__message_has_error_counter
+#: model:ir.model.fields,help:social_planner.field_social_marketing_message__message_has_error_counter
+msgid "Number of messages with delivery error"
+msgstr ""
+
+#. module: social_planner
+#. odoo-python
+#: code:addons/social_planner/models/social_marketing_post.py:0
+msgid "Only draft or rejected posts can be submitted for approval."
+msgstr ""
+
+#. module: social_planner
+#. odoo-python
+#: code:addons/social_planner/models/social_marketing_post.py:0
+msgid "Only posts pending approval can be approved."
+msgstr ""
+
+#. module: social_planner
+#. odoo-python
+#: code:addons/social_planner/models/social_marketing_post.py:0
+msgid "Only posts pending approval can be rejected."
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_competitor_form
+msgid "Open Profile"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_message_form
+msgid "Open on Platform"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_competitor__media_type__other
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_media_asset__asset_type__other
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_media_asset__category__other
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_message__message_type__other
+msgid "Other"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_form
+msgid "Overall description and purpose..."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_communication_policy__description
+msgid "Overall description of the policy's purpose and scope."
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_policy_form
+msgid "Overall description of the policy's purpose..."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_policy__owner_id
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_policy_search
+msgid "Owner"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_communication_policy__owner_id
+msgid "Owner/responsible for the policy."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__parent_id
+msgid "Parent"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_competitor__competitor_type__partner
+msgid "Partner"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_post__compliance_recheck_verdict__pass
+msgid "Pass"
+msgstr "Godkänd"
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_post__approval_state__pending_approval
+msgid "Pending Approval"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan_line__plan_id
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_post__plan_id
+msgid "Plan"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_post_form_inherit
+msgid "Plan & Policy"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_post__plan_line_id
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_line_form
+msgid "Plan Line"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__line_ids
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_form
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_line_tree
+msgid "Plan Lines"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__name
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_form
+msgid "Plan Name"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__communication_plan_line__status__planned
+#: model_terms:ir.ui.view,arch_db:social_planner.view_content_calendar_search
+msgid "Planned"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_policy_tree
+msgid "Plans"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_communication_policy__plan_ids
+msgid "Plans that follow this policy."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__media_type
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__media_type
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_competitor_search
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_message_search
+msgid "Platform"
+msgstr ""
+
+#. module: social_planner
+#. odoo-python
+#: code:addons/social_planner/models/social_marketing_post.py:0
+msgid ""
+"Please review and approve/reject the social media post \"%(post)s\" for plan"
+" \"%(plan)s\"."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_listening_topic__policy_id
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_media_asset__policy_id
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_post__policy_id
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_search
+msgid "Policy"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_media_asset__policy_approved
+msgid "Policy Approved"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_stream_post__policy_flag
+msgid "Policy Flag"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_policy__name
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_policy_form
+msgid "Policy Name"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__policy_state
+msgid "Policy Status"
+msgstr ""
+
+#. module: social_planner
+#. odoo-python
+#: code:addons/social_planner/models/communication_policy.py:0
+msgid "Policy changed to version %s"
+msgstr "Policyn ändrades till version %s"
+
+#. module: social_planner
+#. odoo-python
+#: code:addons/social_planner/models/social_marketing_post.py:0
+msgid "Policy re-check failed after policy change: %s"
+msgstr "Policy-omkontroll misslyckades efter policyändring: %s"
+
+#. module: social_planner
+#. odoo-python
+#: code:addons/social_planner/models/social_marketing_post.py:0
+msgid "Policy re-check failed: %s"
+msgstr "Policy-omkontroll misslyckades: %s"
+
+#. module: social_planner
+#. odoo-python
+#: code:addons/social_planner/models/social_marketing_post.py:0
+msgid "Policy re-check passed"
+msgstr "Policy-omkontroll godkänd"
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_form
+msgid "Policy:"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__communication_plan_line__content_type__poll
+msgid "Poll"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_stream_post__sentiment__positive
+msgid "Positive"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__communication_plan_line__content_type__post
+msgid "Post"
+msgstr "Post"
+
+#. module: social_planner
+#. odoo-python
+#: code:addons/social_planner/models/social_marketing_post.py:0
+msgid "Post approved by %(user)s."
+msgstr ""
+
+#. module: social_planner
+#. odoo-python
+#: code:addons/social_planner/models/social_marketing_post.py:0
+msgid "Post rejected by %(user)s. Reason: %(reason)s"
+msgstr ""
+
+#. module: social_planner
+#. odoo-python
+#: code:addons/social_planner/models/social_marketing_post.py:0
+msgid "Post submitted for approval. Reviewer: %(reviewer)s"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_policy_form
+msgid "Posting Frequency Limits"
+msgstr ""
+
+#. module: social_planner
+#. odoo-python
+#: code:addons/social_planner/models/communication_plan.py:0
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan_line__post_ids
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_line_form
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_line_tree
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_tree
+msgid "Posts"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__post_frequency_weekly
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor_snapshot__post_frequency_weekly
+msgid "Posts/Week"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__priority
+msgid "Priority"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_media_asset__category__product
+msgid "Product"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__profile_url
+msgid "Profile URL"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_policy__prohibited_content
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_policy_form
+msgid "Prohibited Content"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_communication_policy__crisis_response_protocol
+msgid ""
+"Protocol for crisis management — escalation, channel freeze, response times,"
+" contact persons."
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_policy_form
+msgid "Publication Rules"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_communication_plan__description
+msgid "Purpose and description of the plan."
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_competitor_form
+msgid "Quick Update"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_media_asset__category__quote
+msgid "Quote / Text"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_line_form
+msgid "Re-plan"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_message__message_type__reaction
+msgid "Reaction"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_message__state__read
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_message_search
+msgid "Read"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_social_marketing_post__rejection_reason
+msgid "Reason why the post was rejected."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_post__compliance_recheck_verdict
+msgid "Recheck Verdict"
+msgstr "Omkontrollsbeslut"
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__communication_plan_line__content_type__reel
+msgid "Reel"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_post_form_inherit
+msgid "Reject"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_post__approval_state__rejected
+msgid "Rejected"
+msgstr "Avvisad"
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_post__rejection_reason
+msgid "Rejection Reason"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_message__state__replied
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_message_search
+msgid "Replied"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__replied_via_odoo
+msgid "Replied via Odoo"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__child_ids
+msgid "Replies"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_message_form
+msgid "Reply"
+msgstr ""
+
+#. module: social_planner
+#. odoo-python
+#: code:addons/social_planner/models/social_marketing_message.py:0
+msgid "Reply body is required."
+msgstr ""
+
+#. module: social_planner
+#. odoo-python
+#: code:addons/social_planner/models/social_marketing_message.py:0
+msgid "Reply sent by %(user)s."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_listening_topic__research_duration_minutes
+msgid "Research Duration (min)"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_listening_topic__research_state
+msgid "Research State"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_listening_topic_form
+msgid "Research trends (last30days)"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_policy_form
+msgid "Response Targets"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__response_time_minutes
+msgid "Response Time (min)"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_policy__response_time_target
+msgid "Response Time Target"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__user_id
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_search
+msgid "Responsible"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__activity_user_id
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__activity_user_id
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__activity_user_id
+msgid "Responsible User"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_social_marketing_post__compliance_recheck_verdict
+msgid "Result of the last compliance re-check after a policy change."
+msgstr "Resultat av den senaste compliance-omkontrollen efter en policyändring."
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_post__reviewer_id
+msgid "Reviewer"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_listening_topic_form
+msgid ""
+"Run a last30days trend research for this topic? This may take a few minutes."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_listening_topic__research_state__running
+msgid "Running"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__message_has_sms_error
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__message_has_sms_error
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__message_has_sms_error
+msgid "SMS Delivery error"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_communication_plan_line__time
+msgid "Scheduled time in hours (e.g. 14.5 = 14:30)"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_competitor_search
+msgid "Search Competitors"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_content_calendar_search
+msgid "Search Content Calendar"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_message_search
+msgid "Search Inbox"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_search
+msgid "Search Plans"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_policy_search
+msgid "Search Policies"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_stream_post__sentiment
+msgid "Sentiment"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_stream_post__sentiment_score
+msgid "Sentiment Score"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan_line__sequence
+msgid "Sequence"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_form
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_policy_form
+msgid "Set Draft"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_social_marketing_post__needs_recheck
+msgid ""
+"Set when the communication policy changes while the post is pending "
+"approval, awaiting customer approval, or approved but not yet completed."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_media_asset__file_size
+msgid "Size"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__snapshot_count
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__snapshot_ids
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_competitor_form
+msgid "Snapshots"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model,name:social_planner.model_social_marketing_account
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__social_account_id
+msgid "Social Account"
+msgstr "Socialt konto"
+
+#. module: social_planner
+#: model:ir.model,name:social_planner.model_social_marketing_listening_topic
+msgid "Social Listening Topic"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model,name:social_planner.model_social_marketing_message
+msgid "Social Message (Unified Inbox)"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model,name:social_planner.model_social_planner_ai
+msgid "Social Planner AI Helper"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model,name:social_planner.model_social_marketing_post
+msgid "Social Post"
+msgstr "Sociala inlägg"
+
+#. module: social_planner
+#: model:ir.model,name:social_planner.model_social_marketing_stream_post
+msgid "Social Stream Post"
+msgstr "Inlägg i sociala medier"
+
+#. module: social_planner
+#: model:res.groups,name:social_planner.group_social_content_approver
+msgid "Social: Content Approver"
+msgstr ""
+
+#. module: social_planner
+#: model:res.groups,name:social_planner.group_social_content_creator
+msgid "Social: Content Creator"
+msgstr ""
+
+#. module: social_planner
+#: model:res.groups,name:social_planner.group_social_content_publisher
+msgid "Social: Content Publisher"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.actions.server,name:social_planner.ir_cron_publish_recheck_ir_actions_server
+msgid "Social: Publish Pipeline Re-check"
+msgstr "Social: Omkontroll av publiceringspipeline"
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_communication_policy__brand_voice_guidelines
+msgid ""
+"Specific brand voice — words to use/avoid, language rules, style guide."
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_policy_form
+msgid "Specific words to use/avoid, language rules, style guide..."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__start_date
+msgid "Start Date"
+msgstr ""
+
+#. module: social_planner
+#. odoo-python
+#: code:addons/social_planner/models/communication_plan.py:0
+msgid "Start date must be before end date."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__state
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan_line__status
+#: model:ir.model.fields,field_description:social_planner.field_communication_policy__state
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__state
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_search
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_policy_search
+#: model_terms:ir.ui.view,arch_db:social_planner.view_content_calendar_search
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_message_search
+msgid "Status"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_communication_plan__activity_state
+#: model:ir.model.fields,help:social_planner.field_social_marketing_competitor__activity_state
+#: model:ir.model.fields,help:social_planner.field_social_marketing_message__activity_state
+msgid ""
+"Status based on activities\n"
+"Overdue: Due date is already passed\n"
+"Today: Activity date is today\n"
+"Planned: Future activities."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_communication_policy__approval_chain
+msgid ""
+"Step chain for approval. Example: [{'role': 'creator', 'action': 'submit'}, "
+"{'role': 'approver', 'action': 'approve'}]"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__communication_plan_line__content_type__story
+msgid "Story"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_listening_topic__stream_ids
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_listening_topic_form
+msgid "Streams"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_post_form_inherit
+msgid "Submit for Approval"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor_tag__name
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message_tag__name
+msgid "Tag"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__tag_ids
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_media_asset__tags
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__tag_ids
+msgid "Tags"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_competitor_form
+msgid "Take Snapshot"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__target_audience
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_form
+msgid "Target Audience"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_communication_policy__response_time_target
+msgid "Target response time in minutes for comments/DMs."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_media_asset__category__team
+msgid "Team"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.actions.act_window,help:social_planner.action_content_calendar
+msgid ""
+"The content calendar shows all planned posts across your communication plans.\n"
+"                Create a plan first, then add plan lines to populate the calendar."
+msgstr ""
+
+#. module: social_planner
+#. odoo-python
+#: code:addons/social_planner/models/social_marketing_listening_topic.py:0
+msgid "The last30days research report for \"%s\" is ready."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_communication_plan__policy_id
+#: model:ir.model.fields,help:social_planner.field_social_marketing_post__policy_id
+msgid "The policy defining tone, rules and approval chain."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_social_marketing_post__ai_prompt
+msgid "The prompt used for AI generation."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan_line__theme
+msgid "Theme"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_communication_plan_line__theme
+msgid "Theme for the post, e.g. 'Product Launch' or 'Customer Case Study'."
+msgstr ""
+
+#. module: social_planner
+#. odoo-python
+#: code:addons/social_planner/models/social_marketing_post.py:0
+msgid ""
+"This post must be approved before publishing. Current status: %(status)s"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__threat_level
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_competitor_search
+msgid "Threat Level"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_competitor__media_type__tiktok
+msgid "TikTok"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan_line__time
+msgid "Time"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_media_asset__usage_count
+msgid "Times Used"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_social_marketing_post__compliance_checked_at
+msgid "Timestamp of the compliance snapshot."
+msgstr "Tidpunkt för compliance-ögonblicksbilden."
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_content_calendar_calendar
+msgid "Title"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_policy_form
+msgid "Tone & Voice"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_policy__tone_of_voice
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_policy_form
+msgid "Tone of Voice"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__top_content_theme
+msgid "Top Content Theme"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_listening_topic__name
+msgid "Topic Name"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.actions.act_window,help:social_planner.action_social_marketing_competitor
+msgid ""
+"Track your competitors' social media presence — monitor their follower growth,\n"
+"                engagement rates, posting frequency, and content strategy over time."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_listening_topic__trend_research_report
+msgid "Trend Research Report (30 days)"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_listening_topic_form
+msgid "Trend Research Report (last 30 days)"
+msgstr ""
+
+#. module: social_planner
+#. odoo-python
+#: code:addons/social_planner/models/social_marketing_listening_topic.py:0
+msgid "Trend research complete"
+msgstr ""
+
+#. module: social_planner
+#. odoo-python
+#: code:addons/social_planner/models/social_marketing_listening_topic.py:0
+msgid "Trend research failed"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__communication_plan_line__channel__twitter
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_competitor__media_type__twitter
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_message__media_type__twitter
+msgid "Twitter / X"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_content_calendar_search
+msgid "Twitter/X"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__competitor_type
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_media_asset__mimetype
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__message_type
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_competitor_search
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_message_search
+msgid "Type"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_communication_plan__activity_exception_decoration
+#: model:ir.model.fields,help:social_planner.field_social_marketing_competitor__activity_exception_decoration
+#: model:ir.model.fields,help:social_planner.field_social_marketing_message__activity_exception_decoration
+msgid "Type of the exception activity on record."
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_message_search
+msgid "Unassigned"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.actions.act_window,name:social_planner.action_social_marketing_message
+#: model:ir.ui.menu,name:social_planner.menu_unified_inbox
+#: model_terms:ir.ui.view,arch_db:social_planner.res_config_settings_view_form
+msgid "Unified Inbox"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_message__state__unread
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_message_search
+msgid "Unread"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_message__priority__3
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_message_search
+msgid "Urgent"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_message_form
+msgid ""
+"Use the chatter below to reply. Platform API reply will be\n"
+"                            triggered for supported platforms (LinkedIn, Facebook, Instagram)."
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_competitor_form
+msgid "Use this section to manually update metrics from a recent check."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_policy__version
+msgid "Version"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_communication_policy__version
+msgid "Version number. Auto-incremented on content change."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__communication_plan_line__content_type__video
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_media_asset__asset_type__video
+msgid "Video"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_message_form
+msgid "View on platform"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_social_marketing_post__compliance_warnings
+msgid "Warnings from the policy compliance check."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,field_description:social_planner.field_communication_plan__website_message_ids
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_competitor__website_message_ids
+#: model:ir.model.fields,field_description:social_planner.field_social_marketing_message__website_message_ids
+msgid "Website Messages"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_communication_plan__website_message_ids
+#: model:ir.model.fields,help:social_planner.field_social_marketing_competitor__website_message_ids
+#: model:ir.model.fields,help:social_planner.field_social_marketing_message__website_message_ids
+msgid "Website communication history"
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields,help:social_planner.field_res_config_settings__social_planner_auto_approve_ai
+msgid "When enabled, AI-generated posts are automatically marked as approved."
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.res_config_settings_view_form
+msgid ""
+"When enabled, AI-generated posts skip the approval workflow and are "
+"automatically approved."
+msgstr ""
+
+#. module: social_planner
+#: model:ir.model.fields.selection,name:social_planner.selection__communication_plan_line__channel__youtube
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_competitor__media_type__youtube
+#: model:ir.model.fields.selection,name:social_planner.selection__social_marketing_message__media_type__youtube
+#: model_terms:ir.ui.view,arch_db:social_planner.view_content_calendar_search
+msgid "YouTube"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.actions.act_window,help:social_planner.action_social_marketing_message
+msgid "Your inbox is empty!"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_policy_form
+msgid "[{\"role\": \"creator\", \"action\": \"submit\"}, {\"role\": \"approver\", \"action\": \"approve\"}]"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_kanban
+msgid "lines ·"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_message_kanban
+msgid "min"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_policy_kanban
+msgid "plan(s)"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_kanban
+msgid "posts"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_policy_kanban
+msgid "v"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_communication_plan_form
+msgid ""
+"—\n"
+"                        Status:"
+msgstr ""
+
+#. module: social_planner
+#: model_terms:ir.ui.view,arch_db:social_planner.view_social_marketing_post_form_inherit
+msgid "✨ Generate with AI"
+msgstr ""

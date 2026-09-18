@@ -1,0 +1,17 @@
+{
+  "name": "odoo-social-render-service",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "description": "Server-side Fabric.js renderer for social.image.template (Odoo social_marketing)",
+  "dependencies": {
+    "canvas": "^2.11.2",
+    "fabric": "^6.9.1",
+    "express": "^4.21.2"
+  },
+  "scripts": {
+    "test": "node test_core.mjs && node test_auth.mjs",
+    "test:core": "node test_core.mjs",
+    "test:auth": "node test_auth.mjs"
+  }
+}

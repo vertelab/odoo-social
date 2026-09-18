@@ -10,4 +10,27 @@
         <field name="user_id" ref="base.user_root"/>
         <field name="active" eval="True"/>
     </record>
+
+    <record id="ir_cron_refresh_statistics" model="ir.cron">
+        <field name="name">Social: Refresh Statistics and Snapshots</field>
+        <field name="model_id" ref="model_social_marketing_account"/>
+        <field name="state">code</field>
+        <field name="code">model.refresh_statistics()
+model.env['social_marketing.live.post'].refresh_statistics()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="user_id" ref="base.user_root"/>
+        <field name="active" eval="True"/>
+    </record>
+
+    <record id="ir_cron_backfill_statistics" model="ir.cron">
+        <field name="name">Social: Backfill Historical Statistics</field>
+        <field name="model_id" ref="model_social_marketing_account"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_backfill_statistics()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="user_id" ref="base.user_root"/>
+        <field name="active" eval="False"/>
+    </record>
 </odoo>

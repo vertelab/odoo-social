@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Vertel AB AGPL-3
+# Vertel Sverige AB AGPL-3
 
 from datetime import datetime, timedelta
 import json
@@ -34,8 +34,8 @@ class SocialStreamPost(models.Model):
     media_type = fields.Selection(related='stream_id.media_id.media_type', string="Related Social Media")
     published_date = fields.Datetime('Published date', help="The post published date based on third party information.")
     formatted_published_date = fields.Char('Formatted Published Date', compute='_compute_formatted_published_date')
-    account_id = fields.Many2one(related='stream_id.account_id', string='Related social Account')
-    company_id = fields.Many2one('res.company', 'Company', related='account_id.company_id')
+    social_account_id = fields.Many2one(related='stream_id.social_account_id', string='Related social Account', oldname='account_id')
+    company_id = fields.Many2one('res.company', 'Company', related='social_account_id.company_id')
     is_author = fields.Boolean('Is Author', compute='_compute_is_author')
 
     stream_post_image_ids = fields.One2many('social_marketing.stream.post.image', 'stream_post_id', string="Stream Post Images",

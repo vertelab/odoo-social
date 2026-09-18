@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Vertel AB AGPL-3
+# Vertel Sverige AB AGPL-3
 import uuid
 import requests
 from werkzeug.urls import url_encode, url_join
@@ -11,7 +11,9 @@ class SocialMediaLinkedin(models.Model):
     _inherit = 'social_marketing.media'
 
     _LINKEDIN_ENDPOINT = 'https://api.linkedin.com/rest/'
-    _LINKEDIN_SCOPE = 'r_basicprofile w_member_social w_member_social_feed r_organization_social w_organization_social w_organization_social_feed rw_organization_admin r_organization_followers r_1st_connections_size r_member_postAnalytics r_member_profileAnalytics'
+    _LINKEDIN_SCOPE = ('openid profile email w_member_social '
+                       'r_organization_social rw_organization_social '
+                       'w_organization_social r_organization_analytics')
 
     # TODO in master: remove all projections
     # Control the fields returned by the LinkedIn API
@@ -37,10 +39,19 @@ class SocialMediaLinkedin(models.Model):
         linkedin_client_secret = self.env['ir.config_parameter'].sudo().get_param(
             'social_marketing.linkedin_client_secret')
 
-        if linkedin_app_id and linkedin_client_secret and linkedin_use_own_account:
-            return self._add_linkedin_accounts_from_configuration(linkedin_app_id)
-        else:
-            raise UserError(_("linkedin_app_id and linkedin_client_secret missing"))
+        if linkedin_use_own_account:
+            if linkedin_app_id and linkedin_client_secret:
+                return self._add_linkedin_accounts_from_configuration(linkedin_app_id)
+            raise UserError(_(
+                "linkedin_app_id and linkedin_client_secret missing. Configure "
+                "them under Social settings (LinkedIn)."))
+        # No default (Odoo-provided) LinkedIn app is available in this build —
+        # require the user's own app configuration instead of silently doing
+        # nothing.
+        raise UserError(_(
+            "No LinkedIn app is configured. Enable 'Use your own LinkedIn "
+            "Account' under Social settings and provide an App ID and App "
+            "Secret, then use 'Link account' again."))
 
     def _add_linkedin_accounts_from_configuration(self, linkedin_app_id):
         params = {

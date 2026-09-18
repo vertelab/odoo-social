@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Customer (res.partner): brands smart button -->
+    <record id="view_res_partner_brands_button" model="ir.ui.view">
+        <field name="name">res.partner.brands.button</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_brands" type="object"
+                        class="oe_stat_button" icon="fa-building-o"
+                        groups="social_marketing.group_social_marketing_manager">
+                    <div class="o_stat_info">
+                        <field name="brand_count" widget="statinfo"/>
+                        <span>Brands</span>
+                    </div>
+                </button>
+            </xpath>
+        </field>
+    </record>
+</odoo>

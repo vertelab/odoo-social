@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-# Vertel AB AGPL-3
+# Vertel Sverige AB AGPL-3
 
 {
     'name': 'Social: Communication Planner',
     'category': 'Marketing/Social Marketing',
     'summary': 'Communication planning, policy, approval workflows and AI-assisted social marketing',
-    'version': '1.1',
+    'version': '1.9',
     'description': """
 Social Planner — Kommunikationsplanering för sociala medier
 ===========================================================
@@ -32,6 +32,8 @@ Social Planner — Kommunikationsplanering för sociala medier
         'data/communication_policy_data.xml',
         'data/communication_plan_data.xml',
         'data/competitor_demo_data.xml',
+        'data/last30days_coworker.xml',
+        'data/cron.xml',
         'views/communication_policy_views.xml',
         'views/communication_plan_views.xml',
         'views/content_calendar_views.xml',
@@ -39,9 +41,8 @@ Social Planner — Kommunikationsplanering för sociala medier
         'views/social_listening_views.xml',
         'views/social_marketing_competitor_views.xml',
         'views/social_marketing_message_views.xml',
-        'views/social_planner_dashboard_views.xml',
-        'views/res_config_settings_views.xml',
         'views/menu_views.xml',
+        'views/res_config_settings_views.xml',
     ],
     'demo': [],
     'application': True,

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Posts awaiting customer approval (per-brand KPI) -->
+        <record id="metric_social_post_awaiting_customer" model="dashboard.metric">
+            <field name="name">Posts Awaiting Customer Approval</field>
+            <field name="key">social.post.awaiting_customer</field>
+            <field name="category">Social</field>
+            <field name="source_type">model</field>
+            <field name="model_id" ref="social_marketing.model_social_marketing_post"/>
+            <field name="field_id" ref="social_marketing.field_social_marketing_post__id"/>
+            <field name="aggregation">count</field>
+            <field name="default_domain">[["approval_state", "=", "awaiting_customer"]]</field>
+            <field name="unit">integer</field>
+        </record>
+
+        <!-- Underlag count (per-brand KPI) -->
+        <record id="metric_social_agency_document" model="dashboard.metric">
+            <field name="name">Underlag</field>
+            <field name="key">social.agency.document</field>
+            <field name="category">Social</field>
+            <field name="source_type">model</field>
+            <field name="model_id" ref="model_social_agency_document"/>
+            <field name="field_id" ref="social_marketing_agency.field_social_agency_document__id"/>
+            <field name="aggregation">count</field>
+            <field name="default_domain">[]</field>
+            <field name="unit">integer</field>
+        </record>
+
+        <!-- Listening topics count (per-brand KPI) -->
+        <record id="metric_social_listening_topic" model="dashboard.metric">
+            <field name="name">Listening Topics</field>
+            <field name="key">social.listening.topic</field>
+            <field name="category">Social</field>
+            <field name="source_type">model</field>
+            <field name="model_id" ref="social_planner.model_social_marketing_listening_topic"/>
+            <field name="field_id" ref="social_planner.field_social_marketing_listening_topic__id"/>
+            <field name="aggregation">count</field>
+            <field name="default_domain">[]</field>
+            <field name="unit">integer</field>
+        </record>
+
+    </data>
+</odoo>

@@ -5,11 +5,26 @@
         <field name="model">social_marketing.post.template</field>
         <field name="inherit_id" ref="social_marketing.social_marketing_post_template_view_form"/>
         <field name="arch" type="xml">
+            <xpath expr="//field[@name='platform_ids']" position="after">
+                <group string="Instagram Settings" name="instagram_settings" colspan="2"
+                      invisible="not is_instagram">
+                    <field name="is_instagram" invisible="1"/>
+                    <field name="instagram_message" widget="html"/>
+                    <field name="instagram_image_ids" widget="many2many_binary"/>
+                </group>
+            </xpath>
+            <xpath expr="//group[@name='previews_placeholder']" position="inside">
+                <field name="display_instagram_preview" invisible="1" />
+                <field name="instagram_preview" nolabel="1" colspan="2" widget="social_marketing_post_preview" media_type="instagram"
+                    readonly="1"
+                    invisible="not display_instagram_preview"
+                    class="o_social_preview_wrapper m-0 px-4 py-4 bg-200"/>
+            </xpath>
             <xpath expr="//notebook" position="inside">
                 <page string="Instagram" name="instagram"
                       invisible="not is_split_per_media">
                     <group>
-                        <field name="instagram_message"/>
+                        <field name="instagram_message" widget="html"/>
                         <field name="instagram_image_ids" widget="many2many_binary"/>
                     </group>
                 </page>

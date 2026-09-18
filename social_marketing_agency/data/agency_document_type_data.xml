@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="document_type_strategy" model="social.agency.document.type">
+            <field name="name">Strategy</field>
+            <field name="description">Positioning, target group and channel strategy</field>
+        </record>
+        <record id="document_type_brief" model="social.agency.document.type">
+            <field name="name">Brief</field>
+            <field name="description">Campaign or content brief</field>
+        </record>
+        <record id="document_type_brand_guidelines" model="social.agency.document.type">
+            <field name="name">Brand Guidelines</field>
+            <field name="description">Tone of voice, visual identity and brand rules</field>
+        </record>
+        <record id="document_type_report" model="social.agency.document.type">
+            <field name="name">Report</field>
+            <field name="description">Monthly report, analysis or follow-up</field>
+        </record>
+    </data>
+</odoo>

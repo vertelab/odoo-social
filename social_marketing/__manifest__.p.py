@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-# Vertel AB AGPL-3
+# Vertel Sverige AB AGPL-3
 
 {
     'name': 'Social: Marketing',
     'category': 'Marketing/Social Marketing',
     'summary': 'Manage your social marketing',
-    'version': '1.1',
+    'version': '1.1.1',
     'description': """Manage your social marketing """,
     'website': 'https://vertel.se/app/odoo-social',
     'depends': ['web', 'mail','link_tracker'],
@@ -13,11 +13,15 @@
         'security/social_marketing_security.xml',
         'security/ir.model.access.csv',
         'data/ir_cron_data.xml',
+        'data/social_marketing_platform_data.xml',
         'views/social_marketing_menu_views.xml',
         'views/social_marketing_account_views.xml',
         'views/social_marketing_post_template_views.xml',
+        'views/social_image_template_views.xml',
+        'views/social_image_render_wizard_views.xml',
         'views/social_marketing_post_views.xml',
         'views/res_config_settings_views.xml',
+        'views/res_partner_views.xml',
         'views/social_marketing_media_views.xml',
         'views/discuss_channel_view.xml',
         # 'views/utm_campaign_views.xml',
@@ -32,6 +36,7 @@
     ],
     'assets': {
         'web.assets_backend': [
+            'social_marketing/static/src/lib/fabric_loader.js',
             'social_marketing/static/src/js/fields/*',
             'social_marketing/static/src/js/add_stream_modal.js',
             'social_marketing/static/src/js/images_carousel_dialog.js',

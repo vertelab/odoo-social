@@ -1,5 +1,5 @@
 # coding: utf-8
-# Vertel AB AGPL-3
+# Vertel Sverige AB AGPL-3
 
 from odoo import api, fields, models
 
@@ -8,6 +8,26 @@ class ResConfigSettings(models.TransientModel):
     _inherit = 'res.config.settings'
 
     module_social_marketing_demo = fields.Boolean('Enable Demo Mode', groups="base.group_system")
+
+    social_publish_rate_limit_delay_seconds = fields.Float(
+        string='Default Publish Delay (seconds)',
+        config_parameter='social_publish_rate_limit_delay_seconds',
+        default=1.0,
+        help='Default minimum delay between channel publish jobs. '
+             'Per-media overrides can be set on the Publish Rate Limits '
+             'model.')
+
+    social_marketing_render_service_url = fields.Char(
+        string='Render Service URL',
+        config_parameter='social_marketing.render_service_url',
+        help='Base URL of the Node render service for image templates, '
+             'e.g. http://render-odoo:8600')
+
+    social_marketing_render_service_token = fields.Char(
+        string='Render Service Token',
+        config_parameter='social_marketing.render_service_token',
+        help='Bearer token used to authenticate render service calls. '
+             'Stored via ir.config_parameter; set from pillar in production.')
 
 
 # ────────────────────────────────────────────────────────────────────────

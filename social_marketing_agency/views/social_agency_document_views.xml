@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_social_agency_document_list" model="ir.ui.view">
+        <field name="name">social.agency.document.list</field>
+        <field name="model">social.agency.document</field>
+        <field name="arch" type="xml">
+            <list string="Underlag" create="true" delete="false">
+                <field name="name"/>
+                <field name="type_id"/>
+                <field name="brand_id"/>
+                <field name="status" widget="badge"
+                       decoration-success="status == 'approved'"
+                       decoration-warning="status == 'in_review'"
+                       decoration-danger="status == 'draft'"/>
+                <field name="attachment_count"/>
+                <field name="create_date"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_social_agency_document_kanban" model="ir.ui.view">
+        <field name="name">social.agency.document.kanban</field>
+        <field name="model">social.agency.document</field>
+        <field name="arch" type="xml">
+            <kanban>
+                <field name="name"/>
+                <field name="type_id"/>
+                <field name="brand_id"/>
+                <field name="status"/>
+                <t t-name="card">
+                    <div class="oe_kanban_card">
+                        <div class="oe_kanban_details">
+                            <strong><field name="name"/></strong>
+                            <div><field name="type_id"/></div>
+                            <div class="text-muted"><field name="brand_id"/></div>
+                            <span t-if="record.status.raw_value == 'approved'"
+                                  class="badge text-bg-success">Approved</span>
+                            <span t-elif="record.status.raw_value == 'in_review'"
+                                  class="badge text-bg-warning">In Review</span>
+                            <span t-elif="record.status.raw_value == 'archived'"
+                                  class="badge text-bg-secondary">Archived</span>
+                            <span t-else="" class="badge text-bg-danger">Draft</span>
+                        </div>
+                    </div>
+                </t>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_social_agency_document_search" model="ir.ui.view">
+        <field name="name">social.agency.document.search</field>
+        <field name="model">social.agency.document</field>
+        <field name="arch" type="xml">
+            <search string="Underlag">
+                <field name="name"/>
+                <field name="type_id"/>
+                <field name="brand_id"/>
+                <filter name="group_by_status" string="Status"
+                        context="{'group_by': 'status'}"/>
+                <filter name="group_by_brand" string="Brand"
+                        context="{'group_by': 'brand_id'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_social_agency_document_form" model="ir.ui.view">
+        <field name="name">social.agency.document.form</field>
+        <field name="model">social.agency.document</field>
+        <field name="arch" type="xml">
+            <form string="Underlag">
+                <header>
+                    <button name="action_in_review" type="object" string="Send to Review"
+                            invisible="status not in ['draft']"/>
+                    <button name="action_approve" type="object" string="Approve"
+                            invisible="status not in ['draft', 'in_review']"/>
+                    <button name="action_draft" type="object" string="Back to Draft"
+                            invisible="status not in ['approved', 'archived']"/>
+                    <button name="action_archive" type="object" string="Archive"
+                            invisible="status not in ['approved']"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="type_id"/>
+                            <field name="brand_id"/>
+                            <field name="partner_id" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="status"/>
+                        </group>
+                    </group>
+                    <group string="Description">
+                        <field name="description"/>
+                    </group>
+                    <field name="attachment_ids" widget="many2many_binary"
+                           string="Attachments"/>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_social_agency_document" model="ir.actions.act_window">
+        <field name="name">Underlag</field>
+        <field name="res_model">social.agency.document</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="search_view_id" ref="view_social_agency_document_search"/>
+    </record>
+</odoo>

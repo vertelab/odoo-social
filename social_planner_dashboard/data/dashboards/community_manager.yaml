@@ -1,0 +1,112 @@
+dashboard:
+  key: community_manager
+  name: "Community Manager"
+  description: "Unified inbox, response time and sentiment overview."
+  icon: fa-comments
+  category: Social
+  auto_refresh: 300000
+  cache_ttl: 300
+
+filters:
+  - key: period
+    type: date_range
+    label: Period
+    optional: true
+    default:
+      from: this_month_start
+      to: today
+
+metrics:
+  - key: social.unread_count
+    label: "Unread Messages"
+    source_type: model
+    model: social_marketing.message
+    field: id
+    aggregation: count
+    unit: integer
+    domain:
+      - [state, "=", unread]
+
+  - key: social.response_time
+    label: "Avg Response Time (min)"
+    source_type: model
+    model: social_marketing.message
+    field: response_time_minutes
+    aggregation: avg
+    unit: integer
+
+  - key: social.sentiment
+    label: "Sentiment Distribution"
+    source_type: service
+    service_model: dashboard.source.social.sentiment
+    service_method: get_data
+
+  - key: social.negative_sentiment_exceeded
+    label: "Negative Sentiment Exceeded"
+    source_type: service
+    service_model: dashboard.source.social.sentiment
+    service_method: get_negative_exceeded
+
+  - key: social.inbox
+    label: "Inbox"
+    source_type: service
+    service_model: dashboard.source.social.inbox
+    service_method: get_data
+    kanban:
+      state_field: priority
+      state_colors:
+        "0": "#6c757d"
+        "1": "#17a2b8"
+        "2": "#ffc107"
+        "3": "#dc3545"
+      card_title_field: from_name
+      card_subtitle_field: media_type
+      card_body_fields:
+        - body
+      card_footer_fields:
+        - priority
+      card_actions:
+        - name: open_message
+          label: Open Message
+          icon: fa-envelope-open
+          action: ir.actions.act_window
+          params:
+            res_model: social_marketing.message
+
+charts:
+  - key: kpi_unread
+    type: kpi
+    metric: social.unread_count
+    label: "Unread Messages"
+    layout: {x: 0, y: 0, w: 3, h: 2}
+
+  - key: kpi_response_time
+    type: kpi
+    metric: social.response_time
+    label: "Avg Response Time"
+    layout: {x: 3, y: 0, w: 3, h: 2}
+
+  - key: chart_sentiment
+    type: doughnut_chart
+    metric: social.sentiment
+    label: "Sentiment"
+    layout: {x: 6, y: 0, w: 6, h: 4}
+    config:
+      filter_field: sentiment
+
+  - key: kanban_inbox
+    type: kanban
+    metric: social.inbox
+    label: "Inbox"
+    layout: {x: 0, y: 4, w: 12, h: 5}
+
+alerts:
+  - key: negative_sentiment_spike
+    label: Negative Sentiment Spike
+    metric: social.negative_sentiment_exceeded
+    condition: "value > 0"
+    severity: warning
+    trigger_type: cron
+    schedule: "0 */4 * * *"
+    cooldown: 3600
+    channels: [notification]

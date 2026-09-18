@@ -14,5 +14,17 @@
             <field name="stream_type">linkedin_company_post</field>
             <field name="media_id" ref="social_media_linkedin"/>
         </record>
+
+        <record id="stream_type_linkedin_company_page" model="social_marketing.stream.type">
+            <field name="name">Company Page</field>
+            <field name="stream_type">linkedin_company_page</field>
+            <field name="media_id" ref="social_media_linkedin"/>
+        </record>
+
+        <record id="stream_type_linkedin_feed" model="social_marketing.stream.type">
+            <field name="name">LinkedIn Feed</field>
+            <field name="stream_type">linkedin_feed</field>
+            <field name="media_id" ref="social_media_linkedin"/>
+        </record>
     </data>
 </odoo>

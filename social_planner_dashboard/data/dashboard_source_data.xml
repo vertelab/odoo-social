@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="source_social_competitor" model="dashboard.source">
+        <field name="name">Competitor Benchmark</field>
+        <field name="technical_name">social.competitor</field>
+        <field name="model_name">dashboard.source.social.competitor</field>
+        <field name="category">Social</field>
+        <field name="source_type">service</field>
+        <field name="is_active" eval="True"/>
+    </record>
+
+    <record id="source_social_sentiment" model="dashboard.source">
+        <field name="name">Sentiment</field>
+        <field name="technical_name">social.sentiment</field>
+        <field name="model_name">dashboard.source.social.sentiment</field>
+        <field name="category">Social</field>
+        <field name="source_type">service</field>
+        <field name="is_active" eval="True"/>
+    </record>
+
+    <record id="source_social_best_time" model="dashboard.source">
+        <field name="name">Best Time to Post</field>
+        <field name="technical_name">social.best_time</field>
+        <field name="model_name">dashboard.source.social.best_time</field>
+        <field name="category">Social</field>
+        <field name="source_type">service</field>
+        <field name="is_active" eval="True"/>
+    </record>
+
+    <record id="source_social_plan" model="dashboard.source">
+        <field name="name">Plan Progress</field>
+        <field name="technical_name">social.plan</field>
+        <field name="model_name">dashboard.source.social.plan</field>
+        <field name="category">Social</field>
+        <field name="source_type">service</field>
+        <field name="is_active" eval="True"/>
+    </record>
+
+    <record id="source_social_compliance" model="dashboard.source">
+        <field name="name">Policy Compliance</field>
+        <field name="technical_name">social.compliance</field>
+        <field name="model_name">dashboard.source.social.compliance</field>
+        <field name="category">Social</field>
+        <field name="source_type">service</field>
+        <field name="is_active" eval="True"/>
+    </record>
+
+    <record id="source_social_approval_queue" model="dashboard.source">
+        <field name="name">Approval Queue</field>
+        <field name="technical_name">social.approval_queue</field>
+        <field name="model_name">dashboard.source.social.approval_queue</field>
+        <field name="category">Social</field>
+        <field name="source_type">service</field>
+        <field name="is_active" eval="True"/>
+    </record>
+
+    <record id="source_social_inbox" model="dashboard.source">
+        <field name="name">Unified Inbox</field>
+        <field name="technical_name">social.inbox</field>
+        <field name="model_name">dashboard.source.social.inbox</field>
+        <field name="category">Social</field>
+        <field name="source_type">service</field>
+        <field name="is_active" eval="True"/>
+    </record>
+</odoo>

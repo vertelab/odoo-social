@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Post: brand field + customer approval buttons -->
+    <record id="view_social_marketing_post_brand" model="ir.ui.view">
+        <field name="name">social.marketing.post.brand</field>
+        <field name="model">social_marketing.post</field>
+        <field name="inherit_id" ref="social_marketing.social_marketing_post_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_customer_approve" type="object"
+                        string="Approve (Customer)" class="btn-primary"
+                        groups="social_marketing_agency.group_social_customer_approver"
+                        invisible="approval_state != 'awaiting_customer'"/>
+                <button name="action_customer_reject" type="object"
+                        string="Reject (Customer)" class="btn-danger"
+                        groups="social_marketing_agency.group_social_customer_approver"
+                        invisible="approval_state != 'awaiting_customer'"
+                        confirm="Reject this post? The reason will be visible to the agency."/>
+            </xpath>
+            <xpath expr="//field[@name='platform_ids']" position="before">
+                <field name="brand_id" groups="social_marketing.group_social_marketing_manager"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_social_marketing_post_brand_list" model="ir.ui.view">
+        <field name="name">social.marketing.post.brand.list</field>
+        <field name="model">social_marketing.post</field>
+        <field name="inherit_id" ref="social_marketing.social_marketing_post_view_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='message_plain']" position="after">
+                <field name="brand_id" groups="social_marketing.group_social_marketing_manager"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Customer: awaiting approval list -->
+    <record id="action_social_post_customer_approval" model="ir.actions.act_window">
+        <field name="name">Awaiting Approval</field>
+        <field name="res_model">social_marketing.post</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('approval_state', '=', 'awaiting_customer')]</field>
+    </record>
+</odoo>

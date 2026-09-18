@@ -41,6 +41,19 @@
                             class="btn-info"/>
                 </header>
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_stream_posts" type="object"
+                                class="oe_stat_button" icon="fa-rss"
+                                string="Posts"
+                                help="LinkedIn posts collected for this competitor">
+                            <field name="stream_post_count" widget="statinfo"/>
+                        </button>
+                        <button name="action_view_streams" type="object"
+                                class="oe_stat_button" icon="fa-twitter"
+                                string="Streams">
+                            <field name="stream_count" widget="statinfo"/>
+                        </button>
+                    </div>
                     <div class="oe_title">
                         <h1><field name="name" placeholder="Competitor Name" required="1"/></h1>
                         <group name="header_right">
@@ -55,6 +68,7 @@
                             <field name="media_type"/>
                             <field name="social_handle"/>
                             <field name="profile_url" widget="url"/>
+                            <field name="partner_id"/>
                             <field name="tag_ids" widget="many2many_tags"/>
                         </group>
                         <group name="right">
@@ -114,6 +128,19 @@
                                 <field name="description" nolabel="1"
                                        placeholder="Notes about the competitor's strategy, market position, strengths, weaknesses..."/>
                             </group>
+                        </page>
+
+                        <page string="LinkedIn Streams" name="streams">
+                            <field name="stream_ids" nolabel="1"
+                                   context="{'default_competitor_id': id}">
+                                <list editable="bottom">
+                                    <field name="name"/>
+                                    <field name="stream_type_id"/>
+                                    <field name="linkedin_company_public_id"/>
+                                    <field name="social_account_id"/>
+                                    <field name="stream_post_count" string="Posts"/>
+                                </list>
+                            </field>
                         </page>
                     </notebook>
                 </sheet>

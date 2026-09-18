@@ -55,7 +55,24 @@
                                     </field>
                                 </setting>
                             </block>
-                        </app>
+                        
+                        <block title="Publishing Pipeline" name="social_publish_pipeline_settings">
+                            <setting string="Default Publish Delay"
+                                     help="Default minimum delay (seconds) between channel publish jobs. Per-media overrides can be set under the Publish Rate Limits menu.">
+                                <field name="social_publish_rate_limit_delay_seconds"/>
+                            </setting>
+                        </block>
+                        <block title="Image Templates" name="social_image_template_settings">
+                            <setting string="Render Service URL"
+                                     help="Base URL of the Node render service for image templates (e.g. http://render-odoo:8600). Set from pillar in production.">
+                                <field name="social_marketing_render_service_url"/>
+                            </setting>
+                            <setting string="Render Service Token"
+                                     help="Bearer token for the render service. Secret — never commit; set from pillar in production.">
+                                <field name="social_marketing_render_service_token" widget="password"/>
+                            </setting>
+                        </block>
+</app>
                 </t>
             </xpath>
         </field>

@@ -75,6 +75,17 @@ $o-social-font-family-reset: $o-font-family-sans-serif;
         }
 
     }
+
+    .o_social_hashtag,
+    .o_social_mention {
+        color: #0E7490;
+        text-decoration: none;
+        cursor: pointer;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
 }
 
 // Kanban Views (Both Feed & Posts)

@@ -1,11 +1,26 @@
 # -*- coding: utf-8 -*-
-# Vertel AB AGPL-3
+# Vertel Sverige AB AGPL-3
 import re
 import json
+from html import unescape
 
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
 from odoo.tools import format_datetime
+
+
+def _html_to_plain_text(html):
+    """Extract readable plain text from rich HTML content.
+    Used for API posting, message length checks, AI and policy validation."""
+    if not html:
+        return ''
+    html = re.sub(r'<(br|/p|/div|/li|/h[1-6])\s*/?>', '\n', html, flags=re.I)
+    html = re.sub(r'<[^>]+>', '', html)
+    html = unescape(html)
+    html = re.sub(r'[ \t]+', ' ', html)
+    html = re.sub(r' *\n *', '\n', html)
+    html = re.sub(r'\n{3,}', '\n\n', html)
+    return html.strip()
 
 
 class SocialPostTemplate(models.Model):
@@ -38,15 +53,38 @@ class SocialPostTemplate(models.Model):
         return result
 
     # Content
-    message = fields.Text("Message")
+    message = fields.Html("Message", sanitize=True)
+    message_plain = fields.Text(
+        'Message (plain)', compute='_compute_message_plain', compute_sudo=True)
     image_ids = fields.Many2many(
         'ir.attachment', string='Attach Images',
         help="Will attach images to your posts (if the social media supports it).")
     # JSON array capturing the URLs of the images to make it easy to display them in the kanban view
     image_urls = fields.Text(
         'Images URLs', compute='_compute_image_urls')
+    preview_images_html = fields.Html(
+        'Preview Images', compute='_compute_preview_images_html',
+        help="Rendered <img> tags for the attached images, used in the form preview.")
+
+    @api.depends('image_ids')
+    def _compute_preview_images_html(self):
+        for post in self:
+            imgs = ''.join(
+                '<img src="/web/image/ir.attachment/%s" '
+                'style="max-height:120px;max-width:120px;margin:4px;" '
+                'class="o_social_marketing_preview_img"/>' % att.id
+                for att in post.image_ids
+            )
+            post.preview_images_html = imgs
     is_split_per_media = fields.Boolean('Split Per Network')
     media_count = fields.Integer('Media Count', compute='_compute_media_count')
+
+    # ── Platform targeting ──
+    # Targets one or more platforms (many2many_tags). Platform-specific settings
+    # are added by the bridge modules (social_marketing_linkedin, ...).
+    platform_ids = fields.Many2many(
+        'social_marketing.platform', string='Platforms',
+        help="The platforms this template targets.")
     # Account management
     account_ids = fields.Many2many('social_marketing.account', string='Social Accounts',
                                    help="The accounts on which this post will be published.",
@@ -59,11 +97,15 @@ class SocialPostTemplate(models.Model):
         for post in self:
             post.media_count = len(set(post.account_ids.mapped('media_type')))
 
+    @api.depends('message')
+    def _compute_message_plain(self):
+        for post in self:
+            post.message_plain = _html_to_plain_text(post.message)
 
     @api.constrains('message')
     def _check_message_not_empty(self):
         for post in self:
-            if not post.message:
+            if not post.message_plain.strip():
                 raise UserError(_("The 'message' field is required for post ID %s", post.id))
 
     @api.constrains('image_ids')
@@ -81,8 +123,8 @@ class SocialPostTemplate(models.Model):
     @api.depends('message')
     def _compute_message_length(self):
         for post in self:
-            # compute length of message to check it while posting the message
-            post.message_length = len(post.message or "")
+            # compute length of the plain message to check it while posting
+            post.message_length = len(post.message_plain or "")
 
     def _compute_account_ids(self):
         """If there are less than 3 social accounts available, select them all by default."""
@@ -127,7 +169,7 @@ class SocialPostTemplate(models.Model):
     @api.depends('message')
     def _compute_display_name(self):
         for record in self:
-            name = record.message or ""
+            name = record.message_plain or ""
             record.display_name = name if len(name) <= 50 else f"{name[:47]}..."
 
     def action_generate_post(self):

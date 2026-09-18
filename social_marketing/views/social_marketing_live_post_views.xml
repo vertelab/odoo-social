@@ -13,7 +13,7 @@
                 <sheet>
                     <group>
                         <group name="social_marketing_live_post_global">
-                            <field name="account_id" options="{'no_open': True}" />
+                            <field name="social_account_id" options="{'no_open': True}" />
                             <field name="failure_reason" />
                         </group>
                     </group>

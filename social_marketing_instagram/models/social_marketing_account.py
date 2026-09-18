@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Vertel AB AGPL-3
+# Vertel Sverige AB AGPL-3
 
 import logging
 import requests
@@ -132,5 +132,79 @@ class SocialAccountInstagram(models.Model):
                 if response.ok:
                     data = response.json()
                     account.audience = data.get('followers_count', 0)
+                # Best-effort reach/impressions from Instagram insights.
+                insights = account._fetch_instagram_insights()
+                if insights.get('reach'):
+                    account.reach = insights['reach']
+                if insights.get('impressions'):
+                    account.impressions = insights['impressions']
             except Exception as e:
                 _logger.warning("Instagram stats fetch error for %s: %s", account.display_name, str(e))
+
+    def _fetch_instagram_insights(self):
+        """Best-effort fetch of reach/impressions Instagram insights."""
+        self.ensure_one()
+        try:
+            endpoint = url_join(INSTAGRAM_ENDPOINT, f'{self.instagram_business_account_id}/insights')
+            params = {
+                'metric': 'reach,impressions',
+                'period': 'day',
+                'access_token': self.instagram_access_token,
+            }
+            response = requests.get(endpoint, params=params, timeout=10)
+            if not response.ok:
+                return {}
+            result = {}
+            for entry in response.json().get('data', []):
+                metric = entry.get('name')
+                total = sum(v.get('value', 0) for v in entry.get('values', []))
+                if metric == 'reach':
+                    result['reach'] = total
+                elif metric == 'impressions':
+                    result['impressions'] = total
+            return result
+        except Exception:
+            return {}
+
+    def _backfill_statistics(self, window_start, window_end):
+        instagram_accounts = self._filter_by_media_types(['instagram'])
+        super(SocialAccountInstagram, (self - instagram_accounts))._backfill_statistics(window_start, window_end)
+
+        for account in instagram_accounts:
+            if not account.instagram_business_account_id or not account.instagram_access_token:
+                continue
+            endpoint = url_join(INSTAGRAM_ENDPOINT, f'{account.instagram_business_account_id}/insights')
+            params = {
+                'metric': 'follower_count,reach,impressions',
+                'period': 'day',
+                'since': int(window_start.timestamp()),
+                'until': int(window_end.timestamp()),
+                'access_token': account.instagram_access_token,
+            }
+            try:
+                response = account._backfill_get(endpoint, params=params)
+                if not response.ok:
+                    _logger.warning(
+                        "Instagram backfill failed for %s: %s",
+                        account.display_name, response.text[:200])
+                    continue
+                by_date = {}
+                for entry in response.json().get('data', []):
+                    name = entry.get('name')
+                    for value in entry.get('values', []):
+                        date = (value.get('end_time') or '')[:10]
+                        if not date:
+                            continue
+                        by_date.setdefault(date, {})[name] = value.get('value', 0)
+                metric_map = {
+                    'follower_count': 'audience',
+                    'reach': 'reach',
+                    'impressions': 'impressions',
+                }
+                for date, values in by_date.items():
+                    for ig_metric, stat_metric in metric_map.items():
+                        if ig_metric in values:
+                            account._create_stat_snapshot(stat_metric, values[ig_metric], date)
+            except Exception as e:
+                _logger.warning(
+                    "Instagram backfill error for %s: %s", account.display_name, str(e))

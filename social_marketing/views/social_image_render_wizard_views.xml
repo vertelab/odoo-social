@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_social_image_render_wizard" model="ir.actions.act_window">
+        <field name="name">Create Image from Template</field>
+        <field name="res_model">social.image.render.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <record id="social_image_render_wizard_view_form" model="ir.ui.view">
+        <field name="name">social.image.render.wizard.view.form</field>
+        <field name="model">social.image.render.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Create Image from Template">
+                <group>
+                    <field name="template_id"/>
+                    <field name="format"/>
+                </group>
+                <group string="Placeholders" invisible="not line_ids">
+                    <field name="line_ids">
+                        <list editable="bottom">
+                            <field name="label" readonly="1"/>
+                            <field name="value"/>
+                        </list>
+                    </field>
+                </group>
+                <footer>
+                    <button name="action_render" type="object"
+                            string="Render" class="btn-primary"/>
+                    <button string="Cancel" class="btn-link"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

@@ -27,6 +27,33 @@ export const SocialPostFormatterMixinBase = {
             SocialPostFormatterRegex.REGEX_URL,
             "<a href='$&' class='text-truncate' target='_blank' rel='noreferrer noopener'>$&</a>");
 
+        // Protect existing tags (emoji <img>, URL anchors) so hashtag/mention
+        // highlighting never touches attributes or markup. <br> is kept literal
+        // so the hashtag boundary regex still matches after line breaks.
+        const placeholders = {};
+        let counter = 0;
+        value = value.replace(/<[^>]+>/g, (tag) => {
+            if (/^<br\s*\/?>$/i.test(tag)) {
+                return tag;
+            }
+            const ph = `\u0000${counter++}\u0000`;
+            placeholders[ph] = tag;
+            return ph;
+        });
+
+        // highlight hashtags
+        value = value.replace(
+            SocialPostFormatterRegex.REGEX_HASHTAG,
+            "$1<a href='#' class='o_social_hashtag' tabindex='-1'>#$2</a>");
+
+        // highlight @mentions
+        value = value.replace(
+            SocialPostFormatterRegex.REGEX_AT,
+            "<a href='#' class='o_social_mention' tabindex='-1'>@$1</a>");
+
+        // restore protected tags
+        value = value.replace(/\u0000\d+\u0000/g, (ph) => placeholders[ph]);
+
         return value;
     },
 

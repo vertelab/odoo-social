@@ -82,4 +82,26 @@
             </xpath>
         </field>
     </record>
+
+    <record id="view_social_marketing_post_form_pipeline_snapshot" model="ir.ui.view">
+        <field name="name">social_marketing.post.form.pipeline.snapshot</field>
+        <field name="model">social_marketing.post</field>
+        <field name="inherit_id" ref="social_planner.view_social_marketing_post_form_inherit"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='plan_policy']//group[1]" position="after">
+                <group string="Compliance Snapshot"
+                       invisible="not compliance_snapshot">
+                    <group>
+                        <field name="compliance_snapshot" readonly="1"
+                               widget="jsonb"/>
+                        <field name="compliance_checked_at" readonly="1"/>
+                    </group>
+                    <group>
+                        <field name="needs_recheck" readonly="1"/>
+                        <field name="compliance_recheck_verdict" readonly="1"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
 </odoo>

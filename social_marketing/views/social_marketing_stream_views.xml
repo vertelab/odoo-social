@@ -42,7 +42,7 @@
                     <group>
                         <group name="social_marketing_stream_global">
                             <field name="media_id" invisible="1" />
-                            <field name="account_id" widget="radio"
+                            <field name="social_account_id" widget="radio"
                                 readonly="1"
                                 domain="[('media_id', '=', media_id)]"
                                 options="{'no_create': True, 'no_open': True}" />
@@ -70,7 +70,7 @@
         <field name="inherit_id" ref="social_marketing_stream_view_form"/>
         <field name="arch" type="xml">
             <!--Remove the radio widget as the account on which user want to add the stream has already been selected -->
-            <xpath expr="//field[@name='account_id']" position="attributes">
+            <xpath expr="//field[@name='social_account_id']" position="attributes">
                 <attribute name="widget"></attribute>
             </xpath>
         </field>

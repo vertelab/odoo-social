@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="source_social_engagement" model="dashboard.source">
+        <field name="name">Social Engagement</field>
+        <field name="technical_name">social.engagement</field>
+        <field name="model_name">dashboard.source.social.engagement</field>
+        <field name="category">Social</field>
+        <field name="source_type">service</field>
+        <field name="is_active" eval="True"/>
+    </record>
+
+    <record id="source_social_roi" model="dashboard.source">
+        <field name="name">Social ROI</field>
+        <field name="technical_name">social.roi</field>
+        <field name="model_name">dashboard.source.social.roi</field>
+        <field name="category">Social</field>
+        <field name="source_type">service</field>
+        <field name="is_active" eval="True"/>
+    </record>
+</odoo>

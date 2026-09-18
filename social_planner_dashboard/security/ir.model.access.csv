@@ -1,0 +1,8 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_dashboard_source_social_competitor,dashboard.source.social.competitor,model_dashboard_source_social_competitor,,1,0,0,0
+access_dashboard_source_social_sentiment,dashboard.source.social.sentiment,model_dashboard_source_social_sentiment,,1,0,0,0
+access_dashboard_source_social_best_time,dashboard.source.social.best_time,model_dashboard_source_social_best_time,,1,0,0,0
+access_dashboard_source_social_plan,dashboard.source.social.plan,model_dashboard_source_social_plan,,1,0,0,0
+access_dashboard_source_social_compliance,dashboard.source.social.compliance,model_dashboard_source_social_compliance,,1,0,0,0
+access_dashboard_source_social_approval_queue,dashboard.source.social.approval_queue,model_dashboard_source_social_approval_queue,,1,0,0,0
+access_dashboard_source_social_inbox,dashboard.source.social.inbox,model_dashboard_source_social_inbox,,1,0,0,0

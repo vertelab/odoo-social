@@ -1,0 +1,34 @@
+dashboard:
+  key: social_manager_extended
+  name: "Social Media Manager — Planning"
+  description: "Competitor benchmark and communication plan progress."
+  icon: fa-chart-bar
+  category: Social
+  auto_refresh: 300000
+  cache_ttl: 300
+
+metrics:
+  - key: social.competitor_benchmark
+    label: "Competitor Benchmark"
+    source_type: service
+    service_model: dashboard.source.social.competitor
+    service_method: get_data
+
+  - key: social.plan_completion
+    label: "Plan Completion"
+    source_type: service
+    service_model: dashboard.source.social.plan
+    service_method: get_data
+
+charts:
+  - key: chart_competitor
+    type: column_chart
+    metric: social.competitor_benchmark
+    label: "Competitor Benchmark"
+    layout: {x: 0, y: 0, w: 6, h: 4}
+
+  - key: chart_plan_completion
+    type: bar_chart
+    metric: social.plan_completion
+    label: "Plan Completion %"
+    layout: {x: 6, y: 0, w: 6, h: 4}

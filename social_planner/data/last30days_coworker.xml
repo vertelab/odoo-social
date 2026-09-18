@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- ── Skill: last30days (pi/opencode skill — 30-day trend research) ──
+             The real SKILL.md + Python engine are deployed on the Pi worker
+             via the opencode.last30days Salt state. This ai.skill record is
+             the Odoo-side catalog entry + executable protocol summary so the
+             agent (and the worker, if the skill path is missing) can run it. -->
+        <record id="skill_last30days" model="ai.skill">
+            <field name="name">last30days</field>
+            <field name="category">research</field>
+            <field name="source_type">pi</field>
+            <field name="compatibility">pi_python</field>
+            <field name="github_url">https://github.com/mvanhorn/last30days-skill</field>
+            <field name="description">Research what people actually say about a topic in the last 30 days across Reddit, X/Twitter, YouTube, TikTok, Hacker News, Polymarket, GitHub, Bluesky and the web. Grounded report with citations and engagement signals.</field>
+            <field name="trigger_keywords">trend, trends, sentiment, what people are saying, last 30 days, research topic, social listening</field>
+            <field name="recipe_text"># last30days — 30-day social trend research
+
+Research what people actually say about a topic in the last 30 days across
+Reddit, X/Twitter, YouTube, TikTok, Hacker News, Polymarket, GitHub, Bluesky
+and the web.
+
+## Execute the engine (MANDATORY — never answer from web-search alone)
+
+1. Resolve SKILL_DIR. The skill is deployed at
+   `/usr/local/share/opencode/skills/last30days` (or a pi skills dir).
+   Engine: `$SKILL_DIR/scripts/last30days.py` (requires Python 3.12+).
+
+2. Pre-flight (Step 0.5/0.55): resolve X handles (--x-handle/--x-related),
+   subreddits (--subreddits), GitHub (--github-user / --github-repo) and
+   TikTok/IG creators BEFORE running the engine.
+
+3. YOU are the planner (LAW 7): build a JSON query plan and pass it via
+   `--plan "$QUERY_PLAN_FILE"` (write the JSON to a tmpfile; never inline
+   JSON with apostrophes into the shell command).
+
+4. Run:
+   python3 "$SKILL_DIR/scripts/last30days.py" "&lt;topic&gt;" \
+     --emit=compact --plan "$QUERY_PLAN_FILE" \
+     --x-handle=... --subreddits=... [--github-user=...] --days 30
+
+5. Optional WebSearch supplements for current events — NEVER instead of the
+   engine.
+
+## Synthesis (VOICE CONTRACT)
+
+- First line: badge `🌐 last30days v&lt;version&gt; · synced &lt;date&gt;` — pass the
+  engine's emitted badge through verbatim.
+- GENERAL queries: `What I learned:` then bold-lead-in paragraphs, then the
+  prose label `KEY PATTERNS from the research:`, then a numbered list.
+- Include the engine's emoji-tree footer verbatim (the block between `---`
+  markers).
+- NO `Sources:` block at the end (LAW 1). NO em-dashes — use ` - ` (LAW 3).
+- NO `##` section headers in the body (LAW 4).
+- Every citation is an inline markdown link `[name](url)` (LAW 8); never raw
+  URLs, never plain names when a URL exists.
+- Never dump raw evidence clusters (LAW 6) — synthesize them into prose.
+- Only emit the synthesized report; no scratchpad, no pre-research status
+  noise.
+
+## Guardrails
+
+- Never invent quotes, handles, subreddits or engagement numbers.
+- Note explicitly when something could not be verified live.
+- Return the full report text as the tool result.</field>
+        </record>
+
+        <!-- ── Tool: last30days_research (NATS delegation to Pi worker) ──
+             Same pattern as ai_agent_core's browser_navigate tool:
+             executor=nats, nats_skills=last30days → pi-agent-worker loads the
+             skill and runs the engine, result returns as the tool result. -->
+        <record id="tool_last30days_research" model="ai.tool">
+            <field name="name">last30days_research</field>
+            <field name="description">Research what people actually say about a topic on social media in the last 30 days (Reddit, X/Twitter, YouTube, TikTok, Hacker News, Polymarket, Bluesky, web) using the last30days skill. Returns a grounded, cited report. Use when the user asks about trends, sentiment, discussions, "what people are saying", or market/competitor buzz about a brand, product, person, keyword or "A vs B" comparison. Do NOT use for publishing posts or managing social accounts — that is handled by the publishing pipeline. When the user references a listening topic (social_marketing.listening.topic), save the report to that record as well (trend_research_report, research_state='done') via the odoo tools.</field>
+            <field name="executor">nats</field>
+            <field name="nats_subject">pi.task.do</field>
+            <field name="nats_skills">last30days</field>
+            <field name="risk_level">read_only</field>
+            <field name="active">True</field>
+            <field name="code" eval="''"/>
+            <field name="parameters">{"type": "object", "properties": {
+                "topic": {"type": "string", "description": "Topic to research (brand, product, person, keyword, or 'A vs B' comparison)"},
+                "exclude_keywords": {"type": "string", "description": "Comma-separated keywords to exclude (optional)"},
+                "lookback_days": {"type": "integer", "description": "Days to look back (default 30)"},
+                "x_handle": {"type": "string", "description": "Optional X handle hint to target (without @)"},
+                "subreddits": {"type": "string", "description": "Optional comma-separated subreddit names to target"},
+                "github_repo": {"type": "string", "description": "Optional owner/repo hint for project-mode"},
+                "save_to_listening_topic_id": {"type": "integer", "description": "Optional social_marketing.listening.topic id to persist the report on"}
+            }, "required": ["topic"]}</field>
+            <field name="capabilities">["research", "web-search"]</field>
+        </record>
+
+        <!-- ── AI-medarbetare: Trend Researcher ──
+             Coworker = skal, agent = hjärna (ai_agent_core rule). Single
+             agent mode. web_ui init → visible in /ai/chat. -->
+        <record id="coworker_social_trend_researcher" model="ai.coworker">
+            <field name="name">Trend Researcher</field>
+            <field name="description">You are Trend Researcher, a social media trend research specialist. You use the last30days skill to find out what people actually say about a topic in the last 30 days across Reddit, X/Twitter, YouTube, TikTok, Hacker News, Bluesky and the web, and you produce grounded reports with citations and engagement signals. When the user asks about a brand, product, topic or competitor, first check whether a listening topic (social_marketing.listening.topic) exists for it — if it does, use it and save the report to trend_research_report with research_state='done'; otherwise research the topic directly and present the report. Be explicit about what could not be verified live. Never invent quotes, handles or engagement numbers.
+
+SCHEDULED TASK (when you are run automatically): search for listening topics that need research — research_state in ('draft', 'error') or empty trend_research_report — for active brands, run last30days_research on each and save the report (trend_research_report, research_state='done'). Skip topics in 'running' state. Work through them one at a time. If nothing needs research, reply briefly that no topics needed research.</field>
+            <field name="status">active</field>
+            <field name="orchestration_mode">single</field>
+            <field name="heartbeat_enabled" eval="True"/>
+            <field name="auto_allowed_tools">["last30days_research", "odoo_search", "odoo_write social_marketing.listening.topic"]</field>
+            <field name="cron_model_id" ref="social_planner.model_social_marketing_listening_topic"/>
+            <field name="model_ids" eval="[(6, 0, [ref('social_planner.model_social_marketing_listening_topic')])]"/>
+        </record>
+
+        <record id="agent_social_trend_researcher" model="ai.agent">
+            <field name="name">Trend Researcher Core</field>
+            <field name="ai_role">Social Media Trend Researcher</field>
+            <field name="description">Researches what people say about a topic in the last 30 days via the last30days skill (NATS → pi worker) and persists reports to listening topics when asked.</field>
+            <field name="ai_goal">Produce grounded, cited 30-day trend reports; store them on the matching listening topic.</field>
+            <field name="status">active</field>
+            <field name="skill_ids" eval="[(6, 0, [ref('skill_last30days')])]"/>
+            <field name="tool_ids" eval="[(6, 0, [
+                ref('tool_last30days_research'),
+                ref('ai_agent_core.tool_describe_model'),
+                ref('ai_agent_core.tool_odoo_search'),
+                ref('ai_agent_core.tool_odoo_write'),
+                ref('ai_agent_core.tool_odoo_call_method'),
+            ])]"/>
+        </record>
+
+        <record id="coworker_agent_social_trend_researcher" model="ai.coworker.agent">
+            <field name="coworker_id" ref="coworker_social_trend_researcher"/>
+            <field name="agent_id" ref="agent_social_trend_researcher"/>
+            <field name="role">leader</field>
+            <field name="sequence" eval="10"/>
+        </record>
+
+        # web_ui-initiering skapas av ai.coworker.create() (_ensure_all_init_types)
+        # — behöver ingen egen XML-post (undviker dubbelpost).
+
+        <!-- cron-initiering: daglig automatisk research. Per-quest ir.cron
+             auto-skapas av _ensure_cron(); den globala 5-min-cron:en i
+             ai_agent_core (cron_scheduled_quests) dubbelkörs inte tack vare
+             interval-guarden i social_planner.models.ai_coworker. -->
+        <record id="coworker_trend_researcher_init_cron" model="ai.coworker.init_type">
+            <field name="coworker_id" ref="coworker_social_trend_researcher"/>
+            <field name="init_type">cron</field>
+            <field name="enabled" eval="True"/>
+            <field name="sequence" eval="20"/>
+            <field name="cron_interval_number" eval="1"/>
+            <field name="cron_interval_type">days</field>
+            <field name="filter_domain">[('research_state', 'in', ('draft', 'error'))]</field>
+        </record>
+
+    </data>
+
+    <!-- Seed-fält som måste kunna uppdateras vid varje uppgradering.
+         Posten ligger i noupdate=1 ovan (skyddar användarens tweaks) men
+         ir_model_data.noupdate=True skyddar den även från noupdate=0-block,
+         så vi applicerar dem via en post-load-hook (samma mönster som
+         ai_agent_core._ensure_default_coworker). Funktioner i noupdate=1-
+         block körs bara vid install — därför ligger denna i noupdate=0. -->
+    <data noupdate="0">
+        <function model="ai.coworker" name="_ensure_trend_researcher_seed"/>
+    </data>
+</odoo>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_social_publish_rate_limit_list" model="ir.ui.view">
+        <field name="name">social.publish.rate.limit.list</field>
+        <field name="model">social.publish.rate.limit</field>
+        <field name="arch" type="xml">
+            <list string="Publish Rate Limits" editable="bottom">
+                <field name="media_id"/>
+                <field name="delay_seconds"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_social_publish_rate_limit_form" model="ir.ui.view">
+        <field name="name">social.publish.rate.limit.form</field>
+        <field name="model">social.publish.rate.limit</field>
+        <field name="arch" type="xml">
+            <form string="Publish Rate Limit">
+                <sheet>
+                    <group>
+                        <field name="media_id"/>
+                        <field name="delay_seconds"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_social_publish_rate_limit" model="ir.actions.act_window">
+        <field name="name">Publish Rate Limits</field>
+        <field name="res_model">social.publish.rate.limit</field>
+        <field name="view_mode">list,form</field>
+        <field name="context" eval="{}"/>
+    </record>
+
+    <menuitem id="menu_social_publish_rate_limit"
+              name="Publish Rate Limits"
+              action="action_social_publish_rate_limit"
+              parent="social_marketing.menu_social_marketing_global"
+              sequence="90"
+              groups="social_marketing.group_social_marketing_manager"/>
+</odoo>

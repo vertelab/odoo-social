@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Vertel AB AGPL-3
+# Vertel Sverige AB AGPL-3
 
 import re
 import requests
@@ -55,7 +55,7 @@ class SocialStreamPostLinkedIn(models.Model):
         super(SocialStreamPostLinkedIn, (self - linkedin_posts))._compute_is_author()
 
         for post in linkedin_posts:
-            post.is_author = post.linkedin_author_urn == post.account_id.linkedin_account_urn
+            post.is_author = post.linkedin_author_urn == post.social_account_id.linkedin_account_urn
 
     # ========================================================
     # COMMENTS / LIKES
@@ -63,7 +63,7 @@ class SocialStreamPostLinkedIn(models.Model):
 
     def _linkedin_comment_add(self, message, comment_urn=None):
         data = {
-            'actor': self.account_id.linkedin_account_urn,
+            'actor': self.social_account_id.linkedin_account_urn,
             'message': {
                 'text': message,
             },
@@ -74,21 +74,21 @@ class SocialStreamPostLinkedIn(models.Model):
             # we reply yo an existing comment
             data['parentComment'] = comment_urn
 
-        response = self.account_id._linkedin_request(
+        response = self.social_account_id._linkedin_request(
             'socialActions/%s/comments' % quote(self.linkedin_post_urn),
             method="POST",
             json=data,
         ).json()
 
         if 'created' not in response:
-            self.sudo().account_id._action_disconnect_accounts(response)
+            self.sudo().social_account_id._action_disconnect_accounts(response)
             return {}
 
         response['from'] = {  # fill with our own information to save an API call
-            'id': self.account_id.linkedin_account_urn,
-            'name': self.account_id.name,
-            'authorUrn': self.account_id.linkedin_account_urn,
-            'picture': f"/web/image?model=social.account&id={self.account_id.id}&field=image",
+            'id': self.social_account_id.linkedin_account_urn,
+            'name': self.social_account_id.name,
+            'authorUrn': self.social_account_id.linkedin_account_urn,
+            'picture': f"/web/image?model=social.account&id={self.social_account_id.id}&field=image",
             'isOrganization': True,
         }
         return self._linkedin_format_comment(response)
@@ -96,14 +96,14 @@ class SocialStreamPostLinkedIn(models.Model):
     def _linkedin_comment_delete(self, comment_urn):
         comment_id = re.search(r'urn:li:comment:\(urn:li:activity:\w+,(\w+)\)', comment_urn).group(1)
 
-        response = self.account_id._linkedin_request(
+        response = self.social_account_id._linkedin_request(
             'socialActions/%s/comments/%s' % (quote(self.linkedin_post_urn), quote(comment_id)),
             method='DELETE',
-            params={'actor': self.account_id.linkedin_account_urn},
+            params={'actor': self.social_account_id.linkedin_account_urn},
         )
 
         if response.status_code != 204:
-            self.sudo().account_id._action_disconnect_accounts(response.json())
+            self.sudo().social_account_id._action_disconnect_accounts(response.json())
 
     def _linkedin_comment_fetch(self, comment_urn=None, offset=0, count=20):
         """Retrieve comments on a LinkedIn element.
@@ -115,7 +115,7 @@ class SocialStreamPostLinkedIn(models.Model):
         """
         element_urn = comment_urn or self.linkedin_post_urn
 
-        response = self.account_id._linkedin_request(
+        response = self.social_account_id._linkedin_request(
             'socialActions/%s/comments' % quote(element_urn),
             params={
                 'start': offset,
@@ -123,7 +123,7 @@ class SocialStreamPostLinkedIn(models.Model):
             },
         ).json()
         if 'elements' not in response:
-            self.sudo().account_id._action_disconnect_accounts(response)
+            self.sudo().social_account_id._action_disconnect_accounts(response)
 
         comments = response.get('elements', [])
 
@@ -136,7 +136,7 @@ class SocialStreamPostLinkedIn(models.Model):
 
         # get the author information if it's an organization
         if organizations_ids:
-            response = self.account_id._linkedin_request(
+            response = self.social_account_id._linkedin_request(
                 'organizations',
                 object_ids=organizations_ids,
                 fields=('id', 'name', 'localizedName', 'vanityName', 'logoV2:(original)'),
@@ -160,7 +160,7 @@ class SocialStreamPostLinkedIn(models.Model):
             # As the LinkedIn support suggested, we need to use the old endpoint...
             response = requests.get(
                 "https://api.linkedin.com/v2/people?ids=List(%s)" % ",".join("(id:%s)" % p for p in persons),
-                headers=self.account_id._linkedin_bearer_headers(),
+                headers=self.social_account_id._linkedin_bearer_headers(),
                 timeout=5).json()
 
             for person_id, person_values in response.get('results', {}).items():
@@ -178,7 +178,7 @@ class SocialStreamPostLinkedIn(models.Model):
                 }
 
         if images_ids:
-            image_ids_to_url = self.account_id._linkedin_request_images(images_ids)
+            image_ids_to_url = self.social_account_id._linkedin_request_images(images_ids)
             for author in formatted_authors.values():
                 author['picture'] = image_ids_to_url.get(author['picture'])
 
@@ -193,8 +193,8 @@ class SocialStreamPostLinkedIn(models.Model):
 
         return {
             'postAuthorImage': self.linkedin_author_image_url,
-            'currentUserUrn': self.account_id.linkedin_account_urn,
-            'accountId': self.account_id.id,
+            'currentUserUrn': self.social_account_id.linkedin_account_urn,
+            'accountId': self.social_account_id.id,
             'comments': comments,
             'offset': offset + count,
             'summary': {'total_count': response.get('paging', {}).get('total', 0)},
@@ -247,7 +247,7 @@ class SocialStreamPostLinkedIn(models.Model):
     def _fetch_matching_post(self):
         self.ensure_one()
 
-        if self.account_id.media_type == 'linkedin' and self.linkedin_post_urn:
+        if self.social_account_id.media_type == 'linkedin' and self.linkedin_post_urn:
             return self.env['social_marketing.live.post'].search(
                 [('linkedin_post_id', '=', self.linkedin_post_urn)], limit=1
             ).post_id

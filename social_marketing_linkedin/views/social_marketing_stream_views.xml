@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Show LinkedIn company page settings on the stream form -->
+        <record id="social_marketing_stream_view_form_inherit_linkedin" model="ir.ui.view">
+            <field name="name">social.marketing.stream.view.form.inherit.linkedin</field>
+            <field name="model">social_marketing.stream</field>
+            <field name="inherit_id" ref="social_marketing.social_marketing_stream_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group/group[@name='social_marketing_stream_global']" position="inside">
+                    <field name="linkedin_company_public_id"
+                        placeholder="e.g. ucs-onedo"
+                        invisible="stream_type_type != 'linkedin_company_page'"
+                        required="stream_type_type == 'linkedin_company_page'"/>
+                    <field name="linkedin_feed_max_posts"
+                        invisible="stream_type_type not in ['linkedin_company_page', 'linkedin_feed']"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

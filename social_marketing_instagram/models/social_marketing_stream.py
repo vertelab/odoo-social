@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Vertel AB AGPL-3
+# Vertel Sverige AB AGPL-3
 
 import logging
 import requests
@@ -17,13 +17,13 @@ class SocialStreamInstagram(models.Model):
 
     def _fetch_stream_data(self):
         self.ensure_one()
-        if self.account_id.media_type != 'instagram':
+        if self.social_account_id.media_type != 'instagram':
             return super()._fetch_stream_data()
 
         return self._fetch_instagram_stream()
 
     def _fetch_instagram_stream(self):
-        account = self.account_id
+        account = self.social_account_id
         if not account.instagram_business_account_id or not account.instagram_access_token:
             return False
 

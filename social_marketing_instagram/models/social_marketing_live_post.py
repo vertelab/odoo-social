@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Vertel AB AGPL-3
+# Vertel Sverige AB AGPL-3
 
 import logging
 import requests
@@ -33,7 +33,7 @@ class SocialLivePostInstagram(models.Model):
 
     def _post_instagram(self):
         for live_post in self:
-            account = live_post.account_id
+            account = live_post.social_account_id
             if not account.instagram_business_account_id or not account.instagram_access_token:
                 live_post.write({
                     'state': 'failed',
@@ -72,7 +72,7 @@ class SocialLivePostInstagram(models.Model):
         Instagram kräver en tvåstegsprocess för publicering:
         1. Skapa container (POST /{ig-user-id}/media)
         2. Publicera container (POST /{ig-user-id}/media_publish) """
-        account = live_post.account_id
+        account = live_post.social_account_id
         endpoint = url_join(INSTAGRAM_ENDPOINT,
             f'{account.instagram_business_account_id}/media')
 
@@ -117,7 +117,7 @@ class SocialLivePostInstagram(models.Model):
 
     def _instagram_publish_container(self, live_post, container_id):
         """ Steg 2: Publicera containern på Instagram. """
-        account = live_post.account_id
+        account = live_post.social_account_id
         endpoint = url_join(INSTAGRAM_ENDPOINT,
             f'{account.instagram_business_account_id}/media_publish')
 
@@ -142,13 +142,13 @@ class SocialLivePostInstagram(models.Model):
     def _refresh_statistics(self):
         super(SocialLivePostInstagram, self)._refresh_statistics()
         instagram_posts = self.env['social_marketing.live.post'].sudo().search([
-            ('account_id.media_type', '=', 'instagram'),
+            ('social_account_id.media_type', '=', 'instagram'),
             ('instagram_post_id', '!=', False),
             ('state', '=', 'posted'),
         ], order='create_date DESC', limit=500)
 
         for post in instagram_posts:
-            account = post.account_id
+            account = post.social_account_id
             try:
                 endpoint = url_join(INSTAGRAM_ENDPOINT, post.instagram_post_id)
                 params = {

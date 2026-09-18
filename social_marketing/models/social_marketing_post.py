@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Vertel AB AGPL-3
+# Vertel Sverige AB AGPL-3
 
 import json
 import threading
@@ -51,6 +51,12 @@ class SocialPost(models.Model):
                                  help="The social medias linked to the selected social accounts.")
     live_post_ids = fields.One2many('social_marketing.live.post', 'post_id', string="Posts By Account", readonly=True,
                                     help="Sub-posts that will be published on each selected social accounts.")
+    pipeline_step_ids = fields.One2many(
+        'social.publish.pipeline.step', 'post_id',
+        string='Pipeline Log', readonly=True,
+        help="Ordered audit trail of this post's publishing stages. One record "
+             "per stage transition, including compliance checks, approval, "
+             "per-channel dispatch and completion.")
     live_posts_by_media = fields.Char('Live Posts by Social Media', compute='_compute_live_posts_by_media',
                                       readonly=True,
                                       help="Special technical field that holds a dict containing the live posts names by media ids (used for kanban view).")
@@ -119,13 +125,13 @@ class SocialPost(models.Model):
             else:
                 post.calendar_date = post.scheduled_date
 
-    @api.depends('live_post_ids.account_id', 'live_post_ids.display_name')
+    @api.depends('live_post_ids.social_account_id', 'live_post_ids.display_name')
     def _compute_live_posts_by_media(self):
         """ See field 'help' for more information. """
         for post in self:
             accounts_by_media = {media_id: [] for media_id in post.media_ids.ids}
-            for live_post in post.live_post_ids.filtered(lambda lp: lp.account_id.media_id.ids):
-                accounts_by_media[live_post.account_id.media_id.id].append(live_post.display_name)
+            for live_post in post.live_post_ids.filtered(lambda lp: lp.social_account_id.media_id.ids):
+                accounts_by_media[live_post.social_account_id.media_id.id].append(live_post.display_name)
             post.live_posts_by_media = json.dumps(accounts_by_media)
 
     @api.depends('state')
@@ -269,6 +275,22 @@ class SocialPost(models.Model):
         ]
         return action
 
+    def _pipeline_log(self, stage, state='done', result=None, live_post_id=None):
+        """ Create an audit step record for the post (system-level, sudo).
+
+        policy_id is optional: it only exists when social_planner is installed,
+        so it is read defensively. """
+        self.ensure_one()
+        policy = self.policy_id if 'policy_id' in self._fields else False
+        self.env['social.publish.pipeline.step'].sudo().create({
+            'post_id': self.id,
+            'live_post_id': live_post_id.id if live_post_id else False,
+            'stage': stage,
+            'state': state,
+            'result': result or False,
+            'policy_version': policy.version if policy else False,
+        })
+
     def _action_post(self):
         """ Called when the post is published on its social_marketing.accounts.
         It will create one social_marketing.live.post per social_marketing.account and call '_post' on each of them. """
@@ -310,7 +332,7 @@ class SocialPost(models.Model):
 
         return [{
             'post_id': self.id,
-            'account_id': account.id,
+            'social_account_id': account.id,
         } for account in self.account_ids]
 
     def _check_post_completion(self):

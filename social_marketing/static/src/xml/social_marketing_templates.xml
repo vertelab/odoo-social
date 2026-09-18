@@ -407,14 +407,14 @@
                  t-attf-class="o_stream_post_images_carousel carousel slide {{ multi_images ? 'o_stream_post_images_carousel_multi' : '' }}"
                  data-bs-interval="false">
                 <ol t-if="multi_images" class="carousel-indicators">
-                    <t t-foreach="props.images" t-as="image_url" t-key="image_url">
+                    <t t-foreach="props.images" t-as="image_url" t-key="image_url_index">
                         <li data-bs-target="#o_stream_post_images_carousel"
                             t-att-data-bs-slide-to="image_url_index"
                             t-attf-class="{{ image_url_index === props.activeIndex ? 'active' : '' }}"/>
                     </t>
                 </ol>
                 <div class="carousel-inner h-100 d-flex align-items-center justify-content-center">
-                    <t t-foreach="props.images" t-as="image_url" t-key="image_url">
+                    <t t-foreach="props.images" t-as="image_url" t-key="image_url_index">
                         <div t-attf-class="carousel-item m-0 w-auto {{ image_url_index === props.activeIndex ? 'active' : '' }}">
                             <img t-att-src="image_url" class="shadow" alt="Image Url" />
                         </div>

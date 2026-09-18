@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Vertel AB AGPL-3
+# Vertel Sverige AB AGPL-3
 import logging
 import base64
 import requests
@@ -40,6 +40,18 @@ class SocialAccountLinkedin(models.Model):
     linkedin_password = fields.Char('LinkedIn Password',
         help='Your LinkedIn login password. Stored encrypted. Only needed for Cookie-based method.')
 
+    # Capability badges — each auth path is an independent capability on the
+    # same account (official API + Playwright session + cookies can coexist).
+    linkedin_has_api = fields.Boolean(
+        'Official API', compute='_compute_linkedin_capabilities',
+        help='OAuth access token configured — can post via the official API.')
+    linkedin_has_playwright = fields.Boolean(
+        'Playwright Session', compute='_compute_linkedin_capabilities',
+        help='Browser session saved — can scrape feeds/company pages/inbox.')
+    linkedin_has_cookie = fields.Boolean(
+        'Cookie Login', compute='_compute_linkedin_capabilities',
+        help='Username/password configured — can post via linkedin-api (cookies).')
+
     # Playwright browser automation
     linkedin_playwright_session = fields.Binary('Playwright Session State',
         attachment=True,
@@ -72,16 +84,17 @@ class SocialAccountLinkedin(models.Model):
 
         for account in linkedin_accounts:
             all_stats_dict = account._compute_statistics_linkedin()
-            month_stats_dict = account._compute_statistics_linkedin(last_30d=True)
-            # compute trend
-            for stat_name in list(all_stats_dict.keys()):
-                all_stats_dict['%s_trend' % stat_name] = self._compute_trend(all_stats_dict.get(stat_name, 0), month_stats_dict.get(stat_name, 0))
-            # store statistics
+            # Trends are computed from stored snapshots (see
+            # social_marketing.account._compute_snapshot_trends), so we no
+            # longer double-fetch the last-30-days window here.
             account.write(all_stats_dict)
 
     def _linkedin_fetch_followers_count(self):
         """Fetch number of followers from the LinkedIn API."""
         self.ensure_one()
+        if not self.linkedin_account_urn.startswith('urn:li:organization:'):
+            # Person-konton har inget organization networkSizes-endpoint.
+            return 0
         endpoint = url_join(self.env['social_marketing.media']._LINKEDIN_ENDPOINT, 'networkSizes/urn:li:organization:%s' % self.linkedin_account_id)
         # removing X-Restli-Protocol-Version header for this endpoint as it is not required according to LinkedIn Doc.
         # using this header with an endpoint that doesn't support it will cause the request to fail
@@ -140,6 +153,72 @@ class SocialAccountLinkedin(models.Model):
             'stories': data.get('shareCount', 0) + data.get('shareMentionsCount', 0),
         }
 
+    def _backfill_statistics(self, window_start, window_end):
+        linkedin_accounts = self._filter_by_media_types(['linkedin'])
+        super(SocialAccountLinkedin, (self - linkedin_accounts))._backfill_statistics(window_start, window_end)
+        for account in linkedin_accounts:
+            if not account.linkedin_account_urn:
+                continue
+            account._backfill_linkedin_share_stats(window_start, window_end)
+            account._backfill_linkedin_follower_stats(window_start, window_end)
+
+    def _backfill_linkedin_share_stats(self, window_start, window_end):
+        """Fetch daily share statistics (engagement + impressions) for a window."""
+        self.ensure_one()
+        endpoint = url_join(
+            self.env['social_marketing.media']._LINKEDIN_ENDPOINT,
+            'organizationalEntityShareStatistics')
+        start_ms = int(window_start.timestamp() * 1000)
+        end_ms = int(window_end.timestamp() * 1000)
+        endpoint += '?timeIntervals=%s' % '(timeRange:(start:%i,end:%i),timeGranularityType:DAY)' % (start_ms, end_ms)
+        params = {'q': 'organizationalEntity', 'organizationalEntity': self.linkedin_account_urn}
+        try:
+            response = self._backfill_get(endpoint, params=params, headers=self._linkedin_bearer_headers())
+            if not response.ok:
+                _logger.warning(
+                    "LinkedIn share backfill failed for %s: %s", self.display_name, response.text[:200])
+                return
+            for element in response.json().get('elements', []):
+                start = (element.get('timeRange') or {}).get('start')
+                if not start:
+                    continue
+                date = datetime.utcfromtimestamp(start / 1000).strftime('%Y-%m-%d')
+                stats = element.get('totalShareStatistics', {})
+                engagement = (stats.get('clickCount', 0) + stats.get('likeCount', 0)
+                              + stats.get('commentCount', 0) + stats.get('shareCount', 0))
+                self._create_stat_snapshot('engagement', engagement, date)
+                if stats.get('impressionCount') is not None:
+                    self._create_stat_snapshot('impressions', stats.get('impressionCount', 0), date)
+        except Exception as e:
+            _logger.warning("LinkedIn share backfill error for %s: %s", self.display_name, str(e))
+
+    def _backfill_linkedin_follower_stats(self, window_start, window_end):
+        """Best-effort fetch of daily follower statistics for a window."""
+        self.ensure_one()
+        endpoint = url_join(
+            self.env['social_marketing.media']._LINKEDIN_ENDPOINT,
+            'organizationalEntityFollowerStatistics')
+        start_ms = int(window_start.timestamp() * 1000)
+        end_ms = int(window_end.timestamp() * 1000)
+        endpoint += '?timeIntervals=%s' % '(timeRange:(start:%i,end:%i),timeGranularityType:DAY)' % (start_ms, end_ms)
+        params = {'q': 'organizationalEntity', 'organizationalEntity': self.linkedin_account_urn}
+        try:
+            response = self._backfill_get(endpoint, params=params, headers=self._linkedin_bearer_headers())
+            if not response.ok:
+                return
+            for element in response.json().get('elements', []):
+                start = (element.get('timeRange') or {}).get('start')
+                if not start:
+                    continue
+                date = datetime.utcfromtimestamp(start / 1000).strftime('%Y-%m-%d')
+                counts = element.get('followerCountsByDay') or element.get('followerCounts')
+                if counts:
+                    # take the last entry of the day
+                    follower = counts[-1].get('followerCounts', {}).get('organicFollowerCount', 0)
+                    self._create_stat_snapshot('audience', follower, date)
+        except Exception as e:
+            _logger.warning("LinkedIn follower backfill error for %s: %s", self.display_name, str(e))
+
     @api.model_create_multi
     def create(self, vals_list):
         res = super(SocialAccountLinkedin, self).create(vals_list)
@@ -161,10 +240,34 @@ class SocialAccountLinkedin(models.Model):
         }
 
     def _get_linkedin_accounts(self, linkedin_access_token):
-        """Make an API call to get all LinkedIn pages linked to the actual access token."""
+        """Get all LinkedIn accounts linkable with the access token.
 
+        Prefers the organization (Company Page) accounts — that requires the
+        Community Management API product. The personal/member account is ALWAYS
+        added as a fallback (only needs Share on LinkedIn + Sign In), so
+        linking works even when the org scopes/products are not authorized.
+        """
         _logger.info("=== Getting LinkedIn Accounts ===")
+        accounts = []
+        try:
+            accounts.extend(
+                self._get_linkedin_organization_accounts(linkedin_access_token))
+        except Exception as exc:  # noqa: BLE001 — fallback, never block linking
+            _logger.warning(
+                "LinkedIn: org account fetch failed (no Community Management "
+                "API?): %s — continuing with the member account.", exc)
+        member = self._get_linkedin_member_account(linkedin_access_token)
+        if member:
+            accounts.append(member)
+        return accounts
 
+    def _get_linkedin_organization_accounts(self, linkedin_access_token):
+        """Company Page accounts where the user is an admin.
+
+        Requires the Community Management API product. Returns [] when the
+        scopes/products are missing instead of raising, so the member fallback
+        can still link a personal account.
+        """
         # Get organizations where user is admin
         response = self._linkedin_request(
             'organizationAcls',
@@ -175,12 +278,11 @@ class SocialAccountLinkedin(models.Model):
             },
             linkedin_access_token=linkedin_access_token,
         )
-
-        _logger.info(f"organizationAcls response status: {response.status_code}")
-        _logger.info(f"organizationAcls response: {response.text}")
-
+        _logger.info("organizationAcls response status: %s", response.status_code)
+        _logger.info("organizationAcls response: %s", response.text)
         if not response.ok:
-            raise SocialValidationException(_('An error occurred when fetching your pages: “%s”.', response.text))
+            _logger.warning("LinkedIn organizationAcls failed: %s", response.text)
+            return []
 
         account_ids = [
             urn_to_id(organization['organization'])
@@ -194,7 +296,8 @@ class SocialAccountLinkedin(models.Model):
             linkedin_access_token=linkedin_access_token,
         )
         if not response.ok:
-            raise SocialValidationException(_('An error occurred when fetching your pages data: “%s”.', response.text))
+            _logger.warning("LinkedIn organizations failed: %s", response.text)
+            return []
 
         organization_results = response.json().get('results', {})
 
@@ -216,18 +319,56 @@ class SocialAccountLinkedin(models.Model):
                 'social_account_handle': organization.get('vanityName'),
                 'image': base64.b64encode(image_data) if image_data else False,
             })
-
         return accounts
+
+    def _get_linkedin_member_account(self, linkedin_access_token):
+        """Personal/member account via the OIDC userinfo endpoint.
+
+        Only needs the 'Sign In with LinkedIn (OpenID Connect)' + 'Share on
+        LinkedIn' products (openid/profile/email + w_member_social) — no
+        Community Management API required. Returns None on failure.
+        """
+        headers = self._linkedin_bearer_headers(linkedin_access_token)
+        try:
+            resp = requests.get(
+                'https://api.linkedin.com/v2/userinfo',
+                headers=headers, timeout=20)
+            if not resp.ok:
+                _logger.warning("LinkedIn userinfo failed: %s", resp.text)
+                return None
+            data = resp.json()
+        except Exception as exc:  # noqa: BLE001
+            _logger.warning("LinkedIn userinfo error: %s", exc)
+            return None
+        sub = data.get('sub')
+        if not sub:
+            return None
+        name = data.get('name') or ' '.join(
+            filter(None, (data.get('given_name'), data.get('family_name')))) \
+            or 'LinkedIn Profile'
+        image_data = False
+        picture_url = data.get('picture')
+        if picture_url:
+            try:
+                image_data = base64.b64encode(
+                    requests.get(picture_url, timeout=10).content)
+            except Exception:  # noqa: BLE001
+                image_data = False
+        return {
+            'name': name,
+            'linkedin_account_urn': f"urn:li:person:{sub}",
+            'linkedin_access_token': linkedin_access_token,
+            'social_account_handle': data.get('preferred_username') or sub,
+            'image': image_data,
+        }
 
     def _create_linkedin_accounts(self, access_token, media):
         linkedin_accounts = self._get_linkedin_accounts(access_token)
         if not linkedin_accounts:
-            message = _('You need a Business Account to post on LinkedIn with Odoo Social.\n Please create one and '
-                        'make sure it is linked to your account')
-            documentation_link = 'https://business.linkedin.com/marketing-solutions/linkedin-pages'
-            documentation_link_label = _('Read More about Business Accounts')
-            documentation_link_icon_class = 'fa fa-linkedin'
-            raise SocialValidationException(message, documentation_link, documentation_link_label, documentation_link_icon_class)
+            message = _('No LinkedIn account could be linked. Make sure your app has the '
+                        'Share on LinkedIn product (for personal posting) or the Community '
+                        'Management API product (for Company Pages).')
+            raise SocialValidationException(message)
 
         social_accounts = self.sudo().with_context(active_test=False).search([
             ('media_id', '=', media.id),
@@ -249,7 +390,7 @@ class SocialAccountLinkedin(models.Model):
                 existing_accounts[account['linkedin_account_urn']].write({
                     'active': True,
                     'linkedin_access_token': account.get('linkedin_access_token'),
-                    'social_account_handle': account.get('username'),
+                    'social_account_handle': account.get('social_account_handle'),
                     'is_media_disconnected': False,
                     'image': account.get('image')
                 })
@@ -257,8 +398,10 @@ class SocialAccountLinkedin(models.Model):
                 account.update({
                     'media_id': media.id,
                     'is_media_disconnected': False,
-                    'has_trends': True,
-                    'has_account_stats': True,
+                    # Organisation-konton har statistik/trends-endpoints;
+                    # person-konton (urn:li:person:*) hoppas över.
+                    'has_trends': account['linkedin_account_urn'].startswith('urn:li:organization:'),
+                    'has_account_stats': account['linkedin_account_urn'].startswith('urn:li:organization:'),
                 })
                 accounts_to_create.append(account)
 
@@ -272,7 +415,9 @@ class SocialAccountLinkedin(models.Model):
             'media_id': account.media_id.id,
             'stream_type_id': page_posts_stream_type.id,
             'account_id': account.id
-        } for account in self if account.linkedin_account_urn]
+        } for account in self
+            if account.linkedin_account_urn
+            and account.linkedin_account_urn.startswith('urn:li:organization:')]
 
         if streams_to_create:
             self.env['social_marketing.stream'].create(streams_to_create)
@@ -280,6 +425,40 @@ class SocialAccountLinkedin(models.Model):
     def _extract_linkedin_picture_url(self, json_data):
         # TODO: remove in master
         return ''
+
+    def _get_linkedin_post_method(self):
+        """Return which posting path to use for this account.
+
+        Capability-based: each auth path is an independent capability stored
+        on the SAME account record. The preferred ``linkedin_auth_method`` is
+        honoured when its capability exists; otherwise we fall back to any
+        available capability (API token > Playwright session > cookies).
+
+        Returns 'api', 'cookie', 'playwright' or False (no path available).
+        """
+        self.ensure_one()
+        preferred = self.linkedin_auth_method
+        capabilities = {
+            'api': bool(self.linkedin_access_token),
+            'cookie': bool(self.linkedin_username and self.linkedin_password),
+            'playwright': bool(self.linkedin_playwright_session),
+        }
+        if capabilities.get(preferred):
+            return preferred
+        for method in ('api', 'playwright', 'cookie'):
+            if capabilities.get(method):
+                return method
+        return False
+
+    @api.depends('linkedin_access_token', 'linkedin_playwright_session',
+                 'linkedin_username', 'linkedin_password')
+    def _compute_linkedin_capabilities(self):
+        """Capability badges shown on the account form (independent auth paths)."""
+        for account in self:
+            account.linkedin_has_api = bool(account.linkedin_access_token)
+            account.linkedin_has_playwright = bool(account.linkedin_playwright_session)
+            account.linkedin_has_cookie = bool(
+                account.linkedin_username and account.linkedin_password)
 
     def action_open_playwright_login(self):
         """ Open a Chromium browser via Playwright for manual LinkedIn login.

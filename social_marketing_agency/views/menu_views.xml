@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Template action for the agency workspace -->
+    <record id="action_social_marketing_post_template" model="ir.actions.act_window">
+        <field name="name">Post Templates</field>
+        <field name="res_model">social_marketing.post.template</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- ── Agency workspace (internal) ─────────────────────────────────── -->
+    <menuitem id="menu_social_agency_root"
+              parent="social_marketing.menu_social_marketing_global"
+              name="Social Agency"
+              sequence="1"
+              groups="social_marketing.group_social_marketing_manager,social_marketing_agency.group_social_agency_brand_user"/>
+
+    <!-- Brand kanban is the root choice: first menu item -->
+    <menuitem id="menu_social_agency_brands"
+              parent="menu_social_agency_root"
+              action="action_social_brand"
+              name="Brands"
+              sequence="1"/>
+
+    <menuitem id="menu_social_agency_underlag"
+              parent="menu_social_agency_root"
+              action="action_social_agency_document"
+              name="Underlag"
+              sequence="2"/>
+
+    <menuitem id="menu_social_agency_policies"
+              parent="menu_social_agency_root"
+              action="social_planner.action_communication_policy"
+              name="Policies"
+              sequence="3"/>
+
+    <menuitem id="menu_social_agency_templates"
+              parent="menu_social_agency_root"
+              action="action_social_marketing_post_template"
+              name="Templates"
+              sequence="4"/>
+
+    <menuitem id="menu_social_agency_listening"
+              parent="menu_social_agency_root"
+              action="social_planner.action_social_listening_topic"
+              name="Listening"
+              sequence="5"/>
+
+    <menuitem id="menu_social_agency_streams"
+              parent="menu_social_agency_root"
+              action="social_marketing.action_social_marketing_stream"
+              name="Flows"
+              sequence="6"/>
+
+    <menuitem id="menu_social_agency_accounts"
+              parent="menu_social_agency_root"
+              action="social_marketing.action_social_marketing_account"
+              name="Accounts"
+              sequence="7"
+              groups="social_marketing.group_social_marketing_manager"/>
+
+    <menuitem id="menu_social_agency_media_assets"
+              parent="menu_social_agency_root"
+              action="social_planner.action_social_media_asset"
+              name="Media Library"
+              sequence="8"
+              groups="social_marketing.group_social_marketing_manager"/>
+
+    <menuitem id="menu_social_agency_competitors"
+              parent="menu_social_agency_root"
+              action="social_planner.action_social_marketing_competitor"
+              name="Competitors"
+              sequence="9"/>
+
+    <!-- ── Customer portal (share=True users) ──────────────────────────── -->
+    <menuitem id="menu_social_customer_root"
+              name="My Brand"
+              sequence="106"
+              groups="social_marketing_agency.group_social_customer_approver,social_marketing_agency.group_social_customer_editor"/>
+
+    <!-- Parent for the per-brand dashboards created at runtime -->
+    <menuitem id="menu_social_customer_dashboard"
+              parent="menu_social_customer_root"
+              name="Dashboard"
+              sequence="1"
+              groups="social_marketing_agency.group_social_customer_approver,social_marketing_agency.group_social_customer_editor"/>
+
+    <menuitem id="menu_social_customer_underlag"
+              parent="menu_social_customer_root"
+              action="action_social_agency_document"
+              name="Underlag"
+              sequence="2"
+              groups="social_marketing_agency.group_social_customer_approver,social_marketing_agency.group_social_customer_editor"/>
+
+    <menuitem id="menu_social_customer_approvals"
+              parent="menu_social_customer_root"
+              action="action_social_post_customer_approval"
+              name="Awaiting Approval"
+              sequence="3"
+              groups="social_marketing_agency.group_social_customer_approver,social_marketing_agency.group_social_customer_editor"/>
+
+    <menuitem id="menu_social_customer_listening"
+              parent="menu_social_customer_root"
+              action="social_planner.action_social_listening_topic"
+              name="Listening"
+              sequence="4"
+              groups="social_marketing_agency.group_social_customer_approver,social_marketing_agency.group_social_customer_editor"/>
+
+    <menuitem id="menu_social_customer_streams"
+              parent="menu_social_customer_root"
+              action="social_marketing.action_social_marketing_stream"
+              name="Flows"
+              sequence="5"
+              groups="social_marketing_agency.group_social_customer_approver,social_marketing_agency.group_social_customer_editor"/>
+
+</odoo>

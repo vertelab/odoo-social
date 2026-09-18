@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_social_marketing_post_template_brand" model="ir.ui.view">
+        <field name="name">social.marketing.post.template.brand</field>
+        <field name="model">social_marketing.post.template</field>
+        <field name="inherit_id" ref="social_marketing.social_marketing_post_template_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='message']" position="before">
+                <field name="brand_id" groups="social_marketing.group_social_marketing_manager"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_social_marketing_post_template_brand_list" model="ir.ui.view">
+        <field name="name">social.marketing.post.template.brand.list</field>
+        <field name="model">social_marketing.post.template</field>
+        <field name="inherit_id" ref="social_marketing.social_marketing_post_template_view_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='message_plain']" position="after">
+                <field name="brand_id" groups="social_marketing.group_social_marketing_manager"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

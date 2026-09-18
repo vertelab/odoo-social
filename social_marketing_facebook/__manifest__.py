@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Vertel AB AGPL-3
+# Vertel Sverige AB AGPL-3
 
 {
     'name': 'Social: Marketing Facebook',
@@ -21,6 +21,7 @@ Requires a Facebook App with:
         'security/ir.model.access.csv',
         'data/social_marketing_media_data.xml',
         'views/social_marketing_post_template_views.xml',
+        'views/social_marketing_facebook_preview.xml',
         'views/res_config_settings_views.xml',
     ],
     'auto_install': False,

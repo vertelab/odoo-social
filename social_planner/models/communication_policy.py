@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Vertel AB AGPL-3
+# Vertel Sverige AB AGPL-3
 
 from odoo import _, api, fields, models
 
@@ -78,6 +78,16 @@ class CommunicationPolicy(models.Model):
         for policy in self:
             policy.plan_count = len(policy.plan_ids)
 
+    # Mirrors the policy content fields whose change increments the version
+    # in write() below. Used by the publishing pipeline to flag in-flight
+    # posts for compliance re-check.
+    _POLICY_CONTENT_FIELDS = [
+        'tone_of_voice', 'brand_voice_guidelines', 'hashtag_policy',
+        'posting_frequency_max_daily', 'posting_frequency_max_weekly',
+        'image_guidelines', 'prohibited_content', 'approval_chain',
+        'response_time_target', 'crisis_response_protocol',
+    ]
+
     def write(self, vals):
         """ Auto-increment version on actual policy content change. """
         policy_fields = [
@@ -88,7 +98,24 @@ class CommunicationPolicy(models.Model):
         ]
         if any(field in vals for field in policy_fields):
             vals['version'] = self.version + 1
-        return super().write(vals)
+        res = super().write(vals)
+        # Publishing pipeline: flag in-flight posts for re-check when policy
+        # content changes. Completed posts are never re-checked — their
+        # snapshot remains authoritative.
+        if any(field in vals for field in self._POLICY_CONTENT_FIELDS):
+            posts = self.env['social_marketing.post'].search([
+                ('policy_id', 'in', self.ids),
+                ('approval_state', 'in', [
+                    'pending_approval', 'approved', 'awaiting_customer']),
+                ('state', 'in', ['draft', 'scheduled', 'posting']),
+            ])
+            posts.write({'needs_recheck': True})
+            for post in posts:
+                post._pipeline_log(
+                    'needs_recheck', state='pending',
+                    result=_('Policy changed to version %s',
+                             post.policy_id.version))
+        return res
 
     def action_activate(self):
         self.write({'state': 'active'})

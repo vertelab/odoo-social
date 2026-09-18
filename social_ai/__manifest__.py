@@ -2,7 +2,7 @@
 # Part of Vertel. See LICENSE file for full copyright and licensing details.
 {
     'name': 'Social AI — Bridge',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0.1',
     'summary': 'Social coach coworker för Odoo Mind Workspace (social_marketing)',
     'category': 'AI Orchestration',
     'description': """
@@ -15,7 +15,7 @@
           social_marketing.post schemalagd, inte publicerad omedelbart)
         - HITL via workspace.activity.suggestion (godkännandekön)
     """,
-    'author': 'Vertel AB',
+    'author': 'Vertel Sverige AB',
     'license': 'AGPL-3',
     'depends': [
         'ai_agent_core',

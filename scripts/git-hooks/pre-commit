@@ -1,0 +1,72 @@
+#!/bin/sh
+# Vertel p-file sync guard (pre-commit).
+#
+# Runs the p-file consistency check before a commit is recorded. Blocks the
+# commit when a p-file and its generated branch file have diverged, which is
+# the mistake that silently reverted committed work three times in
+# odoo-social (0d4f797, 886962f, and the worktree that became 18cdd73).
+#
+# Installed by scripts/install_hooks.sh. Bypass deliberately with
+#   git commit --no-verify
+# but only when you are certain the divergence is intended.
+
+repo_root=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
+checker="$repo_root/scripts/check_pfile_sync.py"
+
+if [ ! -f "$checker" ]; then
+    # Nothing to check in this repository.
+    exit 0
+fi
+
+# Only run when a p-file or a generated branch file is among the staged paths.
+# A commit that touches neither cannot introduce divergence.
+staged=$(git diff --cached --name-only --diff-filter=ACMR)
+if [ -z "$staged" ]; then
+    exit 0
+fi
+
+touched=$(printf '%s\n' "$staged" | grep -E '\.p\.[a-z]+$' || true)
+if [ -z "$touched" ]; then
+    # No p-file staged. Check whether a staged file is the generated partner
+    # of an existing p-file (e.g. someone edited only the branch file).
+    while IFS= read -r path; do
+        [ -n "$path" ] || continue
+        for ext in py xml js css scss csv; do
+            case "$path" in
+                *."$ext")
+                    base=${path%.$ext}
+                    pfile="$base.p.$ext"
+                    if [ -f "$pfile" ]; then
+                        touched="yes"
+                        break 2
+                    fi
+                    ;;
+            esac
+        done
+    done <<EOF
+$staged
+EOF
+fi
+
+if [ -z "$touched" ]; then
+    exit 0
+fi
+
+if ! python3 "$checker" --repo "$repo_root"; then
+    cat >&2 <<'MSG'
+
+──────────────────────────────────────────────────────────────────────────────
+COMMIT BLOCKED — p-file and generated branch file have diverged.
+
+The generated file is what Odoo loads, but the p-file is the source of truth
+that odoobranchpfile/preprocess regenerates from. Editing only one side means
+the next regeneration silently reverts that edit.
+
+Fix: apply the change to BOTH files and stage them together.
+Do not delete p-files.
+──────────────────────────────────────────────────────────────────────────────
+MSG
+    exit 1
+fi
+
+exit 0

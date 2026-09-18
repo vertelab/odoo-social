@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Vertel AB AGPL-3
+# Vertel Sverige AB AGPL-3
 
 import contextlib
 import logging
@@ -11,6 +11,7 @@ import re
 from odoo import models, fields, tools, _
 from odoo.addons.mail.tools import link_preview
 from odoo.exceptions import UserError
+from odoo.addons.social_marketing.models.social_marketing_provider_response import classify_response
 
 _logger = logging.getLogger(__name__)
 
@@ -32,7 +33,7 @@ class SocialLivePostLinkedin(models.Model):
 
         for account in accounts:
             linkedin_post_ids = self.env['social_marketing.live.post'].sudo().search(
-                [('account_id', '=', account.id), ('linkedin_post_id', '!=', False)],
+                [('social_account_id', '=', account.id), ('linkedin_post_id', '!=', False)],
                 order='create_date DESC', limit=1000
             )
             if not linkedin_post_ids:
@@ -63,40 +64,76 @@ class SocialLivePostLinkedin(models.Model):
 
                     like_count = sum(like.get('count', 0) for like in stats.get('reactionSummaries', {}).values())
                     comment_count = stats.get('commentSummary', {}).get('count', 0)
-                    linkedin_post_ids[urn].update({'engagement': like_count + comment_count})
+                    linkedin_post_ids[urn].update({
+                        'engagement': like_count + comment_count,
+                        'likes': like_count,
+                        'comments': comment_count,
+                    })
 
     def _post(self):
         linkedin_live_posts = self._filter_by_media_types(['linkedin'])
         super(SocialLivePostLinkedin, (self - linkedin_live_posts))._post()
 
-        # Split by auth method
-        api_posts = linkedin_live_posts.filtered(
-            lambda p: p.account_id.linkedin_auth_method == 'api')
-        cookie_posts = linkedin_live_posts.filtered(
-            lambda p: p.account_id.linkedin_auth_method == 'cookie')
-        playwright_posts = linkedin_live_posts.filtered(
-            lambda p: p.account_id.linkedin_auth_method == 'playwright')
+        # Capability-based split: each account picks the posting path that is
+        # actually configured (preferred method honoured when available,
+        # otherwise API token > Playwright session > cookies).
+        api_posts = self.env['social_marketing.live.post']
+        cookie_posts = self.env['social_marketing.live.post']
+        playwright_posts = self.env['social_marketing.live.post']
+        no_method = self.env['social_marketing.live.post']
+        for live_post in linkedin_live_posts:
+            method = live_post.social_account_id._get_linkedin_post_method()
+            if method == 'api':
+                api_posts |= live_post
+            elif method == 'cookie':
+                cookie_posts |= live_post
+            elif method == 'playwright':
+                playwright_posts |= live_post
+            else:
+                no_method |= live_post
 
         api_posts._post_linkedin()
         cookie_posts._post_linkedin_cookie()
         playwright_posts._post_linkedin_playwright()
 
+        if no_method:
+            _logger.warning(
+                'LinkedIn: no auth method available for %s — configure an '
+                'API token, Playwright session or cookie login on the account.',
+                ', '.join(no_method.mapped('social_account_id.display_name')),
+            )
+
     def _post_linkedin(self):
         for live_post in self:
             url_in_message = self.env['social_marketing.post']._extract_url_from_message(live_post.message)
 
+            # Visibility from the template/post LinkedIn settings
+            audience = live_post.post_id.linkedin_audience or 'public'
+            if audience == 'connections':
+                visibility = {"com.linkedin.ugc.MemberNetworkVisibility": "CONNECTIONS"}
+            elif audience == 'group' and live_post.post_id.linkedin_group_urn:
+                visibility = {
+                    "com.linkedin.ugc.MemberNetworkVisibility": "CONTAINER",
+                    "container": live_post.post_id.linkedin_group_urn,
+                }
+            else:
+                visibility = "PUBLIC"
+
             data = {
-                "author": live_post.account_id.linkedin_account_urn,
+                "author": live_post.social_account_id.linkedin_account_urn,
                 "commentary": self._format_to_linkedin_little_text(live_post.message),
                 "distribution": {"feedDistribution": "MAIN_FEED"},
                 "lifecycleState": "PUBLISHED",
-                "visibility": "PUBLIC",
+                "visibility": visibility,
             }
+            # Brand partnership label (API support varies by permission level)
+            if live_post.post_id.linkedin_brand_partnership:
+                data["brandPartnership"] = True
 
             if live_post.post_id.image_ids:
                 try:
                     images_urn = [
-                        self._linkedin_upload_image(live_post.account_id, image_id)
+                        self._linkedin_upload_image(live_post.social_account_id, image_id)
                         for image_id in live_post.post_id.image_ids
                     ]
                 except UserError as e:
@@ -133,12 +170,12 @@ class SocialLivePostLinkedin(models.Model):
                 if image_url := preview.get('og_image'):
                     with contextlib.suppress(Exception):
                         if (image_response := requests.get(image_url, timeout=3)).ok:
-                            image_urn = self._linkedin_upload_image(live_post.account_id, image_response.content)
+                            image_urn = self._linkedin_upload_image(live_post.social_account_id, image_response.content)
                             data['content']['article']['thumbnail'] = image_urn
 
             response = requests.post(
                 url_join(self.env['social_marketing.media']._LINKEDIN_ENDPOINT, 'posts'),
-                headers=live_post.account_id._linkedin_bearer_headers(),
+                headers=live_post.social_account_id._linkedin_bearer_headers(),
                 json=data, timeout=10)
 
             post_id = response.headers.get('x-restli-id')
@@ -153,14 +190,22 @@ class SocialLivePostLinkedin(models.Model):
                     response_json = response.json()
                 except Exception:
                     response_json = {}
+                classified = classify_response(
+                    response, unauthorized_codes={65600})
+                if classified.has_exceeded_rate_limit():
+                    failure_reason = _('Rate limit exceeded. Retry after %s seconds.') % classified.retry_after
+                elif classified.is_unauthorized():
+                    failure_reason = _('Unauthorized: access token expired or revoked.')
+                else:
+                    failure_reason = response_json.get('message', _('unknown'))
                 values = {
                     'state': 'failed',
-                    'failure_reason': response_json.get('message', _('unknown')),
+                    'failure_reason': failure_reason,
                 }
 
                 if response_json.get('serviceErrorCode') == 65600:
                     # Invalid access token
-                    self.account_id._action_disconnect_accounts(response)
+                    self.social_account_id._action_disconnect_accounts(response)
 
             live_post.write(values)
 
@@ -230,10 +275,16 @@ class SocialLivePostLinkedin(models.Model):
             return
 
         for live_post in self:
-            account = live_post.account_id
+            account = live_post.social_account_id
+
+            # Resolve password: prefer keykeep credential (system path),
+            # fall back to the legacy field.
+            password = account.linkedin_password
+            if 'credential_id' in account._fields and account.credential_id:
+                password = account.credential_id._read_encrypted('password', system=True) or password
 
             # Validate credentials
-            if not account.linkedin_username or not account.linkedin_password:
+            if not account.linkedin_username or not password:
                 live_post.write({
                     'state': 'failed',
                     'failure_reason': _(
@@ -245,7 +296,7 @@ class SocialLivePostLinkedin(models.Model):
 
             try:
                 # Authenticate with LinkedIn
-                api = Linkedin(account.linkedin_username, account.linkedin_password)
+                api = Linkedin(account.linkedin_username, password)
 
                 # Post content
                 message = live_post.message or ''
@@ -348,7 +399,7 @@ class SocialLivePostLinkedin(models.Model):
         import base64
 
         for live_post in self:
-            account = live_post.account_id
+            account = live_post.social_account_id
             session_data = account._load_playwright_session()
 
             if not session_data:

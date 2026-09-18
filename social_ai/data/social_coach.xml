@@ -1,54 +1,84 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- social-coach coworker (task 10.5, domänspec UF: social) -->
-    <record id="coworker_social_coach" model="ai.coworker">
-        <field name="name">Social Coach</field>
-        <field name="channel_alias">social</field>
-        <field name="sub_description">Inläggsförslag från koncept → schemalagda posts</field>
-        <field name="description">
-Du är Social Coach — en AI-coworker som hjälper marknadschefen att omvandla
-OKF-koncept (ai.okf.concept) till sociala inläggsförslag i
-social_marketing.post.
+    <data noupdate="1">
 
-Arbetssätt:
-1. Läs 3+ relevanta koncept (ai.okf.concept) som rör marknadsföring/kampanjer.
-2. Dra 3 inläggsförslag per koncept — varje förslag blir en
-   workspace.activity.suggestion (typ: social post) med källkoncept i
-   evidence_ids (Varför?-länk).
-3. HITL: förslagen ligger i godkännandekön. När användaren godkänner skapas
-   en social_marketing.post i state=draft med scheduled_date (schemalagd,
-   INTE publicerad omedelbart).
-4. Följ varumärkesröst: koncist, engagerande, med call-to-action när
-   det passar konceptet.
+        <!-- ── Skills: kapaciteterna lever som skills/instruktioner på
+             medarbetarens agenter — INTE som force-körda sub-agenter ── -->
 
-HITL-policy: skapa alltid förslag, publicera ALDRIG automatiskt.
-        </field>
-        <field name="status">active</field>
-        <field name="model_ids" eval="[(6, 0, [
-            ref('social_marketing.model_social_marketing_post'),
-            ref('social_marketing.model_social_marketing_account'),
-            ref('ai_agent_core.model_ai_okf_concept'),
-        ])]"/>
-        <field name="filter_domain">[]</field>
-        <field name="injection_level">summary_and_key</field>
-        <field name="hitl_threshold">always</field>
-        <field name="budget_kr_monthly">0</field>
-        <field name="max_actions_per_day">20</field>
-        <field name="orchestration_mode">single</field>
-        <field name="example_prompts">
+        <record id="skill_social_post_generation" model="ai.skill">
+            <field name="name">Social: Inläggsförslag från koncept</field>
+            <field name="category">communication</field>
+            <field name="description">Omvandlar OKF-koncept (ai.okf.concept) till sociala inläggsförslag (social_marketing.post) med HITL-godkännande före publicering.</field>
+            <field name="trigger_keywords">social, inlägg, post, kampanj, LinkedIn, Facebook, Instagram, koncept, innehållsförslag</field>
+            <field name="recipe_text">När du ska omvandla OKF-koncept (ai.okf.concept) till sociala inläggsförslag:
+1. Läs 3+ relevanta koncept som rör marknadsföring/kampanjer.
+2. Dra 3 inläggsförslag per koncept — varje förslag blir en social_marketing.post i state=draft (schemalagd, INTE publicerad omedelbart).
+3. HITL: begär godkännande via ai.coworker.hitl med action_type=social_publish innan något publiceras.
+4. Publicera ALDRIG automatiskt — vänta alltid på ett godkänt beslut.
+5. Följ varumärkesröst: koncist, engagerande, med call-to-action när det passar konceptet.
+</field>
+        </record>
+
+        <!-- ── AI Medarbetare: Social Coach (single mode; skills aggregeras
+             i systemprompten av run()) ── -->
+        <record id="coworker_social_coach" model="ai.coworker">
+            <field name="name">Social Coach</field>
+            <field name="channel_alias">social</field>
+            <field name="sub_description">Inläggsförslag från koncept → schemalagda posts</field>
+            <field name="description">Du är Social Coach — en AI-coworker som hjälper marknadschefen att omvandla OKF-koncept till sociala inläggsförslag i social_marketing.post. Du skapar alltid förslag som utkast och publicerar aldrig automatiskt; all publicering kräver ett godkänt HITL-beslut.</field>
+            <field name="status">active</field>
+            <field name="orchestration_mode">single</field>
+            <field name="heartbeat_enabled" eval="True"/>
+            <field name="auto_allowed_tools">["odoo_search", "odoo_create", "odoo_write", "describe_model"]</field>
+            <field name="hitl_threshold">always</field>
+            <field name="monthly_cap_mtokens">0</field>
+            <field name="example_prompts">
 - "Ge mig 3 inläggsförslag för vår nya kampanj"
 - "Skapa ett LinkedIn-inlägg från konceptet om hållbarhet"
 - "Schemalägg veckans sociala inlägg"
-        </field>
-        <field name="heartbeat_enabled">True</field>
-    </record>
+            </field>
+        </record>
 
-    <!-- cron-initiering: social-coach väcks dagligen för att dra förslag -->
-    <record id="coworker_social_coach_cron" model="ai.coworker.init_type">
-        <field name="coworker_id" ref="coworker_social_coach"/>
-        <field name="init_type">cron</field>
-        <field name="enabled">True</field>
-        <field name="cron_interval_type">days</field>
-        <field name="cron_interval_number">1</field>
-    </record>
+        <!-- ── Agent: kapaciteten kopplas via ai.agent.skill_ids ── -->
+        <record id="agent_social_post" model="ai.agent">
+            <field name="name">Social → Inlägg</field>
+            <field name="ai_role">Social Content Creator</field>
+            <field name="description">Omvandlar OKF-koncept till sociala inläggsförslag (state=draft) via skill: Social: Inläggsförslag från koncept.</field>
+            <field name="ai_goal">Skapa sociala inläggsförslag som väntar på HITL-godkännande innan publicering.</field>
+            <field name="status">active</field>
+            <field name="skill_ids" eval="[(6, 0, [ref('skill_social_post_generation')])]"/>
+            <!-- explicit-agent-tools: odoo-verktyg anges EXPLICIT här. -->
+            <field name="tool_ids" eval="[(6, 0, [
+                ref('ai_agent_core.tool_describe_model'),
+                ref('ai_agent_core.tool_odoo_search'),
+                ref('ai_agent_core.tool_odoo_create'),
+                ref('ai_agent_core.tool_odoo_write'),
+            ])]"/>
+        </record>
+
+        <record id="coworker_agent_social_post" model="ai.coworker.agent">
+            <field name="coworker_id" ref="coworker_social_coach"/>
+            <field name="agent_id" ref="agent_social_post"/>
+            <field name="role">member</field>
+            <field name="sequence" eval="10"/>
+        </record>
+
+        <!-- cron-initiering: social-coach väcks dagligen för att dra förslag -->
+        <record id="coworker_social_coach_cron" model="ai.coworker.init_type">
+            <field name="coworker_id" ref="coworker_social_coach"/>
+            <field name="init_type">cron</field>
+            <field name="enabled" eval="True"/>
+            <field name="cron_interval_type">days</field>
+            <field name="cron_interval_number">1</field>
+        </record>
+
+        <!-- web_ui (visas i chat) -->
+        <record id="coworker_social_coach_webui" model="ai.coworker.init_type">
+            <field name="coworker_id" ref="coworker_social_coach"/>
+            <field name="init_type">web_ui</field>
+            <field name="enabled" eval="True"/>
+            <field name="sequence" eval="20"/>
+        </record>
+
+    </data>
 </odoo>

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data>
+    <!-- Account statistics snapshots -->
+    <record id="social_marketing_account_stat_action" model="ir.actions.act_window">
+        <field name="name">Account Statistics</field>
+        <field name="res_model">social_marketing.account.stat</field>
+        <field name="view_mode">graph,pivot,list</field>
+    </record>
+
+    <record id="social_marketing_account_stat_view_graph" model="ir.ui.view">
+        <field name="name">social.marketing.account.stat.graph</field>
+        <field name="model">social_marketing.account.stat</field>
+        <field name="arch" type="xml">
+            <graph string="Account Statistics" type="line">
+                <field name="date" type="row"/>
+                <field name="metric" type="col"/>
+                <field name="value" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="social_marketing_account_stat_view_pivot" model="ir.ui.view">
+        <field name="name">social.marketing.account.stat.pivot</field>
+        <field name="model">social_marketing.account.stat</field>
+        <field name="arch" type="xml">
+            <pivot string="Account Statistics">
+                <field name="date" type="row"/>
+                <field name="metric" type="col"/>
+                <field name="value" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="social_marketing_account_stat_view_list" model="ir.ui.view">
+        <field name="name">social.marketing.account.stat.list</field>
+        <field name="model">social_marketing.account.stat</field>
+        <field name="arch" type="xml">
+            <list string="Account Statistics">
+                <field name="social_account_id"/>
+                <field name="metric"/>
+                <field name="value"/>
+                <field name="date"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Live post engagement snapshots -->
+    <record id="social_marketing_live_post_stat_action" model="ir.actions.act_window">
+        <field name="name">Post Engagement</field>
+        <field name="res_model">social_marketing.live_post.stat</field>
+        <field name="view_mode">graph,pivot,list</field>
+    </record>
+
+    <record id="social_marketing_live_post_stat_view_graph" model="ir.ui.view">
+        <field name="name">social.marketing.live.post.stat.graph</field>
+        <field name="model">social_marketing.live_post.stat</field>
+        <field name="arch" type="xml">
+            <graph string="Post Engagement" type="line">
+                <field name="date" type="row"/>
+                <field name="metric" type="col"/>
+                <field name="value" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="social_marketing_live_post_stat_view_pivot" model="ir.ui.view">
+        <field name="name">social.marketing.live.post.stat.pivot</field>
+        <field name="model">social_marketing.live_post.stat</field>
+        <field name="arch" type="xml">
+            <pivot string="Post Engagement">
+                <field name="date" type="row"/>
+                <field name="metric" type="col"/>
+                <field name="value" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="social_marketing_live_post_stat_view_list" model="ir.ui.view">
+        <field name="name">social.marketing.live.post.stat.list</field>
+        <field name="model">social_marketing.live_post.stat</field>
+        <field name="arch" type="xml">
+            <list string="Post Engagement">
+                <field name="live_post_id"/>
+                <field name="metric"/>
+                <field name="value"/>
+                <field name="date"/>
+            </list>
+        </field>
+    </record>
+
+    <menuitem
+        id="menu_social_marketing_account_stat"
+        parent="menu_social_marketing_configuration"
+        action="social_marketing_account_stat_action"
+        name="Statistics"
+        sequence="45" />
+</data>
+</odoo>

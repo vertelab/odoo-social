@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Vertel AB AGPL-3
+# Vertel Sverige AB AGPL-3
 
 from odoo import _, api, fields, models
 
@@ -14,7 +14,7 @@ class SocialMarketingStreamPost(models.Model):
         ('positive', 'Positive'),
         ('neutral', 'Neutral'),
         ('negative', 'Negative'),
-    ], string='Sentiment', default='neutral', tracking=True)
+    ], string='Sentiment', default='neutral')
     sentiment_score = fields.Float('Sentiment Score', digits=(3, 2))
     needs_review = fields.Boolean('Needs Review')
     policy_flag = fields.Boolean('Policy Flag')
