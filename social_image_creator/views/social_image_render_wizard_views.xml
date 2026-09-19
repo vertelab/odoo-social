@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_social_image_render_wizard" model="ir.actions.act_window">
+        <field name="name">Create Image from Template</field>
+        <field name="res_model">social.image.render.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <record id="social_image_render_wizard_view_form" model="ir.ui.view">
+        <field name="name">social.image.render.wizard.view.form</field>
+        <field name="model">social.image.render.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Create Image from Template">
+                <field name="has_binding_model" invisible="1"/>
+                <field name="binding_mismatch" invisible="1"/>
+                <field name="show_render_timing" invisible="1"/>
+                <field name="record_model" invisible="1"/>
+                <div class="alert alert-warning" role="alert"
+                     invisible="not binding_mismatch">
+                    The chosen record belongs to a different model than the
+                    template's binding model. Pick a record of the binding
+                    model, or clear the record and fill in the placeholders
+                    manually.
+                </div>
+                <group>
+                    <field name="template_id"/>
+                    <field name="format"/>
+                    <field name="render_timing" invisible="not show_render_timing"/>
+                    <field name="record_id"
+                           invisible="not has_binding_model"
+                           options="{'no_create': True, 'no_open': True}"/>
+                    <field name="variant_index"/>
+                </group>
+                <group string="Placeholders"
+                       invisible="not line_ids or has_binding_model and record_id">
+                    <field name="line_ids">
+                        <list editable="bottom">
+                            <field name="label" readonly="1"/>
+                            <field name="value"/>
+                        </list>
+                    </field>
+                </group>
+                <group string="Preview">
+                    <div class="alert alert-danger" role="alert"
+                         invisible="not preview_error">
+                        <field name="preview_error" readonly="1" nolabel="1"/>
+                    </div>
+                    <field name="preview_attachment_id" invisible="1"/>
+                    <field name="preview_datas" widget="image" readonly="1"
+                           options="{'size': [320, 320]}"
+                           invisible="not preview_datas"/>
+                </group>
+                <footer>
+                    <button name="action_preview" type="object"
+                            string="Refresh Preview"/>
+                    <button name="action_render" type="object"
+                            string="Render" class="btn-primary"/>
+                    <button string="Cancel" class="btn-link"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="social_image_bulk_wizard_view_form" model="ir.ui.view">
+        <field name="name">social.image.bulk.wizard.view.form</field>
+        <field name="model">social.image.bulk.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Create Posts from Image Template">
+                <field name="state" invisible="1"/>
+                <group invisible="state != 'setup'">
+                    <field name="source_model_name" readonly="1"/>
+                    <field name="source_record_count" readonly="1"/>
+                    <field name="template_id"/>
+                    <field name="variant_index"/>
+                </group>
+                <group string="Result" invisible="state != 'done'">
+                    <field name="created_count" readonly="1"/>
+                    <field name="failure_details" readonly="1"
+                           placeholder="No failures."/>
+                </group>
+                <footer>
+                    <button name="action_create_posts" type="object"
+                            string="Create Posts" class="btn-primary"
+                            invisible="state != 'setup'"/>
+                    <button name="action_view_posts" type="object"
+                            string="View Created Posts"
+                            invisible="state != 'done' or not created_count"/>
+                    <button string="Close" class="btn-link" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_social_image_bulk_create" model="ir.actions.server">
+        <field name="name">Create Posts from Image Template</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="state">code</field>
+        <field name="code">
+action = env['social.image.bulk.wizard'].action_open()
+        </field>
+        <field name="binding_model_id" eval="False"/>
+        <field name="binding_type">action</field>
+    </record>
+</odoo>

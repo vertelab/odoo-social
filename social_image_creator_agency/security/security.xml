@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ──────────────────────────────────────────────────────────────
+         Record rules for brand-scoped image templates and brand fonts,
+         copied from the social_marketing_agency pattern in
+         social_marketing_agency/security/security.xml:
+
+         - Customer users (approver read, editor read+write+create) see
+           only templates of their own brands; unbranded templates
+           (brand_id = False, agency company level) stay visible, exactly
+           like the other customer read rules' OR branch.
+         - Agency brand users see their assigned brands plus company-level
+           templates; managers see everything (no rule for them, as in the
+           agency module).
+         ────────────────────────────────────────────────────────────── -->
+
+    <!-- social.image.template -->
+    <record id="rule_social_image_template_customer_read" model="ir.rule">
+        <field name="name">Image template: customer read own brands</field>
+        <field name="model_id" ref="social_image_creator.model_social_image_template"/>
+        <field name="domain_force">['|', ('brand_id', '=', False), ('brand_id.partner_id', '=', user.partner_id.commercial_partner_id.id)]</field>
+        <field name="groups" eval="[(4, ref('social_marketing_agency.group_social_customer_approver')), (4, ref('social_marketing_agency.group_social_customer_editor'))]"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="0"/>
+        <field name="perm_create" eval="0"/>
+        <field name="perm_unlink" eval="0"/>
+    </record>
+    <record id="rule_social_image_template_customer_write" model="ir.rule">
+        <field name="name">Image template: customer editor write own brands</field>
+        <field name="model_id" ref="social_image_creator.model_social_image_template"/>
+        <field name="domain_force">[('brand_id.partner_id', '=', user.partner_id.commercial_partner_id.id)]</field>
+        <field name="groups" eval="[(4, ref('social_marketing_agency.group_social_customer_editor'))]"/>
+        <field name="perm_read" eval="0"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_unlink" eval="0"/>
+    </record>
+    <record id="rule_social_image_template_agency_brand_user" model="ir.rule">
+        <field name="name">Image template: agency brand user sees own brands</field>
+        <field name="model_id" ref="social_image_creator.model_social_image_template"/>
+        <field name="domain_force">['|', ('brand_id', '=', False), ('brand_id', 'in', user.brand_ids.ids)]</field>
+        <field name="groups" eval="[(4, ref('social_marketing_agency.group_social_agency_brand_user'))]"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_unlink" eval="0"/>
+    </record>
+
+    <!-- social.brand.font (brand_id is required here, so no False branch;
+         agency brand users are scoped like the credential rule) -->
+    <record id="rule_social_brand_font_customer_read" model="ir.rule">
+        <field name="name">Brand font: customer read own brands</field>
+        <field name="model_id" ref="model_social_brand_font"/>
+        <field name="domain_force">[('brand_id.partner_id', '=', user.partner_id.commercial_partner_id.id)]</field>
+        <field name="groups" eval="[(4, ref('social_marketing_agency.group_social_customer_approver')), (4, ref('social_marketing_agency.group_social_customer_editor'))]"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="0"/>
+        <field name="perm_create" eval="0"/>
+        <field name="perm_unlink" eval="0"/>
+    </record>
+    <record id="rule_social_brand_font_agency_brand_user" model="ir.rule">
+        <field name="name">Brand font: agency brand user sees own brands</field>
+        <field name="model_id" ref="model_social_brand_font"/>
+        <field name="domain_force">[('brand_id', 'in', user.brand_ids.ids)]</field>
+        <field name="groups" eval="[(4, ref('social_marketing_agency.group_social_agency_brand_user'))]"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_unlink" eval="0"/>
+    </record>
+</odoo>

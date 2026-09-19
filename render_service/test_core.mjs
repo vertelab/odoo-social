@@ -1,4 +1,4 @@
-// render_service/test_core.mjs — unit tests for render_core.mjs (no canvas needed)
+// render_service/test_core.mjs: unit tests for render_core.mjs (no canvas needed)
 import assert from 'node:assert/strict'
 import { applyBindingsToScene, substituteText, xmlEscape, absolutizeFileUrl } from './render_core.mjs'
 
@@ -44,7 +44,7 @@ const scene = {
     background: '#ffffff',
     objects: [
         { type: 'textbox', text: '{{headline}}' },
-        { type: 'textbox', text: '<b>{{cta}}</b>', _hideIfEmpty: { placeholder: 'cta' } },
+        { type: 'textbox', text: '<b>{{cta}}</b>', _hideIfEmpty: { field: 'cta' } },
         { type: 'image', src: '/web/image/42' },
         { type: 'textbox', text: 'static' },
     ],
