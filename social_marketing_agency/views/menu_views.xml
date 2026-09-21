@@ -40,6 +40,12 @@
               name="Templates"
               sequence="4"/>
 
+    <menuitem id="menu_social_agency_content_sources"
+              parent="menu_social_agency_root"
+              action="action_social_content_source"
+              name="Content Sources"
+              sequence="45"/>
+
     <menuitem id="menu_social_agency_listening"
               parent="menu_social_agency_root"
               action="social_planner.action_social_listening_topic"

@@ -17,6 +17,27 @@ class ResConfigSettings(models.TransientModel):
              'Per-media overrides can be set on the Publish Rate Limits '
              'model.')
 
+    social_marketing_render_service_url = fields.Char(
+        string='Render Service URL',
+        config_parameter='social_marketing.render_service_url',
+        help='Base URL of the Node render service for image templates, '
+             'e.g. http://render-odoo:8600')
+
+    social_marketing_dm_retention_days = fields.Integer(
+        string='Direct Message Retention (days)',
+        config_parameter='social_marketing.dm_retention_days',
+        default=90,
+        help='How long private inbox items (direct messages) are kept before '
+             'the retention cron deletes them. Direct messages are personal '
+             'data; keeping them forever is not a neutral default. Set to 0 '
+             'to disable the deletion. Public items are never deleted by it.')
+
+    social_marketing_render_service_token = fields.Char(
+        string='Render Service Token',
+        config_parameter='social_marketing.render_service_token',
+        help='Bearer token used to authenticate render service calls. '
+             'Stored via ir.config_parameter; set from pillar in production.')
+
 
 # ────────────────────────────────────────────────────────────────────────
 # Background Jobs — cron-administration (samma mönster som ai_agent_core)
@@ -24,6 +45,7 @@ class ResConfigSettings(models.TransientModel):
 
 SOCIAL_MARKETING_CRON_NAMES = [
     'Social: Publish Scheduled Posts',
+    'Social: Delete Expired Direct Messages',
 ]
 
 

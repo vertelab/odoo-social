@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <record id="ir_cron_content_source_generate" model="ir.cron">
+        <field name="name">Social: Generate Posts from Content Sources</field>
+        <field name="model_id" ref="model_social_content_source"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_generate_posts()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">hours</field>
+        <field name="user_id" ref="base.user_root"/>
+        <field name="active" eval="True"/>
+    </record>
+
+</odoo>

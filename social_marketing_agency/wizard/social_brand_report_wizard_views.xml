@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_social_brand_report_wizard_form" model="ir.ui.view">
+        <field name="name">social.brand.report.wizard.form</field>
+        <field name="model">social.brand.report.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Brand Performance Report">
+                <group>
+                    <field name="brand_id" options="{'no_create': True}"/>
+                    <field name="date_from"/>
+                    <field name="date_to"/>
+                    <field name="top_post_count"/>
+                </group>
+                <footer>
+                    <button name="action_print_report" type="object"
+                            string="Produce Report" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_social_brand_report_wizard" model="ir.actions.act_window">
+        <field name="name">Brand Performance Report</field>
+        <field name="res_model">social.brand.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <record id="view_social_brand_form_report_button" model="ir.ui.view">
+        <field name="name">social.brand.form.report.button</field>
+        <field name="model">social.brand</field>
+        <field name="inherit_id" ref="social_marketing_agency.view_social_brand_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="%(action_social_brand_report_wizard)d" type="action"
+                        string="Customer Report"
+                        context="{'default_brand_id': id}"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

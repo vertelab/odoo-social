@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data>
+
+    <!-- The user picks a model and a field. Nothing here is free text
+         except the token name itself, which is what the template body
+         refers to. -->
+    <record id="social_data_binding_view_list" model="ir.ui.view">
+        <field name="name">social.data.binding.view.list</field>
+        <field name="model">social.data.binding</field>
+        <field name="arch" type="xml">
+            <list string="Data Bindings" editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="model_id" options="{'no_create': True, 'no_open': True}"/>
+                <field name="field_id" options="{'no_create': True, 'no_open': True}"
+                       domain="[('model_id', '=', model_id)]"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="social_image_template_view_form_bindings" model="ir.ui.view">
+        <field name="name">social.image.template.view.form.bindings</field>
+        <field name="model">social.image.template</field>
+        <field name="inherit_id" ref="social_marketing.social_image_template_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[field[@name='placeholder_ids']]" position="after">
+                <group string="Data Bindings" colspan="2">
+                    <field name="binding_ids" nolabel="1" colspan="2"
+                           context="{'tree_view_ref': 'social_marketing.social_data_binding_view_list'}"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="social_marketing_post_template_view_form_bindings" model="ir.ui.view">
+        <field name="name">social_marketing.post.template.view.form.bindings</field>
+        <field name="model">social_marketing.post.template</field>
+        <field name="inherit_id" ref="social_marketing.social_marketing_post_template_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='social_post_global']" position="after">
+                <group string="Data Bindings" name="social_post_bindings" colspan="2">
+                    <field name="binding_ids" nolabel="1" colspan="2"
+                           context="{'tree_view_ref': 'social_marketing.social_data_binding_view_list'}"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+</data>
+</odoo>
