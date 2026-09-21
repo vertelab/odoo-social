@@ -34,6 +34,7 @@ import {
     widestLine,
 } from "@social_image_creator/js/dialog/social_image_editor_utils";
 import {
+    BASIC_SHAPES,
     PARAM_SHAPES,
     SHAPE_META,
     SHAPES,
@@ -1502,6 +1503,28 @@ export class SocialImageEditorDialog extends Component {
         );
     }
 
+    /**
+     * Ring: a Circle with no fill and a heavy stroke, so the stroke color
+     * and width controls in the properties panel shape it directly.
+     */
+    addRing() {
+        if (!this._fabric) {
+            return;
+        }
+        const { Circle } = this._fabric;
+        const { width, height } = this._dimensions;
+        this._addObject(
+            new Circle({
+                left: width * 0.1,
+                top: height * 0.2,
+                radius: 100,
+                fill: "",
+                stroke: "#f59e0b",
+                strokeWidth: 24,
+            })
+        );
+    }
+
     addTriangle() {
         if (!this._fabric) {
             return;
@@ -1785,6 +1808,30 @@ export class SocialImageEditorDialog extends Component {
      */
     menuShapes() {
         return SHAPES.filter((s) => s.path);
+    }
+
+    menuBasicShapes() {
+        return BASIC_SHAPES;
+    }
+
+    /**
+     * Insert one of the BASIC_SHAPES primitives from the shapes menu.
+     */
+    addBasicShape(kind) {
+        const adders = {
+            rect: () => this.addRect(),
+            circle: () => this.addCircle(),
+            ring: () => this.addRing(),
+            triangle: () => this.addTriangle(),
+            line: () => this.addLine(),
+            arrow: () => this.addArrow(),
+        };
+        if (!adders[kind]) {
+            return;
+        }
+        this.state.shapesOpen = false;
+        this._syncGlobalPointerListener();
+        adders[kind]();
     }
 
     /**

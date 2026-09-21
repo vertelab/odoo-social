@@ -57,6 +57,41 @@ for (const shape of shapes.SHAPES) {
     checkTrue(`shape ${shape.kind} has label`, !!shape.label);
     checkTrue(`shape ${shape.kind} has path`, typeof shape.path === "string" && shape.path.length > 0);
 }
+// Basic shapes share the shapes menu with the path library. Each kind needs
+// an adder in the dialog, and the toolbar must not grow loose per-shape
+// buttons again.
+check(
+    "basic shapes in menu order",
+    shapes.BASIC_SHAPES.map((s) => s.kind),
+    ["rect", "circle", "ring", "triangle", "line", "arrow"]
+);
+const dialogSource = readFileSync(
+    join(here, "../src/js/dialog/social_image_editor_dialog.js"),
+    "utf8"
+);
+const templateSource = readFileSync(
+    join(here, "../src/xml/social_image_editor_dialog.xml"),
+    "utf8"
+);
+for (const basic of shapes.BASIC_SHAPES) {
+    checkTrue(`basic shape ${basic.kind} has label and icon`, !!basic.label && /^fa-/.test(basic.icon));
+    checkTrue(
+        `basic shape ${basic.kind} has an adder in addBasicShape`,
+        new RegExp(`\\b${basic.kind}: \\(\\) => this\\.add[A-Z]\\w+\\(\\)`).test(dialogSource)
+    );
+    checkTrue(
+        `basic shape ${basic.kind} does not collide with a path shape`,
+        !shapes.SHAPE_META[basic.kind]
+    );
+}
+checkTrue(
+    "no loose per-shape toolbar buttons",
+    !/t-on-click="add(Rect|Circle|Ring|Triangle|Line|Arrow)"/.test(templateSource)
+);
+checkTrue(
+    "shapes menu renders the basic shapes",
+    /t-foreach="menuBasicShapes\(\)"/.test(templateSource)
+);
 check("burst8 path is closed", shapes.SHAPE_META.burst8.path.trim().endsWith("Z"), true);
 check("burst8 has 16 vertices", (shapes.SHAPE_META.burst8.path.match(/[ML]/g) || []).length, 16);
 check("burst12 has 24 vertices", (shapes.SHAPE_META.burst12.path.match(/[ML]/g) || []).length, 24);

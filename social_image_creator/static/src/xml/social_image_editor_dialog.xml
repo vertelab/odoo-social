@@ -35,27 +35,22 @@
             <button type="button" class="btn btn-sm btn-secondary" t-on-click="addText" title="Add text" t-att-disabled="!state.fabricVersion">
                 <i class="fa fa-font"/>
             </button>
-            <button type="button" class="btn btn-sm btn-secondary" t-on-click="addRect" title="Add rectangle" t-att-disabled="!state.fabricVersion">
-                <i class="fa fa-square-o"/>
-            </button>
-            <button type="button" class="btn btn-sm btn-secondary" t-on-click="addCircle" title="Add circle" t-att-disabled="!state.fabricVersion">
-                <i class="fa fa-circle-o"/>
-            </button>
-            <button type="button" class="btn btn-sm btn-secondary" t-on-click="addTriangle" title="Add triangle" t-att-disabled="!state.fabricVersion">
-                <i class="fa fa-caret-up"/>
-            </button>
-            <button type="button" class="btn btn-sm btn-secondary" t-on-click="addLine" title="Add line" t-att-disabled="!state.fabricVersion">
-                <i class="fa fa-minus"/>
-            </button>
-            <button type="button" class="btn btn-sm btn-secondary" t-on-click="addArrow" title="Add arrow" t-att-disabled="!state.fabricVersion">
-                <i class="fa fa-long-arrow-right"/>
-            </button>
+            <!-- One shapes tool: primitives first, then the path library. -->
             <div class="position-relative" t-ref="shapesMenuRef">
-                <button type="button" class="btn btn-sm btn-secondary" t-on-click="toggleShapesMenu" title="Add shape" t-att-disabled="!state.fabricVersion">
-                    <i class="fa fa-star-o"/>
+                <button type="button" class="btn btn-sm btn-secondary" t-att-class="state.shapesOpen ? 'active' : ''" t-on-click="toggleShapesMenu" title="Add shape" t-att-disabled="!state.fabricVersion">
+                    <i class="fa fa-square-o"/> Shapes <i class="fa fa-caret-down"/>
                 </button>
                 <div t-if="state.shapesOpen" class="o_social_image_editor_shapes_menu position-absolute top-100 start-0 mt-1 bg-white border shadow rounded p-2" style="z-index: 10;">
-                    <div class="small text-muted text-uppercase px-1 pb-1">Shapes</div>
+                    <div class="small text-muted text-uppercase px-1 pb-1">Basic</div>
+                    <div class="d-flex flex-wrap gap-1 pb-2" style="width: 270px;">
+                        <button t-foreach="menuBasicShapes()" t-as="basic" t-key="basic.kind"
+                            type="button"
+                            class="btn btn-sm btn-outline-secondary o_social_image_editor_shape_btn"
+                            t-on-click="() => this.addBasicShape(basic.kind)">
+                            <i t-attf-class="fa {{basic.icon}}"/> <t t-esc="basic.label"/>
+                        </button>
+                    </div>
+                    <div class="small text-muted text-uppercase px-1 pb-1">More shapes</div>
                     <div class="d-flex flex-wrap gap-1" style="width: 270px;">
                         <button t-foreach="menuShapes()" t-as="shape" t-key="shape.kind"
                             type="button"

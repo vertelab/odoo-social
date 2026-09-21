@@ -211,9 +211,23 @@ export const PARAM_SHAPES = {
 };
 
 /**
- * Full shape catalog. Primitives (rect, circle, triangle, line, arrow) have
- * dedicated toolbar buttons; path-based and parametric shapes are inserted
- * from the shapes menu via fabric.Path, scaled by targetSize / 100.
+ * Primitives offered at the top of the shapes menu. These are native Fabric
+ * objects (Rect, Circle, Triangle, Line, Group), not paths, so each maps to
+ * an add* method on the editor dialog rather than to a path in SHAPES.
+ */
+export const BASIC_SHAPES = [
+    { kind: "rect", label: "Rectangle", icon: "fa-square-o" },
+    { kind: "circle", label: "Circle", icon: "fa-circle" },
+    { kind: "ring", label: "Ring", icon: "fa-circle-o" },
+    { kind: "triangle", label: "Triangle", icon: "fa-caret-up" },
+    { kind: "line", label: "Line", icon: "fa-minus" },
+    { kind: "arrow", label: "Arrow", icon: "fa-long-arrow-right" },
+];
+
+/**
+ * Path shape catalog. Path-based and parametric shapes are inserted from the
+ * shapes menu via fabric.Path, scaled by targetSize / 100. The primitives
+ * live in BASIC_SHAPES above and share the same menu.
  */
 export const SHAPES = [
     { kind: "pill", label: "Pill", path: "M 25 0 H 75 A 25 25 0 0 1 75 100 H 25 A 25 25 0 0 1 25 0 Z" },
