@@ -201,7 +201,11 @@
                     </button>
                 </div>
                 <div class="o_social_image_editor_canvas_area flex-grow-1 overflow-auto bg-light d-flex align-items-center justify-content-center p-3" t-ref="canvasAreaRef">
-                    <canvas t-ref="canvasRef" class="o_social_image_editor_canvas bg-white shadow-sm"/>
+                    <!-- No bg-* class here: Fabric copies className onto the upper
+                         canvas it stacks on top, and Bootstrap's !important
+                         background would hide everything drawn below. The
+                         white page is Fabric's own backgroundColor. -->
+                    <canvas t-ref="canvasRef" class="o_social_image_editor_canvas shadow-sm"/>
                 </div>
             </div>
 
@@ -323,7 +327,7 @@
                         <!-- Line height + char spacing -->
                         <label class="o_social_image_editor_prop_row" title="Line height">
                             <span>Line height</span>
-                            <span class="o_social_image_editor_prop_value" t-esc="Number(state.inspector.lineHeight).toFixed(2)"/>
+                            <span class="o_social_image_editor_prop_value" t-esc="formatFixed2(state.inspector.lineHeight)"/>
                             <input type="range" class="w-100" min="0.5" max="3" step="0.05" t-att-value="state.inspector.lineHeight" t-on-change="onLineHeightChange"/>
                         </label>
                         <label class="o_social_image_editor_prop_row" title="Character spacing">
@@ -502,7 +506,7 @@
                             <div class="d-flex align-items-center gap-2 mb-2 small">
                                 <input type="color" class="o_social_image_editor_color_input" t-att-value="state.inspector.shadow.hex" t-on-change="(ev) => this.onShadowChange({hex: ev.target.value})" title="Shadow color"/>
                                 <label class="d-flex align-items-center gap-1 mb-0 flex-grow-1" title="Shadow opacity">
-                                    <input type="range" class="w-100" min="0" max="100" step="1" t-att-value="state.inspector.shadow.alpha" t-on-input="(ev) => this.onShadowChange({alpha: Number(ev.target.value)})"/>
+                                    <input type="range" class="w-100" min="0" max="100" step="1" t-att-value="state.inspector.shadow.alpha" t-on-input="(ev) => this.onShadowChange({alpha: this.toNumber(ev.target.value)})"/>
                                     <span class="o_social_image_editor_prop_value" t-esc="state.inspector.shadow.alpha + '%'"/>
                                 </label>
                             </div>
@@ -519,19 +523,19 @@
                                     <span class="text-muted">B</span>
                                     <input type="number" class="form-control form-control-sm" style="width: 56px;" min="0" max="100"
                                         t-att-value="state.inspector.shadow.blur"
-                                        t-on-change="(ev) => this.onShadowChange({blur: Number(ev.target.value)})"/>
+                                        t-on-change="(ev) => this.onShadowChange({blur: this.toNumber(ev.target.value)})"/>
                                 </label>
                                 <label class="d-flex align-items-center gap-1 mb-0" title="Offset X">
                                     <span class="text-muted">X</span>
                                     <input type="number" class="form-control form-control-sm" style="width: 56px;" min="-100" max="100"
                                         t-att-value="state.inspector.shadow.offsetX"
-                                        t-on-change="(ev) => this.onShadowChange({offsetX: Number(ev.target.value)})"/>
+                                        t-on-change="(ev) => this.onShadowChange({offsetX: this.toNumber(ev.target.value)})"/>
                                 </label>
                                 <label class="d-flex align-items-center gap-1 mb-0" title="Offset Y">
                                     <span class="text-muted">Y</span>
                                     <input type="number" class="form-control form-control-sm" style="width: 56px;" min="-100" max="100"
                                         t-att-value="state.inspector.shadow.offsetY"
-                                        t-on-change="(ev) => this.onShadowChange({offsetY: Number(ev.target.value)})"/>
+                                        t-on-change="(ev) => this.onShadowChange({offsetY: this.toNumber(ev.target.value)})"/>
                                 </label>
                             </div>
                         </div>
@@ -542,18 +546,18 @@
                         <div class="o_social_image_editor_props_heading">Image filters</div>
                         <label class="o_social_image_editor_prop_row" title="Brightness">
                             <span>Brightness</span>
-                            <span class="o_social_image_editor_prop_value" t-esc="Number(state.inspector.filters.brightness).toFixed(2)"/>
-                            <input type="range" class="w-100" min="-1" max="1" step="0.05" t-att-value="state.inspector.filters.brightness" t-on-input="(ev) => this.onImageFilterChange('brightness', Number(ev.target.value))"/>
+                            <span class="o_social_image_editor_prop_value" t-esc="formatFixed2(state.inspector.filters.brightness)"/>
+                            <input type="range" class="w-100" min="-1" max="1" step="0.05" t-att-value="state.inspector.filters.brightness" t-on-input="(ev) => this.onImageFilterChange('brightness', this.toNumber(ev.target.value))"/>
                         </label>
                         <label class="o_social_image_editor_prop_row" title="Contrast">
                             <span>Contrast</span>
-                            <span class="o_social_image_editor_prop_value" t-esc="Number(state.inspector.filters.contrast).toFixed(2)"/>
-                            <input type="range" class="w-100" min="-1" max="1" step="0.05" t-att-value="state.inspector.filters.contrast" t-on-input="(ev) => this.onImageFilterChange('contrast', Number(ev.target.value))"/>
+                            <span class="o_social_image_editor_prop_value" t-esc="formatFixed2(state.inspector.filters.contrast)"/>
+                            <input type="range" class="w-100" min="-1" max="1" step="0.05" t-att-value="state.inspector.filters.contrast" t-on-input="(ev) => this.onImageFilterChange('contrast', this.toNumber(ev.target.value))"/>
                         </label>
                         <label class="o_social_image_editor_prop_row" title="Blur">
                             <span>Blur</span>
-                            <span class="o_social_image_editor_prop_value" t-esc="Number(state.inspector.filters.blur).toFixed(2)"/>
-                            <input type="range" class="w-100" min="0" max="1" step="0.02" t-att-value="state.inspector.filters.blur" t-on-input="(ev) => this.onImageFilterChange('blur', Number(ev.target.value))"/>
+                            <span class="o_social_image_editor_prop_value" t-esc="formatFixed2(state.inspector.filters.blur)"/>
+                            <input type="range" class="w-100" min="0" max="1" step="0.02" t-att-value="state.inspector.filters.blur" t-on-input="(ev) => this.onImageFilterChange('blur', this.toNumber(ev.target.value))"/>
                         </label>
                         <label class="d-flex align-items-center gap-2 mb-0 small">
                             <input type="checkbox" t-att-checked="state.inspector.filters.grayscale" t-on-change="(ev) => this.onImageFilterChange('grayscale', ev.target.checked)"/>
@@ -588,7 +592,7 @@
                             <input type="range" class="w-100"
                                 t-att-min="param.min" t-att-max="param.max" t-att-step="param.step"
                                 t-att-value="state.inspector.shapeParams[param.key]"
-                                t-on-input="(ev) => this.onShapeParamChange(param.key, Number(ev.target.value))"/>
+                                t-on-input="(ev) => this.onShapeParamChange(param.key, this.toNumber(ev.target.value))"/>
                         </label>
                     </div>
                 </div>

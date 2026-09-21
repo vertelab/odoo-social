@@ -1030,10 +1030,18 @@ export class SocialImageEditorDialog extends Component {
             area ? area.clientWidth - 32 : 0,
             area ? area.clientHeight - 32 : 0
         );
-        // CSS-scale the element only; the backing store stays pixel-exact
-        // and Fabric maps pointer coordinates through the bounding rect.
-        this.canvasRef.el.style.width = `${Math.round(width * scale)}px`;
-        this.canvasRef.el.style.height = `${Math.round(height * scale)}px`;
+        // CSS-scale only; the backing store stays pixel-exact. This must go
+        // through Fabric: it stacks an upper (interaction) canvas inside a
+        // container on top of this element, and styling the lower canvas
+        // alone leaves those two at full size, so clicks land beside the
+        // objects they appear to hit.
+        this._canvas.setDimensions(
+            {
+                width: `${Math.round(width * scale)}px`,
+                height: `${Math.round(height * scale)}px`,
+            },
+            { cssOnly: true }
+        );
     }
 
     // ------------------------------------------------------------------
@@ -1960,6 +1968,18 @@ export class SocialImageEditorDialog extends Component {
 
     gradientAngle() {
         return this._gradientValue("angle", 0);
+    }
+
+    // Template helpers. OWL resolves every identifier in a template
+    // expression on the component, so bare JS globals like Number() are
+    // not available there ("ctx.Number is not a function").
+    toNumber(value) {
+        return Number(value);
+    }
+
+    formatFixed2(value) {
+        const num = Number(value);
+        return Number.isFinite(num) ? num.toFixed(2) : "";
     }
 
     gradientStartPosPct() {
