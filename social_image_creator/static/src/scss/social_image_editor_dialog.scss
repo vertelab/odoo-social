@@ -1,0 +1,270 @@
+.o_social_image_editor_launcher {
+    .o_social_image_editor_preview {
+        width: 160px;
+        height: 100px;
+        overflow: hidden;
+
+        img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+    }
+}
+
+.o_social_image_editor_dialog {
+    z-index: $zindex-modal + 1;
+    background: rgba($gray-900, 0.35);
+
+    .o_social_image_editor_sep {
+        width: 1px;
+        height: 20px;
+        background: $border-color;
+    }
+
+    .o_social_image_editor_layer {
+        cursor: pointer;
+        user-select: none;
+
+        &.active {
+            background: rgba($primary, 0.08);
+
+            .o_social_image_editor_layer_label {
+                color: $primary;
+                font-weight: $font-weight-bold;
+            }
+        }
+
+        &.locked .o_social_image_editor_layer_label {
+            color: $text-muted;
+        }
+
+        &.drop-target {
+            box-shadow: inset 0 2px 0 $primary;
+        }
+
+        .o_social_image_editor_layer_grip {
+            cursor: grab;
+        }
+
+        .o_social_image_editor_layer_btn {
+            border: none;
+            background: none;
+            padding: 0 1px;
+            color: $text-muted;
+            font-size: $font-size-sm;
+            // Hover-only actions; eye-when-hidden and lock stay visible.
+            visibility: hidden;
+        }
+
+        &:hover .o_social_image_editor_layer_btn,
+        &.active .o_social_image_editor_layer_btn,
+        .o_social_image_editor_layer_btn .fa-eye-slash,
+        .o_social_image_editor_layer_btn .fa-lock {
+            visibility: visible;
+        }
+    }
+
+    .o_social_image_editor_canvas {
+        // Pixel-exact backing store, CSS-scaled via inline width/height.
+        max-width: none;
+        max-height: none;
+    }
+
+    .o_social_image_editor_shapes_menu {
+        .o_social_image_editor_shape_btn {
+            font-size: $font-size-sm;
+            white-space: nowrap;
+        }
+    }
+
+    .o_social_image_editor_props_body {
+        .o_social_image_editor_props_section {
+            border-bottom: 1px solid $border-color;
+            padding-bottom: $spacer;
+
+            &:last-child {
+                border-bottom: none;
+            }
+        }
+
+        .o_social_image_editor_props_heading {
+            font-size: $font-size-sm;
+            font-weight: $font-weight-bold;
+            text-transform: uppercase;
+            color: $text-muted;
+            margin-bottom: $spacer * 0.5;
+        }
+
+        .o_social_image_editor_prop_row {
+            display: block;
+            font-size: $font-size-sm;
+            color: $text-muted;
+            margin-bottom: $spacer * 0.75;
+
+            .o_social_image_editor_prop_value {
+                float: right;
+                color: $body-color;
+                font-variant-numeric: tabular-nums;
+            }
+
+            input[type="range"] {
+                clear: both;
+            }
+        }
+
+        .o_social_image_editor_color_input {
+            width: 32px;
+            height: 24px;
+            padding: 1px;
+            border: 1px solid $border-color;
+            border-radius: $border-radius;
+            background: $input-bg;
+        }
+
+        .o_social_image_editor_gradient_preview {
+            height: 24px;
+        }
+    }
+
+    .o_social_image_editor_alignbar {
+        .o_social_image_editor_sep {
+            width: 1px;
+            height: 16px;
+            background: $border-color;
+        }
+    }
+
+    .o_social_image_editor_font_menu {
+        z-index: 20;
+
+        .o_social_image_editor_font_list {
+            max-height: 240px;
+
+            .o_social_image_editor_font_group {
+                position: sticky;
+                top: 0;
+                padding: 2px 8px;
+                font-size: $font-size-sm;
+                text-transform: uppercase;
+                color: $text-muted;
+                background: $gray-100;
+            }
+
+            .o_social_image_editor_font_option {
+                display: block;
+                width: 100%;
+                text-align: left;
+                border: none;
+                background: none;
+                padding: 3px 8px;
+                font-size: $font-size-base;
+
+                &:hover {
+                    background: rgba($primary, 0.08);
+                }
+
+                &.active {
+                    color: $primary;
+                    font-weight: $font-weight-bold;
+                }
+            }
+        }
+    }
+
+    .o_social_image_editor_picker_overlay {
+        z-index: 30;
+
+        .o_social_image_editor_picker_backdrop {
+            background: rgba($gray-900, 0.4);
+        }
+    }
+
+    .o_social_image_editor_icon_picker {
+        width: 560px;
+        max-width: 90vw;
+        height: 480px;
+        max-height: 80vh;
+
+        .o_social_image_editor_icon_grid {
+            .o_social_image_editor_icon_btn {
+                width: 40px;
+                height: 40px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                border: none;
+                background: none;
+                border-radius: $border-radius;
+
+                &:hover {
+                    background: rgba($primary, 0.1);
+                }
+            }
+        }
+    }
+
+    .o_social_image_editor_media_picker {
+        width: 640px;
+        max-width: 90vw;
+        height: 480px;
+        max-height: 80vh;
+
+        .o_social_image_editor_media_grid {
+            .o_social_image_editor_media_item {
+                width: 120px;
+                display: inline-flex;
+                flex-direction: column;
+                align-items: stretch;
+                border: 1px solid $border-color;
+                border-radius: $border-radius;
+                background: $gray-100;
+                padding: 0;
+                overflow: hidden;
+
+                &:hover {
+                    border-color: $primary;
+                }
+
+                img {
+                    width: 100%;
+                    height: 90px;
+                    object-fit: contain;
+                }
+
+                .o_social_image_editor_media_name {
+                    display: block;
+                    background: $white;
+                    border-top: 1px solid $border-color;
+                }
+            }
+        }
+    }
+
+    .o_social_image_editor_brand_swatches {
+        .o_social_image_editor_brand_swatches_label {
+            font-size: $font-size-sm;
+            text-transform: uppercase;
+            margin-right: 2px;
+        }
+
+        .o_social_image_editor_brand_swatch {
+            width: 20px;
+            height: 20px;
+            border: 1px solid $border-color;
+            border-radius: $border-radius;
+            padding: 0;
+
+            &.o_social_image_editor_brand_swatch_end {
+                border-radius: 50%;
+            }
+
+            &.o_social_image_editor_brand_swatch_bg {
+                border-style: dashed;
+            }
+
+            &:hover {
+                outline: 2px solid rgba($primary, 0.5);
+            }
+        }
+    }
+}

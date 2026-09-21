@@ -10,8 +10,11 @@
     "express": "^4.21.2"
   },
   "scripts": {
-    "test": "node test_core.mjs && node test_auth.mjs",
+    "test": "node test_core.mjs && node test_binding.mjs && node test_fonts.mjs && node test_auth.mjs && node test_security.mjs",
     "test:core": "node test_core.mjs",
-    "test:auth": "node test_auth.mjs"
+    "test:binding": "node test_binding.mjs",
+    "test:fonts": "node test_fonts.mjs",
+    "test:auth": "node test_auth.mjs",
+    "test:security": "node test_security.mjs"
   }
 }
