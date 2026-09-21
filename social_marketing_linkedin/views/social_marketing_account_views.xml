@@ -14,6 +14,29 @@
                                invisible="id == False"/>
                     </group>
 
+                    <!-- Capability badges (independent auth paths on one account) -->
+                    <group string="Capabilities" name="linkedin_capabilities">
+                        <div class="o_social_linkedin_capabilities" colspan="2"
+                             invisible="not (linkedin_has_api or linkedin_has_playwright or linkedin_has_cookie)">
+                            <span class="badge badge-success" invisible="not linkedin_has_api">
+                                <i class="fa fa-check"/> Official API (token)
+                            </span>
+                            <span class="badge badge-info" invisible="not linkedin_has_playwright">
+                                <i class="fa fa-check"/> Playwright (session)
+                            </span>
+                            <span class="badge badge-warning" invisible="not linkedin_has_cookie">
+                                <i class="fa fa-check"/> Cookie login
+                            </span>
+                        </div>
+                        <div class="text-muted" colspan="2"
+                             invisible="linkedin_has_api or linkedin_has_playwright or linkedin_has_cookie">
+                            <i class="fa fa-minus"/> Ingen auth konfigurerad
+                        </div>
+                        <field name="linkedin_has_api" invisible="1"/>
+                        <field name="linkedin_has_playwright" invisible="1"/>
+                        <field name="linkedin_has_cookie" invisible="1"/>
+                    </group>
+
                     <!-- Official API -->
                     <group string="Official API" name="linkedin_api_group"
                            invisible="linkedin_auth_method != 'api' or id == False">

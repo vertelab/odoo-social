@@ -1,21 +1,31 @@
 # Odoo Social — Python dependencies
-# Install with: pip install -r requirements.txt
+#
+# Installeras av repo_apply (salt odoo.repo_apply) — se odoo-ai/requirements.txt
+# for bakgrund om varfor verifiering och versionstak finns.
+#
+# OBS: `social_marketing_linkedin` har auto_install: True och dras darfor in
+# automatiskt med `social_marketing`. Saknas nedan paket blir modulen
+# oinstallerbar och hela `marketing_core`-installationen faller.
 
-# Core (installed by Odoo)
-# requests
-
-# LinkedIn — official API
-# Uses built-in requests library, no extra deps
-
-# LinkedIn — cookie-based auth (linkedin-api library by Tom Quirk)
+# ── LinkedIn — cookie-based auth (linkedin-api by Tom Quirk) ─────────────
 # https://github.com/tomquirk/linkedin-api
+# OBS: linkedin-api 2.3.1 deklarerar lxml<6.0.0 i sin metadata, men
+# importerar och kor fint med lxml 6.1.3 (verifierat 2026-09-15 pa key).
+# repo_apply slar ihop ALLA repons requirements och loser om tradet —
+# pip varnar for konflikten men blockerar inte. Pinnar vi lxml<6 har
+# riskerar vi i stallet att bryta nagot annat som vill ha >=6. Lamna
+# opinnat tills ett verkligt fel uppstar i LinkedIn-flodet.
 linkedin-api
 
-# LinkedIn — Playwright browser automation
-# Persistent browser context, session reuse, CAPTCHA-resistant
-# After pip install, run: playwright install chromium
+# ── LinkedIn — Playwright browser automation ─────────────────────────────
+# Persistent browser context, session reuse, CAPTCHA-resistant.
+# VIKTIGT: enbart `pip install playwright` racker INTE — webblasaren maste
+# ocksa installeras separat:
+#     playwright install chromium
+#     playwright install-deps chromium   # systembibliotek (apt)
+# Utan detta startar modulen men kraschar forst vid forsta sidladdning.
 playwright
 
-# Postiz bridge (optional)
+# ── Postiz bridge (optional) ─────────────────────────────────────────────
 # No extra Python deps — uses requests (built-in)
 # Requires a running Postiz server (Docker) or Postiz Cloud account

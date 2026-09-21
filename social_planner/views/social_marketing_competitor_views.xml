@@ -68,6 +68,7 @@
                             <field name="media_type"/>
                             <field name="social_handle"/>
                             <field name="profile_url" widget="url"/>
+                            <field name="partner_id"/>
                             <field name="tag_ids" widget="many2many_tags"/>
                         </group>
                         <group name="right">

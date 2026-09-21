@@ -85,8 +85,7 @@ class SocialAccount(models.Model):
     impressions = fields.Integer("Impressions", readonly=True,
         help="Total number of times the account's content was displayed.")
     last_backfilled_date = fields.Date('Last Backfilled Date', readonly=True,
-        help="Tracks the most recent date covered by the historical statistics backfill.")
-
+        help="Tracks the most recent date covered by the historical statistics backfill."
     # --- Token health -------------------------------------------------
     # Social credentials expire. Without an expiry date and a warning ahead
     # of it, publishing simply stops one day with no visible cause.
@@ -106,6 +105,7 @@ class SocialAccount(models.Model):
         'Expiry Warning Sent', readonly=True, copy=False,
         help="When the last credentials expiry warning was raised. Prevents "
              "the cron from warning about the same expiry over and over.")
+
 
     def _compute_statistics(self):
         """ Every social module should override this method if it 'has_account_stats'.
@@ -341,7 +341,6 @@ class SocialAccount(models.Model):
         self._backfill_account_statistics(
             retention_days, window_days, fields.Date.today())
         return True
-
     @api.model
     def _get_token_warning_days(self):
         """ How many days ahead of expiry a warning should be raised. """
@@ -424,7 +423,6 @@ class SocialAccount(models.Model):
         self.ensure_one()
         return self.token_expiry_date - timedelta(
             days=self._get_token_warning_days())
-
     def _filter_by_media_types(self, media_types):
         return self.filtered(lambda account: account.media_type in media_types)
 

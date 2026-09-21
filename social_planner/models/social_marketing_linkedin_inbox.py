@@ -179,6 +179,7 @@ class SocialMarketingAccountLinkedIn(models.Model):
     # ────────────────────────────────────────────────────────────
     _LINKEDIN_INBOX_SCRIPT = r'''
 import json
+import random
 import sys
 import time
 from playwright.sync_api import sync_playwright
@@ -248,7 +249,7 @@ def main():
                 page.wait_for_load_state('networkidle', timeout=20000)
             except Exception:
                 pass
-            time.sleep(3)
+            time.sleep(random.uniform(3, 6))
             # wait for conversation list (SPA render + possible redirect to active thread)
             convos = []
             try:
@@ -278,7 +279,7 @@ def main():
                     items[idx].click()
                 except Exception:
                     continue
-                time.sleep(4)
+                time.sleep(random.uniform(3, 6))
                 msgs = safe_evaluate(page, MSG_JS)
                 result['conversations'].append({
                     'name': convo.get('name', ''),

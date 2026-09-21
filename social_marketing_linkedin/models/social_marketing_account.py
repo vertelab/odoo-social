@@ -40,6 +40,18 @@ class SocialAccountLinkedin(models.Model):
     linkedin_password = fields.Char('LinkedIn Password',
         help='Your LinkedIn login password. Stored encrypted. Only needed for Cookie-based method.')
 
+    # Capability badges — each auth path is an independent capability on the
+    # same account (official API + Playwright session + cookies can coexist).
+    linkedin_has_api = fields.Boolean(
+        'Official API', compute='_compute_linkedin_capabilities',
+        help='OAuth access token configured — can post via the official API.')
+    linkedin_has_playwright = fields.Boolean(
+        'Playwright Session', compute='_compute_linkedin_capabilities',
+        help='Browser session saved — can scrape feeds/company pages/inbox.')
+    linkedin_has_cookie = fields.Boolean(
+        'Cookie Login', compute='_compute_linkedin_capabilities',
+        help='Username/password configured — can post via linkedin-api (cookies).')
+
     # Playwright browser automation
     linkedin_playwright_session = fields.Binary('Playwright Session State',
         attachment=True,
@@ -413,6 +425,40 @@ class SocialAccountLinkedin(models.Model):
     def _extract_linkedin_picture_url(self, json_data):
         # TODO: remove in master
         return ''
+
+    def _get_linkedin_post_method(self):
+        """Return which posting path to use for this account.
+
+        Capability-based: each auth path is an independent capability stored
+        on the SAME account record. The preferred ``linkedin_auth_method`` is
+        honoured when its capability exists; otherwise we fall back to any
+        available capability (API token > Playwright session > cookies).
+
+        Returns 'api', 'cookie', 'playwright' or False (no path available).
+        """
+        self.ensure_one()
+        preferred = self.linkedin_auth_method
+        capabilities = {
+            'api': bool(self.linkedin_access_token),
+            'cookie': bool(self.linkedin_username and self.linkedin_password),
+            'playwright': bool(self.linkedin_playwright_session),
+        }
+        if capabilities.get(preferred):
+            return preferred
+        for method in ('api', 'playwright', 'cookie'):
+            if capabilities.get(method):
+                return method
+        return False
+
+    @api.depends('linkedin_access_token', 'linkedin_playwright_session',
+                 'linkedin_username', 'linkedin_password')
+    def _compute_linkedin_capabilities(self):
+        """Capability badges shown on the account form (independent auth paths)."""
+        for account in self:
+            account.linkedin_has_api = bool(account.linkedin_access_token)
+            account.linkedin_has_playwright = bool(account.linkedin_playwright_session)
+            account.linkedin_has_cookie = bool(
+                account.linkedin_username and account.linkedin_password)
 
     def action_open_playwright_login(self):
         """ Open a Chromium browser via Playwright for manual LinkedIn login.

@@ -1,3 +1,4 @@
+from . import res_partner
 from . import res_config_settings
 from . import social_marketing_account
 from . import social_marketing_post_template

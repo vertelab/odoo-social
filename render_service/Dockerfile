@@ -18,7 +18,8 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm install --omit=dev
 
-COPY server.mjs .
+COPY server.mjs render_core.mjs fonts.mjs ./
+COPY fonts ./fonts
 
 ENV PORT=8600
 ENV RENDER_TOKEN=change-me

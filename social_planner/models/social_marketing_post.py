@@ -160,11 +160,47 @@ class SocialMarketingPost(models.Model):
             'compliance_checked_at': fields.Datetime.now(),
         })
 
+    def _check_compliance_snapshot(self):
+        """ Refuse approval unless a complete compliance snapshot exists.
+
+        The snapshot is written once, when the post passes its compliance
+        check. Approval must not be possible without it, otherwise the post
+        says it was checked while carrying no record of what it was checked
+        against — and the snapshot is the basis for the approval decision.
+
+        Raises UserError naming what is missing. Used by every path that can
+        put a post into an approved state (internal approval, customer
+        approval), so no path can bypass the guarantee. """
+        self.ensure_one()
+        snapshot = self.compliance_snapshot
+        if not snapshot:
+            raise UserError(_(
+                'Cannot approve %(post)s: it has no compliance snapshot.\n'
+                'The post must be submitted for approval first, so that the '
+                'policy compliance check runs and its result is recorded.',
+                post=self.display_name))
+        if not isinstance(snapshot, dict):
+            raise UserError(_(
+                'Cannot approve %(post)s: its compliance snapshot is not '
+                'readable (expected an object, got %(kind)s).',
+                post=self.display_name, kind=type(snapshot).__name__))
+        missing = [
+            key for key in ('policy_version', 'verdict', 'checked_at')
+            if snapshot.get(key) in (None, False, '')
+        ]
+        if missing:
+            raise UserError(_(
+                'Cannot approve %(post)s: its compliance snapshot is '
+                'incomplete (missing: %(missing)s).',
+                post=self.display_name, missing=', '.join(missing)))
+        return True
+
     def action_approve(self):
         """ Approve post — it can now be published. """
         self.ensure_one()
         if self.approval_state != 'pending_approval':
             raise UserError(_('Only posts pending approval can be approved.'))
+        self._check_compliance_snapshot()
         self.approval_state = 'approved'
         self.message_post(
             body=_('Post approved by %(user)s.', user=self.env.user.name),
@@ -316,19 +352,56 @@ class SocialMarketingPost(models.Model):
         and sweep posts stuck in posting whose live posts are all terminal. """
         posts = self.search([('needs_recheck', '=', True)])
         for post in posts:
+            # A post with no reachable policy cannot be re-checked against
+            # anything. Clearing the flag without a verdict would record a
+            # result for a check that never ran, so the flag stays and the
+            # post keeps its stage until a policy becomes available.
+            #
+            # The flag staying set means this cron sees the post again on
+            # every run. Log only on the transition into that state, otherwise
+            # a post parked here would accumulate one step record per cron
+            # tick forever.
+            if not post.policy_id:
+                already_deferred = post.pipeline_step_ids.filtered(
+                    lambda s: s.stage == 'needs_recheck' and s.state == 'pending')
+                if not already_deferred:
+                    post._pipeline_log(
+                        'needs_recheck', state='pending',
+                        result=_('No policy available; re-check deferred.'))
+                continue
+
             warnings = post._check_policy_compliance()
             if warnings:
+                previously_passed = (
+                    (post.compliance_snapshot or {}).get('verdict') == 'pass')
                 post.write({
                     'compliance_recheck_verdict': 'fail',
                     'needs_recheck': False,
                 })
-                post._pipeline_log(
-                    'failed', state='failed',
-                    result=_('Policy re-check failed: %s',
-                             '; '.join(warnings)))
+                # Distinguish a post that regressed after having passed from
+                # one that failed its first check: the regression is the
+                # actionable case and must not be conflated with ordinary
+                # failure.
+                if previously_passed:
+                    post._pipeline_log(
+                        'compliance_recheck_failed', state='failed',
+                        result=_('Policy re-check failed: %s',
+                                 '; '.join(warnings)))
+                    body = _(
+                        'Policy re-check FAILED after the post had already '
+                        'passed at version %(version)s: %(warnings)s',
+                        version=(post.compliance_snapshot or {}).get(
+                            'policy_version'),
+                        warnings='; '.join(warnings))
+                else:
+                    post._pipeline_log(
+                        'failed', state='failed',
+                        result=_('Policy re-check failed: %s',
+                                 '; '.join(warnings)))
+                    body = _(
+                        'Policy re-check failed: %s', '; '.join(warnings))
                 post.message_post(
-                    body=_('Policy re-check failed after policy change: %s',
-                           '; '.join(warnings)),
+                    body=body,
                     message_type='notification',
                     subtype_xmlid='mail.mt_comment')
             else:
@@ -336,10 +409,24 @@ class SocialMarketingPost(models.Model):
                     'compliance_recheck_verdict': 'pass',
                     'needs_recheck': False,
                 })
+                # A distinct stage, so a re-check passing cannot be mistaken
+                # for the original compliance check in the audit log.
                 post._pipeline_log(
-                    'compliance_checked',
-                    result=_('Policy re-check passed'))
+                    'compliance_recheck_passed',
+                    result=_('Policy re-check passed at version %s',
+                             post.policy_id.version))
         # Sweep: complete posts whose live posts are all terminal (covers
         # permanent job failures that never got a success callback).
         self.search([('state', '=', 'posting')])._check_post_completion()
         return True
+
+    def _recheck_flag_stuck(self):
+        """ Posts flagged for re-check that cannot be re-checked at all.
+
+        Surfaces the case where a policy was archived or unlinked while posts
+        still referenced it. Those posts keep their flag (see
+        _cron_publish_recheck) and would otherwise sit silently forever. """
+        return self.search([
+            ('needs_recheck', '=', True),
+            ('policy_id', '=', False),
+        ])

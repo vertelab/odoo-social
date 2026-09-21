@@ -232,6 +232,10 @@ class SocialMarketingPost(models.Model):
             raise UserError(
                 _('Only posts awaiting customer approval can be approved '
                   'by the customer.'))
+        # The snapshot is the basis for the approval decision, and this is a
+        # second path into 'approved'. Without this check the guarantee in
+        # social-publish-pipeline would hold on the internal path only.
+        self._check_compliance_snapshot()
         self.write({'approval_state': 'approved'})
         self._safe_message_post(
             body=_('Post approved by customer %(user)s.',
