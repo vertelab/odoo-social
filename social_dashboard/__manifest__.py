@@ -7,7 +7,7 @@
     "category": "Marketing/Social Marketing",
     "summary": "BI dashboards for social_marketing powered by dashboard_vrtl",
     "author": "Vertel Sverige AB",
-    "website": "https://vertel.se",
+    "website": "https://vertel.se/apps/odoo-social/social_dashboard",
     "license": "AGPL-3",
     "depends": ["dashboard_vrtl", "social_marketing"],
     "data": [

@@ -15,6 +15,7 @@
           (`_read_encrypted(..., system=True)`), aldrig klartext.
     """,
     'author': 'Vertel Sverige AB',
+    'website': 'https://vertel.se/apps/odoo-social/social_keykeep',
     'license': 'AGPL-3',
     'depends': [
         'social_marketing',

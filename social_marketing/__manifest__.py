@@ -7,7 +7,7 @@
     'summary': 'Manage your social marketing',
     'version': '1.1.1',
     'description': """Manage your social marketing """,
-    'website': 'https://vertel.se/app/odoo-social',
+    'website': 'https://vertel.se/apps/odoo-social/social_marketing',
     'depends': ['web', 'mail','link_tracker'],
     'data': [
         'security/social_marketing_security.xml',

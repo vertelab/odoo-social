@@ -2,6 +2,7 @@
 # Vertel Sverige AB AGPL-3
 
 {
+    'website': 'https://vertel.se/apps/odoo-social/social_marketing_instagram',
     'name': 'Social: Marketing Instagram',
     'category': 'Marketing/Social Marketing',
     'summary': 'Manage your Instagram business account and schedule posts',

@@ -18,7 +18,7 @@ Social Planner — Kommunikationsplanering för sociala medier
 * Social listening — nyckelords-/hashtag-bevakning
 * Mediebibliotek — återanvändbara assets med AI-taggning
     """,
-    'website': 'https://vertel.se/app/odoo-social',
+    'website': 'https://vertel.se/apps/odoo-social/social_planner',
     'depends': [
         'social_marketing',
         'social_marketing_linkedin',

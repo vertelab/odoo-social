@@ -7,7 +7,7 @@
     "category": "Marketing/Social Marketing",
     "summary": "Planning, compliance and community dashboards for social_planner",
     "author": "Vertel Sverige AB",
-    "website": "https://vertel.se",
+    "website": "https://vertel.se/apps/odoo-social/social_planner_dashboard",
     "license": "AGPL-3",
     "depends": ["social_planner", "dashboard_vrtl"],
     "data": [

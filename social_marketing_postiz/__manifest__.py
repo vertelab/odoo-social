@@ -34,7 +34,7 @@ Odoo social_planner → social_marketing_postiz → Postiz Server → 32 Platfor
 3. Get API key from Postiz Settings → Developers → Public API
 4. Enter the API key + URL in Odoo Settings → Social Marketing
     """,
-    'website': 'https://vertel.se/app/odoo-social',
+    'website': 'https://vertel.se/apps/odoo-social/social_marketing_postiz',
     'depends': ['social_marketing', 'social_planner'],
     'data': [
         'security/ir.model.access.csv',

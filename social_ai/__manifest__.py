@@ -16,6 +16,7 @@
         - HITL via workspace.activity.suggestion (godkännandekön)
     """,
     'author': 'Vertel Sverige AB',
+    'website': 'https://vertel.se/apps/odoo-social/social_ai',
     'license': 'AGPL-3',
     'depends': [
         'ai_agent_core',

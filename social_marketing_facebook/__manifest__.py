@@ -2,6 +2,7 @@
 # Vertel Sverige AB AGPL-3
 
 {
+    'website': 'https://vertel.se/apps/odoo-social/social_marketing_facebook',
     'name': 'Social: Marketing Facebook',
     'category': 'Marketing/Social Marketing',
     'summary': 'Manage your Facebook pages and schedule posts',

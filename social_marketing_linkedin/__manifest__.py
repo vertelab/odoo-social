@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 {
+    'website': 'https://vertel.se/apps/odoo-social/social_marketing_linkedin',
     'name': 'Social: Marketing LinkedIn',
     'summary': 'Manage your LinkedIn accounts and schedule posts',
     'description': 'Manage your LinkedIn accounts and schedule posts',

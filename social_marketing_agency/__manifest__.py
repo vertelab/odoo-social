@@ -7,7 +7,7 @@
     "category": "Marketing/Social Marketing",
     "summary": "Agency layer: brands, customer underlag, portal accounts and per-brand dashboards",
     "author": "Vertel Sverige AB",
-    "website": "https://vertel.se",
+    "website": "https://vertel.se/apps/odoo-social/social_marketing_agency",
     "license": "AGPL-3",
     "depends": [
         "social_marketing",
