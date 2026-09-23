@@ -18,8 +18,6 @@
         'views/social_marketing_menu_views.xml',
         'views/social_marketing_account_views.xml',
         'views/social_marketing_post_template_views.xml',
-        'views/social_image_template_views.xml',
-        'views/social_image_render_wizard_views.xml',
         'views/social_data_binding_views.xml',
         'views/social_marketing_post_views.xml',
         'views/res_config_settings_views.xml',

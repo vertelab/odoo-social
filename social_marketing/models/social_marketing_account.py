@@ -85,7 +85,8 @@ class SocialAccount(models.Model):
     impressions = fields.Integer("Impressions", readonly=True,
         help="Total number of times the account's content was displayed.")
     last_backfilled_date = fields.Date('Last Backfilled Date', readonly=True,
-        help="Tracks the most recent date covered by the historical statistics backfill."
+        help="Tracks the most recent date covered by the historical statistics backfill.")
+
     # --- Token health -------------------------------------------------
     # Social credentials expire. Without an expiry date and a warning ahead
     # of it, publishing simply stops one day with no visible cause.
