@@ -2,10 +2,22 @@
 {
     'website': 'https://vertel.se/apps/odoo-social/social_marketing_linkedin',
     'name': 'Social: Marketing LinkedIn',
-    'summary': 'Manage your LinkedIn accounts and schedule posts',
+    'summary': 'Manage your LinkedIn accounts and schedule posts.',
+    'description': '''
+Marketing LinkedIn
+==================
+
+    Manage your LinkedIn accounts and schedule posts.
+
+    Features:
+
+        - Web integration: Exposes HTTP endpoints for external systems.
+        - UI Integration: Extends 6 view(s) in the Odoo interface.
+        - Extends Odoo: Builds on social_marketing.account, social_marketing.live.post, social_marketing.media, social_marketing.post.
+    ''',
     'description': 'Manage your LinkedIn accounts and schedule posts',
     'category': 'Marketing/Social Marketing',
-    'version': '0.2',
+    'version': '18.0.1.0.0',
     'depends': ['social_marketing',],
     'external_dependencies': {
         'python': ['linkedin_api', 'playwright'],

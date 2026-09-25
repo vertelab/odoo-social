@@ -5,18 +5,25 @@
     'website': 'https://vertel.se/apps/odoo-social/social_marketing_facebook',
     'name': 'Social: Marketing Facebook',
     'category': 'Marketing/Social Marketing',
-    'summary': 'Manage your Facebook pages and schedule posts',
-    'version': '1.0',
-    'description': """Manage your Facebook pages and schedule posts.
+    'summary': 'Manage your Facebook pages and schedule posts.',
+    'version': '18.0.1.0.0',
+    'description': '''
+Marketing Facebook
+==================
 
-Unified inbox: Facebook DMs and comments appear in the social_planner inbox.
+    Unified inbox: Facebook DMs and comments appear in the social_planner inbox.
 
-Requires a Facebook App with:
-- pages_manage_posts
-- pages_read_engagement
-- pages_manage_metadata
-- pages_messaging (for DMs)
-    """,
+    Requires a Facebook App with:
+    - pages_manage_posts
+    - pages_read_engagement
+    - pages_manage_metadata
+    - pages_messaging (for DMs)
+
+    Features:
+
+        - UI Integration: Extends 3 view(s) in the Odoo interface.
+        - Extends Odoo: Builds on social_marketing.account, social_marketing.live.post, social_marketing.media, social_marketing.post.
+    ''',
     'depends': ['social_marketing'],
     'data': [
         'security/ir.model.access.csv',

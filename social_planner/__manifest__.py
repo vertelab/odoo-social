@@ -4,20 +4,17 @@
 {
     'name': 'Social: Communication Planner',
     'category': 'Marketing/Social Marketing',
-    'summary': 'Communication planning, policy, approval workflows and AI-assisted social marketing',
-    'version': '1.9',
-    'description': """
-Social Planner — Kommunikationsplanering för sociala medier
-===========================================================
+    'summary': 'Communication planning, policy, approval workflows and AI-assisted social marketing.',
+    'version': '18.0.1.9.0',
+    'description': '''
+Communication Planner
+=====================
 
-* Kommunikationspolicy — tonalitet, varumärkesröst, publiceringsregler, krisprotokoll
-* Kommunikationsplan — flerkanals-kampanjplanering med content-kalender
-* Godkännandeflöde — roller (skapare, granskare, publicerare) med policy-validering
-* AI-integration — innehållsgenerering, sentimentanalys, "bästa tid att posta"
-* Avancerad analys — cross-channel dashboards, ROI-spårning, compliance-rapporter
-* Social listening — nyckelords-/hashtag-bevakning
-* Mediebibliotek — återanvändbara assets med AI-taggning
-    """,
+    Social Planner - Communication planning for social media.
+
+    - Communication policy: tone of voice, brand voice, publishing rules.
+    - Content planning and approval flows.
+    ''',
     'website': 'https://vertel.se/apps/odoo-social/social_planner',
     'depends': [
         'social_marketing',

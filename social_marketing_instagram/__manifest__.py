@@ -5,17 +5,24 @@
     'website': 'https://vertel.se/apps/odoo-social/social_marketing_instagram',
     'name': 'Social: Marketing Instagram',
     'category': 'Marketing/Social Marketing',
-    'summary': 'Manage your Instagram business account and schedule posts',
-    'version': '1.0',
-    'description': """Manage your Instagram business accounts and schedule posts.
+    'summary': 'Manage your Instagram business account and schedule posts.',
+    'version': '18.0.1.0.0',
+    'description': '''
+Marketing Instagram
+===================
 
-Unified inbox: Instagram DMs and comments appear in the social_planner inbox.
+    Unified inbox: Instagram DMs and comments appear in the social_planner inbox.
 
-Requires a Facebook App with Instagram Basic Display and Instagram Graph API:
-- instagram_basic
-- instagram_manage_messages
-- instagram_manage_comments
-    """,
+    Requires a Facebook App with Instagram Basic Display and Instagram Graph API:
+    - instagram_basic
+    - instagram_manage_messages
+    - instagram_manage_comments
+
+    Features:
+
+        - UI Integration: Extends 3 view(s) in the Odoo interface.
+        - Extends Odoo: Builds on social_marketing.account, social_marketing.live.post, social_marketing.media, social_marketing.post.
+    ''',
     'depends': ['social_marketing', 'social_marketing_facebook'],
     'data': [
         'security/ir.model.access.csv',

@@ -3,17 +3,18 @@
 {
     'name': 'Social Keykeep — Credential Bridge',
     'version': '18.0.1.0.0',
-    'summary': 'Brygga sociala kontons hemligheter till krypterade keykeep.credential',
+    'summary': 'Brygga sociala kontons hemligheter till krypterade keykeep.credential.',
     'category': 'Social Marketing',
-    'description': """
-        Bryggmodul mellan odoo-social och keykeep.
+    'description': '''
+Social Keykeep — Credential Bridge
+==================================
 
-        - Lägger till `credential_id` (keykeep.credential) på social_marketing.account.
-        - Migrerar legacy-klartext (linkedin_password, facebook_page_access_token)
-          till krypterade keykeep.credential (Fernet) och rensar källfälten.
-        - Publicering läser hemligheten via keykeeps systemväg
-          (`_read_encrypted(..., system=True)`), aldrig klartext.
-    """,
+    Bridge module between odoo-social and keykeep.
+
+    - Adds ``credential_id`` (keykeep.credential) to social_marketing.account.
+    - Migrates legacy plaintext (linkedin_password, facebook_password, ...)
+      to keykeep credentials.
+    ''',
     'author': 'Vertel Sverige AB',
     'website': 'https://vertel.se/apps/odoo-social/social_keykeep',
     'license': 'AGPL-3',

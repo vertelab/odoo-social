@@ -4,9 +4,21 @@
 {
     'name': 'Social: Marketing',
     'category': 'Marketing/Social Marketing',
-    'summary': 'Manage your social marketing',
-    'version': '1.1.1',
-    'description': """Manage your social marketing """,
+    'summary': 'Manage your social marketing.',
+    'version': '18.0.1.1.1',
+    'description': '''
+Marketing
+=========
+
+    Manage your social marketing.
+
+    Features:
+
+        - Web integration: Exposes HTTP endpoints for external systems.
+        - Automation: Scheduled jobs: Social: Publish Scheduled Posts, Social: Refresh Statistics and Snapshots, Social: Backfill Historical Statistics.
+        - UI Integration: Extends 17 view(s) in the Odoo interface.
+        - Extends Odoo: Builds on discuss.channel, mail.thread, message, social.image.render.wizard.
+    ''',
     'website': 'https://vertel.se/apps/odoo-social/social_marketing',
     'depends': ['web', 'mail','link_tracker'],
     'data': [

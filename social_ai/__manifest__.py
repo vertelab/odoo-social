@@ -5,16 +5,21 @@
     'version': '18.0.1.0.1',
     'summary': 'Social coach coworker för Odoo Mind Workspace (social_marketing)',
     'category': 'AI Orchestration',
-    'description': """
-        Bridge mellan odoo-social och ai_agent_core (task 10.5).
+    'description': '''
+Social AI — Bridge
+==================
 
-        Lägger till social-coach-coworkern som data XML:
-        - läser social_marketing.post, account, post.template och
-          ai.okf.concept
-        - drar inläggsförslag → Workspace-agendan (godkända →
-          social_marketing.post schemalagd, inte publicerad omedelbart)
-        - HITL via workspace.activity.suggestion (godkännandekön)
-    """,
+    Lägger till social-coach-coworkern som data XML:
+            - läser social_marketing.post, account, post.template och
+              ai.okf.concept
+            - drar inläggsförslag → Workspace-agendan (godkända →
+              social_marketing.post schemalagd, inte publicerad omedelbart)
+            - HITL via workspace.activity.suggestion (godkännandekön)
+
+    Features:
+
+        - Extends Odoo: Builds on ai.coworker.hitl.
+    ''',
     'author': 'Vertel Sverige AB',
     'website': 'https://vertel.se/apps/odoo-social/social_ai',
     'license': 'AGPL-3',
