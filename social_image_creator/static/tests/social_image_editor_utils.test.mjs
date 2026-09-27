@@ -80,6 +80,58 @@ check("moveItem does not mutate", (() => {
     return list;
 })(), [1, 2, 3]);
 
+// computeInsertIndex: the indicator sits on the TOP edge of the hovered
+// row, so a drop must land directly above it in both drag directions.
+check("insert index equal", utils.computeInsertIndex(2, 2), 2);
+check("insert index up", utils.computeInsertIndex(3, 1), 1);
+check("insert index adjacent up", utils.computeInsertIndex(1, 0), 0);
+check("insert index down", utils.computeInsertIndex(0, 2), 1);
+check("insert index adjacent down", utils.computeInsertIndex(0, 1), 0);
+check("insert index to end zone", utils.computeInsertIndex(1, 4), 3);
+check("insert index last row to end zone", utils.computeInsertIndex(3, 4), 3);
+
+// Full drop semantics through moveItem, panel order (topmost first):
+// dragging "a" onto row "c" (index 2) lands it directly above "c".
+check(
+    "drop down lands above hovered row",
+    utils.moveItem(["a", "b", "c", "d"], 0, utils.computeInsertIndex(0, 2)),
+    ["b", "a", "c", "d"]
+);
+// Dragging "d" onto row "a" (index 0) lands it directly above "a".
+check(
+    "drop up lands above hovered row",
+    utils.moveItem(["a", "b", "c", "d"], 3, utils.computeInsertIndex(3, 0)),
+    ["d", "a", "b", "c"]
+);
+// Dropping on the trailing zone (index = length) appends at the bottom.
+check(
+    "drop in trailing zone appends",
+    utils.moveItem(["a", "b", "c", "d"], 1, utils.computeInsertIndex(1, 4)),
+    ["a", "c", "d", "b"]
+);
+// Dropping the last row on the trailing zone is a no-op.
+check(
+    "drop last row in trailing zone noop",
+    utils.moveItem(["a", "b", "c", "d"], 3, utils.computeInsertIndex(3, 4)),
+    ["a", "b", "c", "d"]
+);
+// Downward drag onto a row directly below the dragged one is a no-op
+// (the item is already directly above the hovered row).
+check(
+    "drop adjacent below noop",
+    utils.moveItem(["a", "b", "c"], 0, utils.computeInsertIndex(0, 1)),
+    ["a", "b", "c"]
+);
+
+// opacityPercentFromFraction: the state.opacity write behind the slider.
+check("opacity percent half", utils.opacityPercentFromFraction(0.5), 50);
+check("opacity percent full", utils.opacityPercentFromFraction(1), 100);
+check("opacity percent zero", utils.opacityPercentFromFraction(0), 0);
+check("opacity percent rounds", utils.opacityPercentFromFraction(0.456), 46);
+check("opacity percent clamps high", utils.opacityPercentFromFraction(1.3), 100);
+check("opacity percent clamps low", utils.opacityPercentFromFraction(-0.2), 0);
+check("opacity percent garbage", utils.opacityPercentFromFraction("x"), 100);
+
 // computeDisplayScale
 check("scale fits width", utils.computeDisplayScale(1200, 630, 600, 630), 0.5);
 check("scale never upscales", utils.computeDisplayScale(800, 400, 2000, 2000), 1);

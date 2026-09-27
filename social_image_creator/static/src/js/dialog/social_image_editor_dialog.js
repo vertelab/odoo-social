@@ -14,6 +14,7 @@ import {
     computeAutofitFontSize,
     computeDisplayScale,
     computeDistributePositions,
+    computeInsertIndex,
     computeSmartSpacing,
     DASH_PRESETS,
     detectStrokePattern,
@@ -23,6 +24,7 @@ import {
     isEmptyBindingValue,
     moveItem,
     newLayerId,
+    opacityPercentFromFraction,
     parseShadowColor,
     buildShadowColor,
     resolveTokens,
@@ -166,6 +168,9 @@ export class SocialImageEditorDialog extends Component {
         // Snapping: guide lines + smart-spacing labels, drawn on contextTop.
         this._snapGuides = { lines: [], distances: [] };
         this._snapAlt = false;
+        // Shift during a move locks the drag to the dominant axis.
+        this._snapShift = false;
+        this._moveStart = null;
         this._companyId = null;
         this._company = null;
         // Live preview: scene snapshot taken before binding resolution,
@@ -181,16 +186,24 @@ export class SocialImageEditorDialog extends Component {
         this._boundOnSnapKeyDown = (ev) => {
             if (ev.key === "Alt") {
                 this._snapAlt = true;
+            } else if (ev.key === "Shift") {
+                this._snapShift = true;
             }
         };
         this._boundOnSnapKeyUp = (ev) => {
             if (ev.key === "Alt") {
                 this._snapAlt = false;
+            } else if (ev.key === "Shift") {
+                this._snapShift = false;
             }
         };
         this._boundOnObjectMoving = (ev) => this._onObjectMoving(ev);
+        this._boundOnDragStart = (ev) => this._onDragStart(ev);
         this._boundDrawSnapGuides = () => this._drawSnapGuides();
-        this._boundClearSnapGuides = () => this._clearSnapGuides();
+        this._boundClearSnapGuides = () => {
+            this._moveStart = null;
+            this._clearSnapGuides();
+        };
 
         onMounted(async () => {
             window.addEventListener("keydown", this._boundOnKeyDown);
@@ -292,6 +305,7 @@ export class SocialImageEditorDialog extends Component {
         // render-engine-os): guides drawn on contextTop, cleared on
         // mouse up. Alt bypasses snapping via the window listeners.
         this._canvas.on("object:moving", this._boundOnObjectMoving);
+        this._canvas.on("mouse:down", this._boundOnDragStart);
         this._canvas.on("after:render", this._boundDrawSnapGuides);
         this._canvas.on("mouse:up", this._boundClearSnapGuides);
         let scene = {};
@@ -1050,12 +1064,60 @@ export class SocialImageEditorDialog extends Component {
     // (ported from render-engine-os; pure math lives in the utils)
     // ------------------------------------------------------------------
 
+    /**
+     * Record where a move begins (pointer + object position) so Shift can
+     * lock the drag to the dominant axis relative to this point. Reset on
+     * mouse up together with the snap guides.
+     */
+    _onDragStart(ev) {
+        if (!this._canvas) {
+            return;
+        }
+        if (!ev.target) {
+            this._moveStart = null;
+            return;
+        }
+        const p = ev.pointer || this._canvas.getPointer(ev.e);
+        this._moveStart = {
+            pointerX: p.x,
+            pointerY: p.y,
+            left: ev.target.left || 0,
+            top: ev.target.top || 0,
+        };
+    }
+
+    /**
+     * Shift held during a move constrains it to one axis, dominant axis
+     * wins (ties count as horizontal). Runs before the snap logic so
+     * guides still work along the free axis, and before the Alt bypass
+     * so Alt+Shift is a free but axis-locked drag.
+     */
+    _applyShiftAxisLock(moving, ev) {
+        if (!this._snapShift || !this._moveStart) {
+            return;
+        }
+        const fc = this._canvas;
+        const p = (ev && (ev.pointer || (ev.e && fc.getPointer(ev.e)))) || null;
+        if (!p) {
+            return;
+        }
+        const dx = p.x - this._moveStart.pointerX;
+        const dy = p.y - this._moveStart.pointerY;
+        if (Math.abs(dx) >= Math.abs(dy)) {
+            moving.top = this._moveStart.top;
+        } else {
+            moving.left = this._moveStart.left;
+        }
+        moving.setCoords();
+    }
+
     _onObjectMoving(ev) {
         const fc = this._canvas;
         const moving = ev.target;
         if (!fc || !moving) {
             return;
         }
+        this._applyShiftAxisLock(moving, ev);
         if (this._snapAlt) {
             this._snapGuides.lines = [];
             this._snapGuides.distances = [];
@@ -1443,6 +1505,24 @@ export class SocialImageEditorDialog extends Component {
         }
         obj._layerId = newLayerId();
         this._canvas.add(obj);
+        this._canvas.setActiveObject(obj);
+        this._canvas.requestRenderAll();
+        this._syncSelection();
+        this._onCanvasChanged();
+    }
+
+    /**
+     * Add at a captured stack position instead of on top: used when an
+     * async load (image from URL) resolves after other objects were
+     * added, so the late object keeps its pick-order slot instead of
+     * overtaking them. Same side effects as _addObject otherwise.
+     */
+    _addObjectAt(obj, index) {
+        if (!this._assertEditable()) {
+            return;
+        }
+        obj._layerId = newLayerId();
+        this._canvas.insertAt(index, obj);
         this._canvas.setActiveObject(obj);
         this._canvas.requestRenderAll();
         this._syncSelection();
@@ -1854,10 +1934,14 @@ export class SocialImageEditorDialog extends Component {
     }
 
     _addImageFromUrl(url, name) {
-        if (!this._fabric) {
+        if (!this._fabric || !this._canvas) {
             return;
         }
         const { width, height } = this._dimensions;
+        // Capture the intended z-position NOW: the image lands whenever
+        // the load finishes, and objects added in between must stay ABOVE
+        // it or the visible order contradicts the pick order.
+        const insertIndex = this._canvas.getObjects().length;
         this._fabric.FabricImage.fromURL(url, {
             left: width * 0.1,
             top: height * 0.1,
@@ -1874,7 +1958,11 @@ export class SocialImageEditorDialog extends Component {
                 if (name) {
                     img._mediaName = name;
                 }
-                this._addObject(img);
+                if (this._canvas.getObjects().length === insertIndex) {
+                    this._addObject(img);
+                } else {
+                    this._addObjectAt(img, insertIndex);
+                }
             })
             .catch((err) => {
                 this.state.message = `Image failed to load: ${err.message || err}`;
@@ -1915,8 +2003,12 @@ export class SocialImageEditorDialog extends Component {
             return;
         }
         const value = Number(ev.target.value) / 100;
+        // Write the state back so the re-render (_syncLayers via
+        // _onCanvasChanged) does not snap the range input to a stale
+        // value mid-drag.
+        this.state.opacity = opacityPercentFromFraction(value);
         for (const obj of objects) {
-            obj.set("opacity", value);
+            obj.set("opacity", this.state.opacity / 100);
         }
         this._canvas.requestRenderAll();
         this._onCanvasChanged();
@@ -3142,7 +3234,12 @@ export class SocialImageEditorDialog extends Component {
         }
         const objects = this._canvas.getObjects();
         const byId = new Map(objects.map((obj) => [obj._layerId, obj]));
-        const newLayers = moveItem(this.state.layers, fromIndex, toIndex);
+        // The indicator promises "directly above the hovered row"; for a
+        // downward drag the removal shifts that row up one slot, so insert
+        // one slot earlier. toIndex may be state.layers.length (trailing
+        // drop zone = append at the bottom).
+        const insertIndex = computeInsertIndex(fromIndex, toIndex);
+        const newLayers = moveItem(this.state.layers, fromIndex, insertIndex);
         const reordered = [...newLayers]
             .reverse()
             .map((layer) => byId.get(layer.id))

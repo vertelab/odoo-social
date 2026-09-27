@@ -102,7 +102,7 @@
             <span class="mx-2 o_social_image_editor_sep"/>
             <label class="d-flex align-items-center gap-1 small text-muted mb-0" title="Opacity">
                 <i class="fa fa-adjust"/>
-                <input type="range" min="0" max="100" step="1" style="width: 90px;" t-att-value="state.opacity" t-on-change="onOpacityChange" t-att-disabled="!state.fabricVersion || !state.hasSelection"/>
+                <input type="range" min="0" max="100" step="1" style="width: 90px;" t-att-value="state.opacity" t-on-input="onOpacityChange" t-att-disabled="!state.fabricVersion || !state.hasSelection"/>
             </label>
             <button type="button" class="btn btn-sm btn-danger" t-on-click="deleteSelected" title="Delete selection" t-att-disabled="!state.fabricVersion || !state.hasSelection">
                 <i class="fa fa-trash-o"/>
@@ -154,6 +154,12 @@
                         </button>
                     </div>
                 </t>
+                <div t-if="state.layers.length"
+                    t-attf-class="o_social_image_editor_layer_dropzone {{ state.dropTargetIndex === state.layers.length ? 'drop-target' : '' }}"
+                    title="Drop here to move to the bottom"
+                    t-on-dragover="(ev) => this.onLayerDragOver(ev, state.layers.length)"
+                    t-on-dragleave="() => this.onLayerDragLeave()"
+                    t-on-drop="(ev) => this.onLayerDrop(ev, state.layers.length)"/>
                 <div t-if="!state.layers.length and !state.busy" class="p-3 text-muted small">
                     No layers yet. Use the toolbar above to add objects.
                 </div>
@@ -437,7 +443,7 @@
                         <label class="o_social_image_editor_prop_row mb-0" title="Opacity">
                             <span>Opacity</span>
                             <span class="o_social_image_editor_prop_value" t-esc="state.opacity + '%'"/>
-                            <input type="range" class="w-100" min="0" max="100" step="1" t-att-value="state.opacity" t-on-change="onOpacityChange"/>
+                            <input type="range" class="w-100" min="0" max="100" step="1" t-att-value="state.opacity" t-on-input="onOpacityChange"/>
                         </label>
                     </div>
 

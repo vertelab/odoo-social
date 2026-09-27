@@ -117,6 +117,35 @@ export function moveItem(list, fromIndex, toIndex) {
 }
 
 /**
+ * Insert position for a layer-panel drag, given the hovered row index
+ * (the indicator sits on the TOP edge of the hovered row, so a drop
+ * promises "lands directly above the hovered row"). For downward drags
+ * (fromIndex < toIndex) the removal shifts the hovered row up by one
+ * slot, so insert one slot earlier to keep that promise. `toIndex` may
+ * be one past the end (trailing drop zone = append at the bottom).
+ */
+export function computeInsertIndex(fromIndex, toIndex) {
+    if (fromIndex === toIndex) {
+        return fromIndex;
+    }
+    return fromIndex < toIndex ? toIndex - 1 : toIndex;
+}
+
+/**
+ * Panel percent (0-100) for a fabric opacity fraction (0-1): rounded and
+ * clamped so a slider write can never store 101 or a negative. The
+ * dialog writes this back into state.opacity so the re-render does not
+ * snap the range input back to a stale value.
+ */
+export function opacityPercentFromFraction(value) {
+    const n = Number(value);
+    if (!Number.isFinite(n)) {
+        return 100;
+    }
+    return Math.round(Math.min(1, Math.max(0, n)) * 100);
+}
+
+/**
  * Scale factor to display a width x height canvas inside an
  * availWidth x availHeight area, never upscaling.
  */
