@@ -333,7 +333,6 @@ msgid "Can link accounts?"
 msgstr "Kan länkas konton?"
 
 #. module: social_marketing
-#: model_terms:ir.ui.view,arch_db:social_marketing.social_image_render_wizard_view_form
 #: model_terms:ir.ui.view,arch_db:social_marketing.social_marketing_post_view_form
 msgid "Cancel"
 msgstr "Avbryt"
@@ -373,7 +372,6 @@ msgid "Comments"
 msgstr ""
 
 #. module: social_marketing
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_template__company_id
 #: model:ir.model.fields,field_description:social_marketing.field_social_marketing_account__company_id
 #: model:ir.model.fields,field_description:social_marketing.field_social_marketing_account_stat__company_id
 #: model:ir.model.fields,field_description:social_marketing.field_social_marketing_live_post__company_id
@@ -441,8 +439,6 @@ msgid "Controls if we can link accounts or not."
 msgstr "Kontrollerar om vi kan koppla konton eller inte."
 
 #. module: social_marketing
-#: model:ir.actions.act_window,name:social_marketing.action_social_image_render_wizard
-#: model_terms:ir.ui.view,arch_db:social_marketing.social_image_render_wizard_view_form
 #: model_terms:ir.ui.view,arch_db:social_marketing.social_marketing_post_view_form
 msgid "Create Image from Template"
 msgstr "Skapa bild från mall"
@@ -464,10 +460,6 @@ msgstr ""
 "%(company_names)s att dela med sig av sina konton"
 
 #. module: social_marketing
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_render_wizard__create_uid
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_render_wizard_line__create_uid
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_template__create_uid
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_template_placeholder__create_uid
 #: model:ir.model.fields,field_description:social_marketing.field_social_marketing_account__create_uid
 #: model:ir.model.fields,field_description:social_marketing.field_social_marketing_account_stat__create_uid
 #: model:ir.model.fields,field_description:social_marketing.field_social_marketing_cron_line__create_uid
@@ -486,10 +478,6 @@ msgid "Created by"
 msgstr "Skapad av"
 
 #. module: social_marketing
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_render_wizard__create_date
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_render_wizard_line__create_date
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_template__create_date
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_template_placeholder__create_date
 #: model:ir.model.fields,field_description:social_marketing.field_social_marketing_account__create_date
 #: model:ir.model.fields,field_description:social_marketing.field_social_marketing_account_stat__create_date
 #: model:ir.model.fields,field_description:social_marketing.field_social_marketing_cron_line__create_date
@@ -521,11 +509,6 @@ msgstr ""
 #: model:ir.model.fields,field_description:social_marketing.field_res_config_settings__social_marketing_cron_line_ids
 msgid "Cron-rader"
 msgstr ""
-
-#. module: social_marketing
-#: model:ir.model.fields.selection,name:social_marketing.selection__social_image_template__platform__custom
-msgid "Custom"
-msgstr "Anpassad"
 
 #. module: social_marketing
 #: model:ir.model.fields.selection,name:social_marketing.selection__social_marketing_cron_line__cron_interval_type__days
@@ -631,10 +614,6 @@ msgid "Dispatched"
 msgstr "Skickad"
 
 #. module: social_marketing
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_render_wizard__display_name
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_render_wizard_line__display_name
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_template__display_name
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_template_placeholder__display_name
 #: model:ir.model.fields,field_description:social_marketing.field_social_marketing_account__display_name
 #: model:ir.model.fields,field_description:social_marketing.field_social_marketing_account_stat__display_name
 #: model:ir.model.fields,field_description:social_marketing.field_social_marketing_cron_line__display_name
@@ -789,11 +768,6 @@ msgid "Font awesome icon e.g. fa-tasks"
 msgstr "Font awesome-ikon, t.ex. fa-tasks"
 
 #. module: social_marketing
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_render_wizard__format
-msgid "Format"
-msgstr "Format"
-
-#. module: social_marketing
 #: model:ir.model.fields,field_description:social_marketing.field_social_marketing_stream_post__formatted_published_date
 msgid "Formatted Published Date"
 msgstr "Formaterat publicerat datum"
@@ -845,15 +819,6 @@ msgid "Hatched"
 msgstr "Kläckt"
 
 #. module: social_marketing
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_template__height
-msgid "Height (px)"
-msgstr "Höjd (px)"
-
-#. module: social_marketing
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_render_wizard__id
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_render_wizard_line__id
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_template__id
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_template_placeholder__id
 #: model:ir.model.fields,field_description:social_marketing.field_social_marketing_account__id
 #: model:ir.model.fields,field_description:social_marketing.field_social_marketing_account_stat__id
 #: model:ir.model.fields,field_description:social_marketing.field_social_marketing_cron_line__id
@@ -902,15 +867,7 @@ msgid "Image"
 msgstr "Bild"
 
 #. module: social_marketing
-#: model_terms:ir.ui.view,arch_db:social_marketing.social_image_template_view_form
-msgid "Image Template"
-msgstr "Bildmall"
-
-#. module: social_marketing
-#: model:ir.actions.act_window,name:social_marketing.action_social_image_template
-#: model:ir.ui.menu,name:social_marketing.menu_social_image_template
 #: model_terms:ir.ui.view,arch_db:social_marketing.res_config_settings_view_form
-#: model_terms:ir.ui.view,arch_db:social_marketing.social_image_template_view_list
 msgid "Image Templates"
 msgstr "Bildmallar"
 
@@ -924,12 +881,6 @@ msgstr "URL för bild"
 #: code:addons/social_marketing/static/src/xml/social_marketing_templates.xml:0
 msgid "Image Url"
 msgstr "Url för bild"
-
-#. module: social_marketing
-#. odoo-python
-#: code:addons/social_marketing/models/social_image_render_wizard.py:0
-msgid "Image created"
-msgstr "Bild skapad"
 
 #. module: social_marketing
 #: model:ir.model.fields,field_description:social_marketing.field_social_marketing_post__image_urls
@@ -953,16 +904,6 @@ msgstr ""
 #: code:addons/social_marketing/static/src/xml/social_marketing_templates.xml:0
 msgid "Insights"
 msgstr "Insikter"
-
-#. module: social_marketing
-#: model:ir.model.fields.selection,name:social_marketing.selection__social_image_template__platform__instagram_square
-msgid "Instagram Square (1080×1080)"
-msgstr "Instagram kvadrat (1080×1080)"
-
-#. module: social_marketing
-#: model:ir.model.fields.selection,name:social_marketing.selection__social_image_template__platform__instagram_story
-msgid "Instagram Story (1080×1920)"
-msgstr "Instagram Story (1080×1920)"
 
 #. module: social_marketing
 #: model:ir.model.fields,field_description:social_marketing.field_social_marketing_cron_line__cron_interval_number
@@ -1002,21 +943,11 @@ msgid "Kör nu"
 msgstr ""
 
 #. module: social_marketing
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_render_wizard_line__label
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_template_placeholder__label
-msgid "Label"
-msgstr "Etikett"
-
-#. module: social_marketing
 #: model:ir.model.fields,field_description:social_marketing.field_social_marketing_account__last_backfilled_date
 msgid "Last Backfilled Date"
 msgstr ""
 
 #. module: social_marketing
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_render_wizard__write_uid
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_render_wizard_line__write_uid
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_template__write_uid
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_template_placeholder__write_uid
 #: model:ir.model.fields,field_description:social_marketing.field_social_marketing_account__write_uid
 #: model:ir.model.fields,field_description:social_marketing.field_social_marketing_account_stat__write_uid
 #: model:ir.model.fields,field_description:social_marketing.field_social_marketing_cron_line__write_uid
@@ -1035,10 +966,6 @@ msgid "Last Updated by"
 msgstr "Senast uppdaterad av"
 
 #. module: social_marketing
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_render_wizard__write_date
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_render_wizard_line__write_date
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_template__write_date
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_template_placeholder__write_date
 #: model:ir.model.fields,field_description:social_marketing.field_social_marketing_account__write_date
 #: model:ir.model.fields,field_description:social_marketing.field_social_marketing_account_stat__write_date
 #: model:ir.model.fields,field_description:social_marketing.field_social_marketing_cron_line__write_date
@@ -1145,11 +1072,6 @@ msgstr "Länk till den externa statistiken för det sociala kontot"
 #: model:ir.model.fields,field_description:social_marketing.field_social_marketing_account__is_media_disconnected
 msgid "Link with external Social Media is broken"
 msgstr "Länken till externa sociala medier är bruten"
-
-#. module: social_marketing
-#: model:ir.model.fields.selection,name:social_marketing.selection__social_image_template__platform__linkedin_post
-msgid "LinkedIn Post (1200×627)"
-msgstr "LinkedIn-inlägg (1200×627)"
 
 #. module: social_marketing
 #: model:ir.model.fields,help:social_marketing.field_social_marketing_post__account_allowed_ids
@@ -1302,9 +1224,6 @@ msgid "Månader"
 msgstr ""
 
 #. module: social_marketing
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_render_wizard_line__name
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_template__name
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_template_placeholder__name
 #: model:ir.model.fields,field_description:social_marketing.field_social_marketing_account__name
 #: model:ir.model.fields,field_description:social_marketing.field_social_marketing_media__name
 #: model:ir.model.fields,field_description:social_marketing.field_social_marketing_post__name
@@ -1507,25 +1426,10 @@ msgid "Only one snapshot per metric per day per live post is allowed."
 msgstr ""
 
 #. module: social_marketing
-#: model:ir.model.fields.selection,name:social_marketing.selection__social_image_template__platform__og
-msgid "Open Graph (1200×630)"
-msgstr "Open Graph (1200×630)"
-
-#. module: social_marketing
 #. odoo-javascript
 #: code:addons/social_marketing/static/src/xml/social_marketing_templates.xml:0
 msgid "Or add"
 msgstr "Eller lägg till"
-
-#. module: social_marketing
-#: model:ir.model.fields.selection,name:social_marketing.selection__social_image_render_wizard__format__png
-msgid "PNG"
-msgstr ""
-
-#. module: social_marketing
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_template__png_master
-msgid "PNG Master"
-msgstr "PNG-master"
 
 #. module: social_marketing
 #: model:ir.model.fields.selection,name:social_marketing.selection__social_publish_pipeline_step__state__pending
@@ -1556,20 +1460,6 @@ msgstr ""
 #: model:ir.model.fields,field_description:social_marketing.field_social_marketing_cron_line__cron_interval_type
 msgid "Period"
 msgstr ""
-
-#. module: social_marketing
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_render_wizard__line_ids
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_template__placeholder_ids
-#: model_terms:ir.ui.view,arch_db:social_marketing.social_image_render_wizard_view_form
-#: model_terms:ir.ui.view,arch_db:social_marketing.social_image_template_view_form
-#: model_terms:ir.ui.view,arch_db:social_marketing.social_image_template_view_list
-msgid "Placeholders"
-msgstr "Platshållare"
-
-#. module: social_marketing
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_template__platform
-msgid "Platform"
-msgstr "Plattform"
 
 #. module: social_marketing
 #. odoo-python
@@ -1803,16 +1693,6 @@ msgid "Related social Account"
 msgstr "Relaterat socialt konto"
 
 #. module: social_marketing
-#: model_terms:ir.ui.view,arch_db:social_marketing.social_image_render_wizard_view_form
-msgid "Render"
-msgstr "Rendera"
-
-#. module: social_marketing
-#: model:ir.model,name:social_marketing.model_social_image_render_wizard
-msgid "Render Image Template"
-msgstr "Rendera bildmall"
-
-#. module: social_marketing
 #: model:ir.model.fields,field_description:social_marketing.field_res_config_settings__social_marketing_render_service_token
 #: model_terms:ir.ui.view,arch_db:social_marketing.res_config_settings_view_form
 msgid "Render Service Token"
@@ -1823,35 +1703,6 @@ msgstr "Render-tjänstens token"
 #: model_terms:ir.ui.view,arch_db:social_marketing.res_config_settings_view_form
 msgid "Render Service URL"
 msgstr "Render-tjänstens URL"
-
-#. module: social_marketing
-#: model:ir.model,name:social_marketing.model_social_image_render_wizard_line
-msgid "Render Wizard Placeholder Line"
-msgstr "Render-guide platshållarrad"
-
-#. module: social_marketing
-#. odoo-python
-#: code:addons/social_marketing/models/social_image_template.py:0
-msgid ""
-"Render service is not configured. Set the render service URL in Settings "
-"(Social Marketing)."
-msgstr ""
-
-#. module: social_marketing
-#. odoo-python
-#: code:addons/social_marketing/models/social_image_template.py:0
-msgid ""
-"Render service is unreachable (%s). Check the configured URL and that the "
-"service is running."
-msgstr ""
-
-#. module: social_marketing
-#. odoo-python
-#: code:addons/social_marketing/models/social_image_template.py:0
-msgid ""
-"Render service returned HTTP %s. Check the template scene and the service "
-"logs."
-msgstr ""
 
 #. module: social_marketing
 #. odoo-javascript
@@ -1881,16 +1732,6 @@ msgid "SMS Delivery error"
 msgstr "SMS leveransfel"
 
 #. module: social_marketing
-#: model:ir.model.fields.selection,name:social_marketing.selection__social_image_render_wizard__format__svg
-msgid "SVG"
-msgstr ""
-
-#. module: social_marketing
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_template__svg_master
-msgid "SVG Master"
-msgstr "SVG-master"
-
-#. module: social_marketing
 #. odoo-javascript
 #: code:addons/social_marketing/static/src/xml/social_image_editor_field.xml:0
 msgid "Save"
@@ -1901,16 +1742,6 @@ msgstr ""
 #: code:addons/social_marketing/static/src/xml/social_image_editor_field.xml:0
 msgid "Save scene + SVG master"
 msgstr "Spara scen + SVG-master"
-
-#. module: social_marketing
-#: model_terms:ir.ui.view,arch_db:social_marketing.social_image_template_view_form
-msgid "Scene"
-msgstr ""
-
-#. module: social_marketing
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_template__scene_json
-msgid "Scene (Fabric JSON)"
-msgstr "Scen (Fabric JSON)"
 
 #. module: social_marketing
 #: model_terms:ir.ui.view,arch_db:social_marketing.social_marketing_post_view_form
@@ -2003,16 +1834,6 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:social_marketing.social_marketing_account_view_list
 msgid "Social Accounts"
 msgstr "Sociala konton"
-
-#. module: social_marketing
-#: model:ir.model,name:social_marketing.model_social_image_template
-msgid "Social Image Template"
-msgstr "Social bildmall"
-
-#. module: social_marketing
-#: model:ir.model,name:social_marketing.model_social_image_template_placeholder
-msgid "Social Image Template Placeholder"
-msgstr "Social bildmall-platshållare"
 
 #. module: social_marketing
 #: model:ir.model,name:social_marketing.model_social_marketing_live_post
@@ -2283,18 +2104,6 @@ msgid "Sync"
 msgstr "Synk"
 
 #. module: social_marketing
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_render_wizard__template_id
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_template_placeholder__template_id
-msgid "Template"
-msgstr "Mall"
-
-#. module: social_marketing
-#. odoo-python
-#: code:addons/social_marketing/models/social_image_template.py:0
-msgid "Template scene is not valid JSON."
-msgstr "Mallscenen är inte giltig JSON."
-
-#. module: social_marketing
 #. odoo-python
 #: code:addons/social_marketing/models/social_marketing_post_template.py:0
 msgid "The 'message' field is required for post ID %s"
@@ -2354,12 +2163,6 @@ msgstr ""
 #: model:ir.model.fields,field_description:social_marketing.field_social_marketing_stream__media_image
 msgid "The related Social Media's image"
 msgstr "Det relaterade sociala mediets bild"
-
-#. module: social_marketing
-#. odoo-python
-#: code:addons/social_marketing/models/social_image_render_wizard.py:0
-msgid "The rendered image was added to the post."
-msgstr "Den renderade bilden lades till i inlägget."
 
 #. module: social_marketing
 #: model:ir.model.fields,help:social_marketing.field_social_marketing_post__media_ids
@@ -2441,12 +2244,6 @@ msgstr "Okänt fel"
 
 #. module: social_marketing
 #. odoo-python
-#: code:addons/social_marketing/models/social_image_template.py:0
-msgid "Unsupported render format: %s"
-msgstr "Formatet stöds inte: %s"
-
-#. module: social_marketing
-#. odoo-python
 #: code:addons/social_marketing/models/social_marketing_post_template.py:0
 msgid "Uploaded file does not seem to be a valid image."
 msgstr "Den uppladdade filen verkar inte innehålla en giltig bild."
@@ -2473,7 +2270,6 @@ msgstr ""
 "till ett visst media (\"facebook\", \"X\", ...)."
 
 #. module: social_marketing
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_render_wizard_line__value
 #: model:ir.model.fields,field_description:social_marketing.field_social_marketing_account_stat__value
 #: model:ir.model.fields,field_description:social_marketing.field_social_marketing_live_post_stat__value
 msgid "Value"
@@ -2510,22 +2306,12 @@ msgstr ""
 "publiceringsdatum kan skilja sig åt beroende på media."
 
 #. module: social_marketing
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_template__width
-msgid "Width (px)"
-msgstr "Bredd (px)"
-
-#. module: social_marketing
 #: model:ir.model.fields,help:social_marketing.field_social_marketing_post__image_ids
 #: model:ir.model.fields,help:social_marketing.field_social_marketing_post_template__image_ids
 msgid "Will attach images to your posts (if the social media supports it)."
 msgstr ""
 "Kan bifoga bilder till dina inlägg (om det sociala mediet stöder det).Kan "
 "bifoga bilder till dina inlägg (om det sociala mediet stöder det)."
-
-#. module: social_marketing
-#: model:ir.model.fields,field_description:social_marketing.field_social_image_render_wizard_line__wizard_id
-msgid "Wizard"
-msgstr ""
 
 #. module: social_marketing
 #: model:ir.model.fields,help:social_marketing.field_social_marketing_cron_line__cron_code

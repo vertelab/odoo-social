@@ -19,4 +19,3 @@ from . import social_marketing_live_post_stat
 from . import social_publish_rate_limit
 from . import social_publish_pipeline_step
 from . import social_marketing_platform
-from . import social_data_binding

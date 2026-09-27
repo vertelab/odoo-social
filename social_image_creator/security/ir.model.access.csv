@@ -11,3 +11,5 @@ access_social_image_render_wizard_line_user,social.image.render.wizard.line.user
 access_social_image_render_wizard_line_manager,social.image.render.wizard.line.manager,model_social_image_render_wizard_line,social_marketing.group_social_marketing_manager,1,1,1,1
 access_social_image_bulk_wizard_user,social.image.bulk.wizard.user,model_social_image_bulk_wizard,social_marketing.group_social_marketing_user,1,1,1,1
 access_social_image_bulk_wizard_manager,social.image.bulk.wizard.manager,model_social_image_bulk_wizard,social_marketing.group_social_marketing_manager,1,1,1,1
+access_social_data_binding_user,social.data.binding.user,model_social_data_binding,social_marketing.group_social_marketing_user,1,0,0,0
+access_social_data_binding_manager,social.data.binding.manager,model_social_data_binding,social_marketing.group_social_marketing_manager,1,1,1,1

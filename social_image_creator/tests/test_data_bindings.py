@@ -4,7 +4,7 @@
 from odoo.exceptions import AccessError, ValidationError
 from odoo.tests.common import TransactionCase, tagged
 
-from ..models.social_data_binding_core import (
+from odoo.addons.social_marketing.models.social_data_binding_core import (
     collect_tokens,
     substitute_tokens,
     web_image_source,

@@ -14,6 +14,8 @@
         'data/social_image_size_data.xml',
         'views/social_image_template_views.xml',
         'views/social_image_render_wizard_views.xml',
+        'views/social_data_binding_views.xml',
+        'views/social_marketing_post_views.xml',
         'views/res_config_settings_views.xml',
     ],
     'assets': {

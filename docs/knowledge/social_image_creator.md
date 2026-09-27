@@ -16,6 +16,22 @@ server-side rendering through the Node render service in
   come from `ir.config_parameter` (`social_marketing.render_service_url`
   / `_token`); an unset URL raises a UserError pointing to Settings.
 - `social.image.template.placeholder`: named fill-in fields.
+- `social.data.binding`: named link between a template token and one field
+  of one model; `{{ token }}` is looked up, never evaluated. A binding
+  belongs to exactly one owner, either an image template (`template_id`)
+  or a post template (`post_template_id`). The pure token helpers
+  (`substitute_tokens`, `collect_tokens`, `web_image_source`) live in
+  `social_marketing/models/social_data_binding_core.py`, kept there
+  because `social_marketing_agency` imports them without depending on
+  this module.
+- `social.image.template` / `social_marketing.post.template` extensions
+  (`models/social_data_binding.py`): `binding_ids` one2many plus
+  `get_binding_values` / `render_bound_text`; templates additionally get
+  `render_template_for_record`. The "Create Image from Template" button
+  on the post form is `views/social_marketing_post_views.xml` here (it
+  inherits `social_marketing.social_marketing_post_view_form` and opens
+  this module's render wizard action), and the Data Bindings groups on
+  both template forms are `views/social_data_binding_views.xml`.
 - `social.image.size`: data-driven size presets.
 - `social.image.render.wizard` (+ `.line`): render dialog. Fields:
   `template_id`, `format` (png/svg), `render_timing`

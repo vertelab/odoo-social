@@ -9,7 +9,7 @@ from odoo.exceptions import AccessError, MissingError, ValidationError
 from odoo.tools import format_date, format_datetime
 from odoo.tools.misc import formatLang
 
-from .social_data_binding_core import (
+from odoo.addons.social_marketing.models.social_data_binding_core import (
     collect_tokens,
     substitute_tokens,
     web_image_source,
