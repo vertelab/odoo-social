@@ -469,6 +469,203 @@ export function computeAutofitFontSize({
     return Math.max(floor, best);
 }
 
+/**
+ * Render-time autofit floor, mirrored from MIN_AUTOFIT_FONT_SIZE in
+ * render_service/render_core.mjs. resolveTextForPreview passes it
+ * explicitly so preview and server render converge on the same size;
+ * the edit-time autofit above keeps its own default.
+ */
+export const MIN_AUTOFIT_FONT_SIZE = 4;
+
+/**
+ * Layer-level case transform, mirrored from applyTextTransform in
+ * render_service/render_core.mjs. Only "upper" / "lower" / "title" do
+ * anything; the semantics come from applyPipeTransform so the
+ * _textTransform layer prop and the {{token|pipe}} form can never drift
+ * apart. Non-string input passes through untouched.
+ */
+export function applyTextTransform(text, transform) {
+    if (typeof text !== "string") {
+        return text;
+    }
+    if (transform === "upper") {
+        return applyPipeTransform(text, "upper");
+    }
+    if (transform === "lower") {
+        return applyPipeTransform(text, "lower");
+    }
+    if (transform === "title") {
+        return applyPipeTransform(text, "title");
+    }
+    return text;
+}
+
+/**
+ * Parse a small subset of markdown (**bold**, *italic*, _italic_) and
+ * produce the stripped string plus flat segment ranges carrying
+ * weight/style. Mirrors parseMarkdownSegments in
+ * render_service/render_core.mjs exactly; the parity test in
+ * static/tests pins the two. A backslash escapes the next marker
+ * (\* \_ \\), so escaped markers stay literal, and unmatched markers
+ * stay literal too (nothing parses, null is returned, the caller keeps
+ * the text). Newlines pass through untouched.
+ *
+ * Returns { text, segments: [{start, end, weight?, style?}] }, or null
+ * when nothing was parsed.
+ */
+export function parseMarkdownSegments(text) {
+    if (typeof text !== "string") {
+        return null;
+    }
+    if (!/[*_]/.test(text)) {
+        return null; // fast-out: no markers at all
+    }
+    let stripped = "";
+    const segments = []; // {start, end, weight?, style?}
+    let i = 0;
+    let boldStart = -1;
+    let italicStart = -1;
+    while (i < text.length) {
+        const c = text[i];
+        const n = text[i + 1];
+        // Escape: \* \_ \\ pass the next character through literally.
+        if (c === "\\" && (n === "*" || n === "_" || n === "\\")) {
+            stripped += n;
+            i += 2;
+            continue;
+        }
+        // Bold: ** ... **
+        if (c === "*" && n === "*") {
+            if (boldStart === -1) {
+                boldStart = stripped.length;
+            } else {
+                segments.push({
+                    start: boldStart,
+                    end: stripped.length,
+                    weight: "bold",
+                });
+                boldStart = -1;
+            }
+            i += 2;
+            continue;
+        }
+        // Italic: single * or _
+        if (c === "*" || c === "_") {
+            if (italicStart === -1) {
+                italicStart = stripped.length;
+            } else {
+                segments.push({
+                    start: italicStart,
+                    end: stripped.length,
+                    style: "italic",
+                });
+                italicStart = -1;
+            }
+            i += 1;
+            continue;
+        }
+        stripped += c;
+        i++;
+    }
+    if (segments.length === 0) {
+        return null;
+    }
+    return { text: stripped, segments };
+}
+
+// Translate flat string ranges into Fabric's styles structure:
+//   { lineIdx: { charIdxWithinLine: { fontWeight, fontStyle } } }
+function markdownSegmentsToFabricStyles(stripped, segments) {
+    const lines = stripped.split("\n");
+    const lineStarts = [];
+    let pos = 0;
+    for (const line of lines) {
+        lineStarts.push(pos);
+        pos += line.length + 1;
+    }
+    const styles = {};
+    for (const seg of segments) {
+        for (let p = seg.start; p < seg.end; p++) {
+            let lineIdx = 0;
+            for (let li = 0; li < lineStarts.length; li++) {
+                if (p >= lineStarts[li]) {
+                    lineIdx = li;
+                } else {
+                    break;
+                }
+            }
+            const ci = p - lineStarts[lineIdx];
+            if (!styles[lineIdx]) {
+                styles[lineIdx] = {};
+            }
+            const merged = styles[lineIdx][ci] || {};
+            if (seg.weight) {
+                merged.fontWeight = seg.weight;
+            }
+            if (seg.style) {
+                merged.fontStyle = seg.style;
+            }
+            styles[lineIdx][ci] = merged;
+        }
+    }
+    return styles;
+}
+
+/**
+ * Preview-side mirror of the render-time typography pipeline in
+ * applyBindingsToScene (render_service/render_core.mjs): resolve
+ * tokens, apply _textTransform, convert inline markdown to per-char
+ * styles merged into any existing styles, then shrink fontSize to fit
+ * when _overflow is autofit. Mutates and returns the object (a live
+ * fabric object in the dialog, a plain stand-in in tests), so the
+ * editor's live preview shows exactly what the server will render.
+ *
+ * `measure` mirrors the server option: (lineText, fontDescription) ->
+ * width. Without it every candidate "fits" and fontSize stays
+ * unchanged.
+ */
+export function resolveTextForPreview(obj, bindings, { measure } = {}) {
+    if (!obj || typeof obj.text !== "string") {
+        return obj;
+    }
+    let text = resolveTokens(obj.text, bindings);
+    text = applyTextTransform(text, obj._textTransform);
+    const md = parseMarkdownSegments(text);
+    if (md) {
+        text = md.text;
+        const mdStyles = markdownSegmentsToFabricStyles(text, md.segments);
+        obj.styles = obj.styles || {};
+        for (const [lineIdx, charMap] of Object.entries(mdStyles)) {
+            const lineStyles = { ...(obj.styles[lineIdx] || {}) };
+            for (const [ci, attrs] of Object.entries(charMap)) {
+                // Per-char merge: markdown only claims fontWeight /
+                // fontStyle, any other attribute already on the char
+                // (fill, underline, ...) survives.
+                lineStyles[ci] = { ...(lineStyles[ci] || {}), ...attrs };
+            }
+            obj.styles[lineIdx] = lineStyles;
+        }
+    }
+    if (obj._overflow === "autofit" && obj.fontSize) {
+        const measureLine = typeof measure === "function" ? measure : () => 0;
+        obj.fontSize = computeAutofitFontSize({
+            text,
+            boxWidth: obj.width,
+            startSize: obj.fontSize,
+            minSize: MIN_AUTOFIT_FONT_SIZE,
+            measure: (size, line) =>
+                measureLine(line, {
+                    fontSize: size,
+                    fontFamily: obj.fontFamily,
+                    fontWeight: obj.fontWeight,
+                    fontStyle: obj.fontStyle,
+                }),
+        });
+    }
+    obj.text = text;
+    return obj;
+}
+
 // ------------------------------------------------------------------
 // Color helpers
 // ------------------------------------------------------------------

@@ -260,4 +260,58 @@ console.log('✓ token substitution with pipes')
     console.log('✓ combined scene with bindings')
 }
 
+// 9. Render-time typography pipeline (tasks 1.1, 2.1-2.3): markdown,
+// transform and autofit composed on bound text, exactly as /render
+// runs it with the node-canvas measure server.mjs injects.
+{
+    // Injected measure speaks (lineText, fontDescription) like the
+    // node-canvas one in server.mjs.
+    const measure = (line, desc) => line.length * desc.fontSize * 0.6
+    const scene = {
+        version: '6.9.1',
+        background: '#ffffff',
+        objects: [
+            {
+                type: 'textbox',
+                text: '{{name}}',
+                _textTransform: 'upper',
+                _overflow: 'autofit',
+                width: 120,
+                fontSize: 40,
+                fontFamily: 'Arial',
+            },
+            { type: 'textbox', text: '*{{categ}}*' },
+            { type: 'textbox', text: '{{pitch}}' },
+        ],
+    }
+    const out = applyBindingsToScene(
+        scene,
+        { name: '**acme ab**', categ: 'chairs', pitch: 'Köp **nu**' },
+        { measure }
+    )
+
+    // Object 1: transform runs on the resolved value, markdown strips
+    // the markers, autofit measures the STRIPPED text ('ACME AB', 7
+    // chars): 7 * 28 * 0.6 = 117.6 <= 120, 29 overflows.
+    assert.equal(out.objects[0].text, 'ACME AB')
+    assert.equal(out.objects[0].fontSize, 28)
+    for (let i = 0; i < 7; i++) {
+        assert.equal(out.objects[0].styles['0'][i].fontWeight, 'bold', `char ${i}`)
+    }
+
+    // Object 2: markdown around the token, no transform, no autofit.
+    assert.equal(out.objects[1].text, 'chairs')
+    assert.equal(out.objects[1].styles['0'][0].fontStyle, 'italic')
+    assert.equal(out.objects[1].styles['0'][5].fontStyle, 'italic')
+
+    // Object 3: markdown only inside the substituted value.
+    assert.equal(out.objects[2].text, 'Köp nu')
+    assert.equal(out.objects[2].styles['0'][4].fontWeight, 'bold')
+
+    // The stored scene still holds raw tokens and the designed font size.
+    assert.equal(scene.objects[0].text, '{{name}}')
+    assert.equal(scene.objects[0].fontSize, 40)
+    console.log('✓ combined markdown + transform + autofit pipeline')
+}
+
 console.log('\nALL binding TESTS PASSED')

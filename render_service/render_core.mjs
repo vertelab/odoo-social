@@ -58,6 +58,22 @@ export function applyPipeTransform(value, pipe) {
 }
 
 /**
+ * Apply a layer-level case transform to a resolved string. Only
+ * 'upper' / 'lower' / 'title' do anything; null, 'none' and unknown
+ * values return the text unchanged. The semantics come from
+ * applyPipeTransform so the _textTransform layer prop and the
+ * {{token|pipe}} form can never drift apart. Non-string input passes
+ * through untouched.
+ */
+export function applyTextTransform(text, transform) {
+    if (typeof text !== 'string') return text
+    if (transform === 'upper') return applyPipeTransform(text, 'upper')
+    if (transform === 'lower') return applyPipeTransform(text, 'lower')
+    if (transform === 'title') return applyPipeTransform(text, 'title')
+    return text
+}
+
+/**
  * Substitute every {{name}} / {{path|pipe...}} token in `text` using
  * `bindings`. Unknown tokens are left untouched. Values are always
  * injected as text.
@@ -173,6 +189,175 @@ export function prepareCoverFit(obj, fitTargets) {
     obj.top = top + dy
 }
 
+// ------------------------------------------------------------------
+// Render-time typography (design D2 in openspec/changes/creator-
+// render-parity): case transform, inline markdown and overflow autofit
+// all run inside applyBindingsToScene, after token substitution, so a
+// bound value is styled exactly as the editor preview shows it.
+// ------------------------------------------------------------------
+
+/**
+ * Autofit floor: a bound text is never shrunk below this size, whatever
+ * the measurement says. The editor's edit-time autofit uses its own
+ * (higher) floor; this one guards render-time fitting only.
+ */
+export const MIN_AUTOFIT_FONT_SIZE = 4
+
+// Longest line of a (possibly multi-line) text, by character length.
+// Width measuring is delegated to the caller, so this stays pure.
+// Mirrors widestLine in social_image_editor_utils.js.
+function widestLine(text) {
+    if (typeof text !== 'string' || !text) {
+        return ''
+    }
+    return text.split('\n').reduce((a, b) => (b.length > a.length ? b : a), '')
+}
+
+/**
+ * Autofit font size: the largest font size at or below startSize whose
+ * measured text width fits inside boxWidth. Never grows the text, never
+ * shrinks below minSize. Binary search keeps it cheap and deterministic.
+ * Mirrors computeAutofitFontSize in social_image_editor_utils.js
+ * exactly; editor preview and server render must converge on the same
+ * size for the same text.
+ *
+ * measure is (fontSize, widestLineText) => width in the same units as
+ * boxWidth, injected so this stays pure and testable.
+ */
+export function computeAutofitFontSize({
+    text,
+    boxWidth,
+    startSize,
+    minSize = MIN_AUTOFIT_FONT_SIZE,
+    measure,
+}) {
+    if (typeof measure !== 'function' || !boxWidth || boxWidth <= 0) {
+        return startSize
+    }
+    const line = widestLine(text)
+    if (!line) {
+        return startSize
+    }
+    const start = Number(startSize) || 0
+    const floor = Math.max(1, Number(minSize) || MIN_AUTOFIT_FONT_SIZE)
+    if (start <= floor) {
+        return start
+    }
+    if (measure(start, line) <= boxWidth) {
+        return start
+    }
+    if (measure(floor, line) > boxWidth) {
+        return floor
+    }
+    let lo = floor
+    let hi = start
+    for (let i = 0; i < 24; i++) {
+        const mid = (lo + hi) / 2
+        if (measure(mid, line) <= boxWidth) {
+            lo = mid
+        } else {
+            hi = mid
+        }
+    }
+    // The search converges from below, so an exact integer fit can floor
+    // one short; probe upward while the next integer still fits.
+    let best = Math.floor(lo)
+    while (best < start && measure(best + 1, line) <= boxWidth) {
+        best += 1
+    }
+    return Math.max(floor, best)
+}
+
+/**
+ * Parse a small subset of markdown (**bold**, *italic*, _italic_) and
+ * produce the stripped string plus flat segment ranges carrying
+ * weight/style. Ported from parseMarkdownToFabricStyles in
+ * render-engine-os render/server.mjs, with one addition: a backslash
+ * escapes the next marker (\\* \\_ \\\\), so escaped markers stay
+ * literal instead of opening or closing a segment. Unmatched markers
+ * also stay literal: a text whose markers never pair up parses to no
+ * segments at all, the function returns null and the caller leaves the
+ * text untouched. Newlines pass through untouched (Fabric handles them
+ * natively).
+ *
+ * Returns { text, segments: [{start, end, weight?, style?}] }, or null
+ * when nothing was parsed so callers can skip the work.
+ */
+export function parseMarkdownSegments(text) {
+    if (typeof text !== 'string') return null
+    if (!/[*_]/.test(text)) return null // fast-out: no markers at all
+    let stripped = ''
+    const segments = [] // {start, end, weight?, style?}
+    let i = 0
+    let boldStart = -1
+    let italicStart = -1
+    while (i < text.length) {
+        const c = text[i]
+        const n = text[i + 1]
+        // Escape: \* \_ \\ pass the next character through literally.
+        if (c === '\\' && (n === '*' || n === '_' || n === '\\')) {
+            stripped += n
+            i += 2
+            continue
+        }
+        // Bold: ** ... **
+        if (c === '*' && n === '*') {
+            if (boldStart === -1) {
+                boldStart = stripped.length
+            } else {
+                segments.push({ start: boldStart, end: stripped.length, weight: 'bold' })
+                boldStart = -1
+            }
+            i += 2
+            continue
+        }
+        // Italic: single * or _
+        if (c === '*' || c === '_') {
+            if (italicStart === -1) {
+                italicStart = stripped.length
+            } else {
+                segments.push({ start: italicStart, end: stripped.length, style: 'italic' })
+                italicStart = -1
+            }
+            i += 1
+            continue
+        }
+        stripped += c
+        i++
+    }
+    if (segments.length === 0) return null
+    return { text: stripped, segments }
+}
+
+// Translate flat string ranges into Fabric's styles structure:
+//   { lineIdx: { charIdxWithinLine: { fontWeight, fontStyle } } }
+function markdownSegmentsToFabricStyles(stripped, segments) {
+    const lines = stripped.split('\n')
+    const lineStarts = []
+    let pos = 0
+    for (const line of lines) {
+        lineStarts.push(pos)
+        pos += line.length + 1
+    }
+    const styles = {}
+    for (const seg of segments) {
+        for (let p = seg.start; p < seg.end; p++) {
+            let lineIdx = 0
+            for (let li = 0; li < lineStarts.length; li++) {
+                if (p >= lineStarts[li]) lineIdx = li
+                else break
+            }
+            const ci = p - lineStarts[lineIdx]
+            if (!styles[lineIdx]) styles[lineIdx] = {}
+            const merged = styles[lineIdx][ci] || {}
+            if (seg.weight) merged.fontWeight = seg.weight
+            if (seg.style) merged.fontStyle = seg.style
+            styles[lineIdx][ci] = merged
+        }
+    }
+    return styles
+}
+
 /**
  * Apply bindings to a Fabric scene (deep copy in, mutated copy out):
  *  - {{field|pipe...}} tokens in every text layer are substituted
@@ -186,7 +371,17 @@ export function prepareCoverFit(obj, fitTargets) {
  *  - image layer srcs are restricted to the allowlist in
  *    absolutizeFileUrl: `data:` URLs and `/web/image/...` paths under
  *    `apiBase` only; anything else aborts with SceneImageUrlError
+ *  - text layers then run the render-time typography pipeline, in this
+ *    order so per-char style indices always describe the final text:
+ *    substitution, optional XML escaping, `_textTransform` (upper /
+ *    lower / title), inline markdown (**bold**, *italic*) converted to
+ *    per-char styles merged into any existing styles, and finally
+ *    `_overflow: autofit` recomputing fontSize against the resolved
+ *    text (never growing, never below MIN_AUTOFIT_FONT_SIZE)
  * When `escapeXml` is true the substituted text is XML-escaped.
+ * `measure` is the autofit width function (text, fontDescription) =>
+ * width in canvas units; without it every candidate "fits" and fontSize
+ * is left unchanged. server.mjs injects a node-canvas measurement.
  *
  * Do NOT pass `escapeXml: true` for the SVG path in server.mjs: Fabric's
  * `canvas.toSVG()` escapes the text itself when it serializes, so escaping
@@ -197,12 +392,15 @@ export function prepareCoverFit(obj, fitTargets) {
 export function applyBindingsToScene(
     sceneJson,
     bindings = {},
-    { escapeXml = false, apiBase = '', fitTargets = null } = {}
+    { escapeXml = false, apiBase = '', fitTargets = null, measure = null } = {}
 ) {
     const json = JSON.parse(JSON.stringify(sceneJson))
     if (!Array.isArray(json.objects)) {
         return json
     }
+    // Without an injected measure every candidate "fits", so autofit
+    // leaves fontSize untouched instead of guessing from nothing.
+    const measureText = typeof measure === 'function' ? measure : () => 0
     for (const obj of json.objects) {
         if (!obj || typeof obj !== 'object') continue
         const hie = obj._hideIfEmpty
@@ -247,9 +445,45 @@ export function applyBindingsToScene(
         if (typeof obj.text !== 'string') {
             continue
         }
+        // Order is fixed so per-char style indices always describe the
+        // final obj.text: markdown markers contain no XML chars, so
+        // escaping before parsing cannot hide them, and transform runs
+        // before markers are stripped so segments index the final text.
         let text = substituteText(obj.text, bindings)
         if (escapeXml) {
             text = xmlEscape(text)
+        }
+        text = applyTextTransform(text, obj._textTransform)
+        const md = parseMarkdownSegments(text)
+        if (md) {
+            text = md.text
+            const mdStyles = markdownSegmentsToFabricStyles(text, md.segments)
+            obj.styles = obj.styles || {}
+            for (const [lineIdx, charMap] of Object.entries(mdStyles)) {
+                const lineStyles = { ...(obj.styles[lineIdx] || {}) }
+                for (const [ci, attrs] of Object.entries(charMap)) {
+                    // Per-char merge: markdown only claims fontWeight /
+                    // fontStyle, any other attribute already on the char
+                    // (fill, underline, ...) survives.
+                    lineStyles[ci] = { ...(lineStyles[ci] || {}), ...attrs }
+                }
+                obj.styles[lineIdx] = lineStyles
+            }
+        }
+        if (obj._overflow === 'autofit' && obj.fontSize) {
+            obj.fontSize = computeAutofitFontSize({
+                text,
+                boxWidth: obj.width,
+                startSize: obj.fontSize,
+                minSize: MIN_AUTOFIT_FONT_SIZE,
+                measure: (size, line) =>
+                    measureText(line, {
+                        fontSize: size,
+                        fontFamily: obj.fontFamily,
+                        fontWeight: obj.fontWeight,
+                        fontStyle: obj.fontStyle,
+                    }),
+            })
         }
         obj.text = text
     }

@@ -3,7 +3,10 @@ import assert from 'node:assert/strict'
 import {
     absolutizeFileUrl,
     applyBindingsToScene,
+    applyTextTransform,
     assertSceneImageUrlsSafe,
+    computeAutofitFontSize,
+    parseMarkdownSegments,
     SceneImageUrlError,
     substituteText,
     xmlEscape,
@@ -195,6 +198,223 @@ console.log('✓ absolutizeFileUrl (strict allowlist, all branches)')
     assert.doesNotThrow(() => assertSceneImageUrlsSafe(null, 'http://odoo:8069'))
     assert.doesNotThrow(() => assertSceneImageUrlsSafe('nope', 'http://odoo:8069'))
     console.log('✓ assertSceneImageUrlsSafe (flat, nested, non-image ignored, empty apiBase)')
+}
+
+// 8. Render-time case transform (task 2.1): applies to the RESOLVED
+// value; the stored scene keeps its token text.
+{
+    const scene = {
+        version: '6.9.1',
+        objects: [
+            { type: 'textbox', text: '{{name}}', _textTransform: 'upper' },
+            { type: 'textbox', text: '{{name}}', _textTransform: 'lower' },
+            { type: 'textbox', text: '{{name}}', _textTransform: 'none' },
+            { type: 'textbox', text: '**{{name}}**', _textTransform: 'upper' },
+        ],
+    }
+    const out = applyBindingsToScene(scene, { name: 'Acme' })
+    assert.equal(out.objects[0].text, 'ACME')
+    assert.equal(out.objects[1].text, 'acme')
+    assert.equal(out.objects[2].text, 'Acme') // 'none' leaves the value alone
+    // Transform runs BEFORE markdown strips the markers: '**ACME**' loses
+    // the asterisks, the resolved value keeps its case.
+    assert.equal(out.objects[3].text, 'ACME')
+    assert.equal(out.objects[3].styles['0'][0].fontWeight, 'bold')
+    // The pre-substitution scene is untouched, token intact.
+    assert.equal(scene.objects[0].text, '{{name}}')
+    assert.equal(scene.objects[3].text, '**{{name}}**')
+    assert.equal(applyTextTransform('hej varlden', 'title'), 'Hej Varlden')
+    console.log('✓ _textTransform applies to resolved text, token scene untouched')
+}
+
+// 9. Inline markdown to per-char styles (task 1.1)
+{
+    const sceneFor = (text, extra = {}) => ({
+        version: '6.9.1',
+        objects: [{ type: 'textbox', text, ...extra }],
+    })
+
+    // Bold segment: markers stripped, chars 7-14 (incl) bold.
+    let out = applyBindingsToScene(sceneFor('Price: **1 299 kr**'), {})
+    assert.equal(out.objects[0].text, 'Price: 1 299 kr')
+    assert.equal(out.objects[0].styles['0'][0], undefined)
+    for (let i = 7; i < 15; i++) {
+        assert.equal(out.objects[0].styles['0'][i].fontWeight, 'bold', `char ${i}`)
+    }
+
+    // Italic, including the _marker_ form.
+    out = applyBindingsToScene(sceneFor('*hej*'), {})
+    assert.equal(out.objects[0].text, 'hej')
+    for (let i = 0; i < 3; i++) {
+        assert.equal(out.objects[0].styles['0'][i].fontStyle, 'italic')
+    }
+    out = applyBindingsToScene(sceneFor('_hej_'), {})
+    assert.equal(out.objects[0].text, 'hej')
+    assert.equal(out.objects[0].styles['0'][2].fontStyle, 'italic')
+
+    // Adjacent bold + italic segments on one line.
+    out = applyBindingsToScene(sceneFor('**a** *b*'), {})
+    assert.equal(out.objects[0].text, 'a b')
+    assert.equal(out.objects[0].styles['0'][0].fontWeight, 'bold')
+    assert.equal(out.objects[0].styles['0'][2].fontStyle, 'italic')
+
+    // Unmatched marker parses to nothing: text stays literal, no styles.
+    out = applyBindingsToScene(sceneFor('**orphan'), {})
+    assert.equal(out.objects[0].text, '**orphan')
+    assert.equal(out.objects[0].styles, undefined)
+
+    // Escaped markers stay literal when a real segment exists.
+    out = applyBindingsToScene(sceneFor('**b** \\*lit\\*'), {})
+    assert.equal(out.objects[0].text, 'b *lit*')
+    assert.equal(out.objects[0].styles['0'][0].fontWeight, 'bold')
+    assert.equal(out.objects[0].styles['0'][2], undefined)
+
+    // Only escaped/unmatched markers: whole text stays as typed.
+    out = applyBindingsToScene(sceneFor('\\*not italic\\*'), {})
+    assert.equal(out.objects[0].text, '\\*not italic\\*')
+
+    // Multiline: ranges land on fabric line/char indices.
+    out = applyBindingsToScene(sceneFor('**a**\n*b*'), {})
+    assert.equal(out.objects[0].text, 'a\nb')
+    assert.equal(out.objects[0].styles['0'][0].fontWeight, 'bold')
+    assert.equal(out.objects[0].styles['1'][0].fontStyle, 'italic')
+
+    // Pre-existing per-char styles survive: other chars, other attrs.
+    out = applyBindingsToScene(
+        sceneFor('**b** cd', {
+            styles: {
+                '0': {
+                    '0': { fill: '#ff0000' },
+                    '5': { textBackgroundColor: '#00ff00' },
+                },
+            },
+        }),
+        {}
+    )
+    assert.equal(out.objects[0].text, 'b cd')
+    assert.deepEqual(out.objects[0].styles['0']['0'], {
+        fill: '#ff0000',
+        fontWeight: 'bold',
+    })
+    assert.deepEqual(out.objects[0].styles['0']['5'], {
+        textBackgroundColor: '#00ff00',
+    })
+
+    // Markdown inside a substituted value (the common bound case).
+    out = applyBindingsToScene(sceneFor('{{pitch}}'), {
+        pitch: 'Köp **nu** eller *ångra*',
+    })
+    assert.equal(out.objects[0].text, 'Köp nu eller ångra')
+    assert.equal(out.objects[0].styles['0'][4].fontWeight, 'bold')
+    assert.equal(out.objects[0].styles['0'][13].fontStyle, 'italic')
+
+    // The parser speaks segments; direct shape check.
+    assert.deepEqual(parseMarkdownSegments('x **ab** y'), {
+        text: 'x ab y',
+        segments: [{ start: 2, end: 4, weight: 'bold' }],
+    })
+    assert.equal(parseMarkdownSegments('plain'), null)
+    console.log('✓ markdown to per-char styles (bold, italic, adjacent, unmatched, escaped, multiline, merge)')
+}
+
+// 10. Autofit at render time (task 2.2): the editor's binary search,
+// driven by an injected measure. Never grows, floors at 4 px.
+{
+    // The injected measure speaks (lineText, fontDescription); the
+    // adapter inside applyBindingsToScene drives it per candidate size.
+    const measure = (line, desc) => line.length * desc.fontSize * 0.6
+    const sceneFor = (text, fontSize = 40, width = 100) => ({
+        version: '6.9.1',
+        objects: [
+            { type: 'textbox', text, _overflow: 'autofit', width, fontSize },
+        ],
+    })
+
+    // Long resolved value shrinks to fit: 20 chars * size * 0.6 <= 100.
+    let out = applyBindingsToScene(
+        sceneFor('{{name}}'),
+        { name: 'abcdefghijklmnopqrst' },
+        { measure }
+    )
+    assert.equal(out.objects[0].fontSize, 8)
+
+    // Short value never grows past the designed size.
+    out = applyBindingsToScene(sceneFor('{{name}}'), { name: 'ab' }, { measure })
+    assert.equal(out.objects[0].fontSize, 40)
+
+    // Floor: even 4 px overflows, so 4 it is.
+    out = applyBindingsToScene(
+        sceneFor('{{name}}'),
+        { name: 'x'.repeat(100) },
+        { measure }
+    )
+    assert.equal(out.objects[0].fontSize, 4)
+
+    // Multiline: the widest LINE (by char count) is measured.
+    out = applyBindingsToScene(
+        sceneFor('{{name}}', 40, 100),
+        { name: 'kort\nabcdefghijklmnopqrst' },
+        { measure }
+    )
+    assert.equal(out.objects[0].fontSize, 8)
+
+    // Without a measure, autofit is a no-op rather than a guess.
+    out = applyBindingsToScene(sceneFor('{{name}}'), {
+        name: 'x'.repeat(100),
+    })
+    assert.equal(out.objects[0].fontSize, 40)
+
+    // measure receives the line text and the object's font description.
+    const seen = []
+    const spyMeasure = (line, desc) => {
+        seen.push([line, desc.fontFamily, desc.fontWeight, desc.fontStyle])
+        return line.length * desc.fontSize * 0.6
+    }
+    out = applyBindingsToScene(
+        {
+            version: '6.9.1',
+            objects: [
+                {
+                    type: 'textbox',
+                    text: 'ab',
+                    _overflow: 'autofit',
+                    width: 100,
+                    fontSize: 40,
+                    fontFamily: 'Arial',
+                    fontWeight: 'bold',
+                    fontStyle: 'italic',
+                },
+            ],
+        },
+        {},
+        { measure: spyMeasure }
+    )
+    assert.equal(out.objects[0].fontSize, 40) // fits at start size
+    assert.ok(seen.length > 0)
+    assert.deepEqual(seen[0], ['ab', 'Arial', 'bold', 'italic'])
+
+    // The mirrored binary search, directly: its own measure speaks
+    // (fontSize, widestLineText).
+    const coreMeasure = (size, line) => line.length * size * 0.6
+    assert.equal(
+        computeAutofitFontSize({
+            text: 'abcdefghijklmnopqrst',
+            boxWidth: 100,
+            startSize: 40,
+            measure: coreMeasure,
+        }),
+        8
+    )
+    assert.equal(
+        computeAutofitFontSize({
+            text: 'x'.repeat(100),
+            boxWidth: 100,
+            startSize: 40,
+            measure: coreMeasure,
+        }),
+        4
+    )
+    console.log('✓ autofit shrinks to fit, never grows, floors at 4, no-op without measure')
 }
 
 console.log('\nALL render_core TESTS PASSED')

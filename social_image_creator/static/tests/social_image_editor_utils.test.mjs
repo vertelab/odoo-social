@@ -8,6 +8,11 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
+// The render-side mirror; parity fixtures below feed both
+// implementations the same input (design D1 in
+// openspec/changes/creator-render-parity).
+import * as renderCore from "../../../render_service/render_core.mjs";
+
 const here = dirname(fileURLToPath(import.meta.url));
 const source = readFileSync(
     join(here, "../src/js/dialog/social_image_editor_utils.js"),
@@ -405,6 +410,87 @@ check("smart spacing vertical labels", vGap.distances.every((d) => d.kind === "v
 const single = utils.computeSmartSpacing(gapBox, [gapOthers[0]], 6);
 check("smart spacing single no snap", [single.dx, single.dy], [0, 0]);
 check("smart spacing single label count", single.distances.length, 1);
+
+// ------------------------------------------------------------------
+// Markdown parity with render_service/render_core.mjs (task 1.2):
+// both parseMarkdownSegments implementations must produce identical
+// stripped text and segments for the same fixtures, and the composed
+// preview pipeline (resolveTextForPreview) must match
+// applyBindingsToScene's text, styles and fontSize.
+// ------------------------------------------------------------------
+const MD_FIXTURES = [
+    "Price: **1 299 kr**",
+    "*hej*",
+    "_hej_",
+    "**a** *b*",
+    "**a***b*",
+    "**bold** and _italic_",
+    "**a** and **b**",
+    "**orphan",
+    "*also orphan",
+    "no markers at all",
+    "**b** \\*lit\\*",
+    "\\*only escaped\\*",
+    "multi\n**line** *text*",
+    "trailing **bold**",
+];
+for (const fixture of MD_FIXTURES) {
+    check(
+        `markdown parity: ${JSON.stringify(fixture)}`,
+        utils.parseMarkdownSegments(fixture),
+        renderCore.parseMarkdownSegments(fixture)
+    );
+}
+
+// Full text pipeline parity: render_core.applyBindingsToScene vs
+// utils.resolveTextForPreview on the same object fixtures, with the
+// same injected measure on both sides.
+const fakeMeasure = (line, desc) => line.length * (desc?.fontSize ?? 0) * 0.6;
+const PARITY_OBJECTS = [
+    { type: "textbox", text: "{{name}}", _textTransform: "upper" },
+    {
+        type: "textbox",
+        text: "{{name}}",
+        _textTransform: "upper",
+        _overflow: "autofit",
+        width: 120,
+        fontSize: 40,
+        fontFamily: "Arial",
+    },
+    {
+        type: "textbox",
+        text: "**static** stays",
+        styles: { "0": { "0": { fill: "#ff0000" }, "8": { underline: true } } },
+    },
+    { type: "textbox", text: "**orphan", _overflow: "autofit", width: 50, fontSize: 12 },
+    { type: "textbox", text: "{{name}}", _overflow: "autofit", width: 100, fontSize: 40 },
+];
+const PARITY_BINDINGS = { name: "**acme ab**" };
+for (const obj of PARITY_OBJECTS) {
+    const renderOut = renderCore.applyBindingsToScene(
+        { version: "6.9.1", objects: [JSON.parse(JSON.stringify(obj))] },
+        PARITY_BINDINGS,
+        { measure: fakeMeasure }
+    ).objects[0];
+    const previewObj = utils.resolveTextForPreview(
+        JSON.parse(JSON.stringify(obj)),
+        PARITY_BINDINGS,
+        { measure: fakeMeasure }
+    );
+    check(
+        `pipeline parity: ${JSON.stringify(obj.text)}`,
+        {
+            text: previewObj.text,
+            styles: previewObj.styles,
+            fontSize: previewObj.fontSize,
+        },
+        {
+            text: renderOut.text,
+            styles: renderOut.styles,
+            fontSize: renderOut.fontSize,
+        }
+    );
+}
 
 if (failures) {
     console.error(`${failures} check(s) failed`);

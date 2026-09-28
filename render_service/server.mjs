@@ -13,7 +13,7 @@
 // scanned before Fabric loads the scene; see render_core.mjs.
 
 import express from 'express'
-import { registerFont } from 'canvas'
+import { createCanvas, registerFont } from 'canvas'
 
 import * as fabric from 'fabric/node'
 import {
@@ -63,6 +63,36 @@ async function loadFonts() {
         )
     }
     return result
+}
+
+// Text measurement for render-time autofit (design D2 in
+// openspec/changes/creator-render-parity): one shared 2d context,
+// created lazily once, reused across requests. ctx.font is rebuilt per
+// measurement from the object's font description; node-canvas measures
+// with the fonts loadFonts registered, so the numbers match the fonts
+// the editor's canvas used when the template was designed.
+let measureContext = null
+
+function getMeasureContext() {
+    if (!measureContext) {
+        measureContext = createCanvas(1, 1).getContext('2d')
+    }
+    return measureContext
+}
+
+/**
+ * The `measure` option of applyBindingsToScene: width of `text` rendered
+ * at the given size and style, in canvas units. fontDescription mirrors
+ * the fabric text object's font fields.
+ */
+function measureText(text, { fontSize, fontFamily, fontWeight, fontStyle } = {}) {
+    const ctx = getMeasureContext()
+    const style = fontStyle || 'normal'
+    const weight = fontWeight || 'normal'
+    const size = Number(fontSize) > 0 ? Number(fontSize) : 16
+    const family = fontFamily || 'sans-serif'
+    ctx.font = `${style} ${weight} ${size}px ${family}`
+    return ctx.measureText(String(text ?? '')).width
 }
 
 if (!TOKEN && !ALLOW_NO_AUTH) {
@@ -172,6 +202,7 @@ app.post('/render', requireAuth, async (req, res) => {
             escapeXml: false,
             apiBase: API_BASE,
             fitTargets,
+            measure: measureText,
         })
         // Binding substitution can swap in a new src (_dataBinding), so
         // scan the post-binding scene too, before Fabric/JSDOM touches it.
