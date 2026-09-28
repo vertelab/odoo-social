@@ -96,6 +96,21 @@
         }
     }
 
+    .o_social_image_editor_grid_menu {
+        width: 200px;
+    }
+
+    .o_social_image_editor_insert_data {
+        max-width: 90vw;
+
+        .o_social_image_editor_insert_models,
+        .o_social_image_editor_insert_fields {
+            .btn {
+                white-space: normal;
+            }
+        }
+    }
+
     .o_social_image_editor_props_body {
         .o_social_image_editor_props_section {
             border-bottom: 1px solid $border-color;
@@ -142,6 +157,24 @@
 
         .o_social_image_editor_gradient_preview {
             height: 24px;
+        }
+
+        // Chart data editor: one narrow input per category/series cell;
+        // scrolls horizontally once the table outgrows the panel.
+        .o_social_image_editor_chart_table {
+            display: block;
+            overflow-x: auto;
+            margin-bottom: $spacer * 0.5;
+            white-space: nowrap;
+
+            th,
+            td {
+                vertical-align: top;
+            }
+
+            .btn-link .fa {
+                font-size: 10px;
+            }
         }
     }
 

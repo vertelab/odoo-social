@@ -83,6 +83,142 @@
             <button type="button" class="btn btn-sm btn-secondary" t-on-click="toggleMediaPicker" title="Media library: brand images and logos" aria-label="Media library" t-att-disabled="!state.fabricVersion">
                 <i class="fa fa-folder-open-o"/>
             </button>
+            <!-- Grid overlay + snap-to-grid: a toggle plus a small
+                 dropdown for the spacing presets and the snap switch. -->
+            <div class="position-relative d-flex align-items-center" t-ref="gridMenuRef">
+                <button type="button" class="btn btn-sm btn-secondary" t-att-class="state.gridVisible ? 'active' : ''" t-on-click="toggleGrid" title="Show grid" aria-label="Show grid" t-att-disabled="!state.fabricVersion">
+                    <i class="fa fa-th"/>
+                </button>
+                <button type="button" class="btn btn-sm btn-secondary dropdown-toggle dropdown-toggle-split" t-att-class="state.gridMenuOpen ? 'active' : ''" t-on-click="toggleGridMenu" title="Grid options" aria-label="Grid options" t-att-disabled="!state.fabricVersion">
+                    <span class="visually-hidden">Grid options</span>
+                </button>
+                <div t-if="state.gridMenuOpen" class="o_social_image_editor_grid_menu position-absolute top-100 start-0 mt-1 bg-white border shadow rounded p-2" style="z-index: 10;">
+                    <div class="small text-muted text-uppercase px-1 pb-1">Grid spacing</div>
+                    <div class="btn-group btn-group-sm d-flex pb-2">
+                        <button t-foreach="gridSpacingPresets()" t-as="preset" t-key="preset"
+                            type="button"
+                            class="btn btn-outline-secondary"
+                            t-att-class="state.gridSpacing === preset ? 'active' : ''"
+                            t-esc="preset + ' px'"
+                            t-on-click="() => this.setGridSpacing(preset)"/>
+                    </div>
+                    <div class="form-check mb-0">
+                        <input type="checkbox" class="form-check-input" id="o_sie_grid_snap" t-att-checked="state.gridSnap" t-on-change="onGridSnapChange"/>
+                        <label class="form-check-label small" for="o_sie_grid_snap">Snap to grid</label>
+                    </div>
+                </div>
+            </div>
+            <!-- Insert Dynamic Data: stepped panel (model, field,
+                 target) over the binding contract. -->
+            <div class="position-relative" t-ref="insertDataRef">
+                <button type="button" class="btn btn-sm btn-secondary" t-att-class="state.insertDataOpen ? 'active' : ''" t-on-click="toggleInsertDataPanel" t-att-title="insertDataLabel()" aria-label="Insert dynamic data" t-att-disabled="!state.fabricVersion">
+                    <i class="fa fa-database"/> <t t-esc="insertDataLabel()"/>
+                </button>
+                <div t-if="state.insertDataOpen" class="o_social_image_editor_insert_data position-absolute top-100 start-0 mt-1 bg-white border shadow rounded p-2" style="z-index: 10; width: 300px;">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <strong class="small text-uppercase text-muted">Insert Dynamic Data</strong>
+                        <button type="button" class="btn-close" t-on-click="closeInsertDataPanel" title="Close" aria-label="Close"/>
+                    </div>
+
+                    <!-- Step 1: model -->
+                    <div t-if="state.insertDataStep === 'model'">
+                        <div class="small text-muted mb-2">Step 1 of 3: choose the model the template binds to.</div>
+                        <div t-if="state.bindingModel" class="d-flex align-items-center justify-content-between gap-2">
+                            <span class="badge text-bg-light border" t-esc="state.bindingModelName || state.bindingModel"/>
+                            <button type="button" class="btn btn-sm btn-primary" t-on-click="onInsertDataContinueToFields">Continue</button>
+                        </div>
+                        <div t-else="">
+                            <input type="text" class="form-control form-control-sm mb-2" placeholder="Search models" t-att-value="state.insertDataSearch" t-on-input="onInsertDataSearchInput"/>
+                            <div t-if="state.insertDataResults.length" class="o_social_image_editor_insert_models d-flex flex-column" style="max-height: 200px; overflow-y: auto;">
+                                <button t-foreach="state.insertDataResults" t-as="res" t-key="res.id"
+                                    type="button"
+                                    class="btn btn-sm btn-outline-secondary text-start text-truncate"
+                                    t-esc="res.name"
+                                    t-on-click="() => this.onInsertModelPicked(res)"/>
+                            </div>
+                            <div t-else="" class="small text-muted">No models found.</div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: field -->
+                    <div t-if="state.insertDataStep === 'field'">
+                        <div class="small text-muted mb-2">Step 2 of 3: pick a field of <span class="text-body" t-esc="state.bindingModelName"/>.</div>
+                        <input type="text" class="form-control form-control-sm mb-2" placeholder="Search fields" t-model="state.insertDataFieldFilter"/>
+                        <div class="o_social_image_editor_insert_fields d-flex flex-column gap-1 mb-2" style="max-height: 200px; overflow-y: auto;">
+                            <button t-foreach="filteredInsertDataFields()" t-as="field" t-key="field.name"
+                                type="button"
+                                class="btn btn-sm btn-outline-secondary text-start d-flex justify-content-between align-items-center gap-2"
+                                t-on-click="() => this.onInsertDataFieldPicked(field)">
+                                <span class="text-truncate" t-esc="field.field_description || field.name"/>
+                                <span t-if="field.type === 'binary'" class="badge text-bg-light border flex-shrink-0">image</span>
+                            </button>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" t-on-click="onInsertDataStepBack">Back</button>
+                    </div>
+
+                    <!-- Step 3: target -->
+                    <div t-if="state.insertDataStep === 'target'">
+                        <div class="small text-muted mb-2">Step 3 of 3: insert <code t-esc="insertDataToken()"/> into the design.</div>
+                        <button type="button" class="btn btn-sm btn-primary w-100 mb-2" t-on-click="onInsertDataTokenClick">Insert as text token</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary w-100 mb-2" t-att-disabled="!insertDataCanBindImage()" t-on-click="onInsertDataBindImageClick">Bind active image layer</button>
+                        <div t-if="state.insertDataField and state.insertDataField.type === 'binary' and !state.inspector.isImage" class="small text-muted mb-2">Select an image layer on the canvas to bind it to this field.</div>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" t-on-click="onInsertDataStepBack">Back</button>
+                    </div>
+                </div>
+            </div>
+            <!-- Table element (design D4): rows/cols/width prompt. -->
+            <div class="position-relative" t-ref="tableMenuRef">
+                <button type="button" class="btn btn-sm btn-secondary" t-att-class="state.tableMenuOpen ? 'active' : ''" t-on-click="toggleTableMenu" title="Add table" aria-label="Add table" t-att-disabled="!state.fabricVersion">
+                    <i class="fa fa-table"/>
+                </button>
+                <div t-if="state.tableMenuOpen" class="o_social_image_editor_table_menu position-absolute top-100 start-0 mt-1 bg-white border shadow rounded p-2" style="z-index: 10; width: 230px;">
+                    <div class="small text-muted text-uppercase px-1 pb-1">Table</div>
+                    <div class="d-flex align-items-center gap-2 mb-2 small">
+                        <label class="d-flex align-items-center gap-1 mb-0 flex-fill" title="Rows">
+                            <span class="text-muted">R</span>
+                            <input type="number" class="form-control form-control-sm" min="1" max="50" t-att-value="state.tableRowsDraft" t-on-input="onTableRowsDraftChange"/>
+                        </label>
+                        <label class="d-flex align-items-center gap-1 mb-0 flex-fill" title="Columns">
+                            <span class="text-muted">C</span>
+                            <input type="number" class="form-control form-control-sm" min="1" max="50" t-att-value="state.tableColsDraft" t-on-input="onTableColsDraftChange"/>
+                        </label>
+                        <label class="d-flex align-items-center gap-1 mb-0 flex-fill" title="Width in px">
+                            <span class="text-muted">W</span>
+                            <input type="number" class="form-control form-control-sm" min="40" t-att-value="state.tableWidthDraft" t-on-input="onTableWidthDraftChange"/>
+                        </label>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-primary w-100" t-on-click="insertTable">Insert table</button>
+                    <div class="small text-muted mt-2 mb-0">Double-click the table later to edit cell text.</div>
+                </div>
+            </div>
+            <!-- Chart element (design D3): type picker with starter data. -->
+            <div class="position-relative" t-ref="chartMenuRef">
+                <button type="button" class="btn btn-sm btn-secondary" t-att-class="state.chartMenuOpen ? 'active' : ''" t-on-click="toggleChartMenu" title="Add chart" aria-label="Add chart" t-att-disabled="!state.fabricVersion">
+                    <i class="fa fa-bar-chart"/>
+                </button>
+                <div t-if="state.chartMenuOpen" class="o_social_image_editor_chart_menu position-absolute top-100 start-0 mt-1 bg-white border shadow rounded p-2" style="z-index: 10; width: 230px;">
+                    <div class="small text-muted text-uppercase px-1 pb-1">Chart</div>
+                    <div class="d-flex flex-column gap-1">
+                        <button t-foreach="chartTypeOptions()" t-as="opt" t-key="opt.type"
+                            type="button"
+                            class="btn btn-sm btn-outline-secondary text-start"
+                            t-esc="opt.label"
+                            t-on-click="() => this.insertChart(opt.type)"/>
+                    </div>
+                </div>
+            </div>
+            <!-- QR element (design D5): content input with inline error. -->
+            <div class="position-relative" t-ref="qrMenuRef">
+                <button type="button" class="btn btn-sm btn-secondary" t-att-class="state.qrMenuOpen ? 'active' : ''" t-on-click="toggleQrMenu" title="Add QR code" aria-label="Add QR code" t-att-disabled="!state.fabricVersion">
+                    <i class="fa fa-qrcode"/>
+                </button>
+                <div t-if="state.qrMenuOpen" class="o_social_image_editor_qr_menu position-absolute top-100 start-0 mt-1 bg-white border shadow rounded p-2" style="z-index: 10; width: 260px;">
+                    <div class="small text-muted text-uppercase px-1 pb-1">QR code</div>
+                    <input type="text" class="form-control form-control-sm mb-2" placeholder="Text or URL, {{field}} allowed" t-att-value="state.qrContentDraft" t-on-input="onQrContentDraftChange"/>
+                    <div t-if="state.qrError" class="small text-danger mb-2 o_social_image_editor_qr_error" t-esc="state.qrError"/>
+                    <button type="button" class="btn btn-sm btn-primary w-100" t-on-click="insertQr">Insert QR code</button>
+                </div>
+            </div>
             <button t-if="state.bindingModelName" type="button"
                 class="btn btn-sm"
                 t-att-class="state.previewMode ? 'btn-primary' : 'btn-secondary'"
@@ -218,6 +354,13 @@
             <!-- Properties panel: text inspector + common basics + morph -->
             <div class="o_social_image_editor_props border-start bg-white d-flex flex-column overflow-hidden" style="width: 280px;">
                 <div class="px-2 py-1 small text-uppercase text-muted border-bottom">Properties</div>
+                <!-- Table edit isolation (design D4): always visible while a
+                     table is ungrouped, regardless of canvas selection. -->
+                <div t-if="state.tableEditing" class="p-2 border-bottom bg-light o_social_image_editor_table_editing">
+                    <div class="o_social_image_editor_props_heading">Editing table cells</div>
+                    <div class="small text-muted mb-2">Double-click a cell to edit its text. Click outside the table or press Done to finish.</div>
+                    <button type="button" class="btn btn-sm btn-primary w-100" t-on-click="() => this._exitTableEdit(true)">Done editing</button>
+                </div>
                 <div t-if="!state.hasSelection" class="p-3 text-muted small">
                     Select an object to edit its properties.
                 </div>
@@ -402,6 +545,92 @@
                             <input type="checkbox" t-att-checked="state.inspector.required" t-att-disabled="!state.inspector.bindField or state.previewMode" t-on-change="onRequiredChange"/>
                             <span>Required (fail render if empty)</span>
                         </label>
+                    </div>
+
+                    <!-- Chart element (design D3): type switcher, title and
+                         the data table (categories x series). Every edit
+                         regenerates the chart layer in place. -->
+                    <div t-if="state.inspector.chart" class="o_social_image_editor_props_section mb-3 o_social_image_editor_chart_props">
+                        <div class="o_social_image_editor_props_heading">Chart</div>
+                        <div class="d-flex flex-wrap gap-1 mb-2">
+                            <button t-foreach="chartTypeOptions()" t-as="opt" t-key="opt.type"
+                                type="button"
+                                class="btn btn-sm btn-outline-secondary"
+                                t-att-class="state.inspector.chart.type === opt.type ? 'active' : ''"
+                                t-esc="opt.label"
+                                t-on-click="() => this.onChartTypeChange(opt.type)"/>
+                        </div>
+                        <input type="text" class="form-control form-control-sm mb-2" placeholder="Chart title" t-att-value="state.inspector.chart.title" t-att-disabled="state.previewMode" t-on-change="onChartTitleChange"/>
+                        <table class="o_social_image_editor_chart_table table table-sm table-borderless mb-2">
+                            <thead>
+                                <tr>
+                                    <th class="p-0"/>
+                                    <th t-foreach="state.inspector.chart.categories" t-as="cat" t-key="cat_index" class="p-0 pb-1">
+                                        <input type="text" class="form-control form-control-sm" style="width: 62px;" t-att-value="cat" t-att-disabled="state.previewMode" t-on-change="(ev) => this.onChartCategoryChange(cat_index, ev)"/>
+                                        <button type="button" class="btn btn-sm btn-link text-danger p-0 small" title="Remove category" aria-label="Remove category" t-att-disabled="state.previewMode or state.inspector.chart.categories.length &lt;= 1" t-on-click="() => this.onChartRemoveCategory(cat_index)">
+                                            <i class="fa fa-times"/>
+                                        </button>
+                                    </th>
+                                    <th class="p-0 pb-1 align-bottom">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" title="Add category" aria-label="Add category" t-att-disabled="state.previewMode" t-on-click="onChartAddCategory">
+                                            <i class="fa fa-plus"/>
+                                        </button>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="state.inspector.chart.series" t-as="series" t-key="series_index">
+                                    <td class="p-0 pb-1">
+                                        <input type="text" class="form-control form-control-sm" style="width: 62px;" t-att-value="series.name" t-att-disabled="state.previewMode" t-on-change="(ev) => this.onChartSeriesNameChange(series_index, ev)"/>
+                                        <button type="button" class="btn btn-sm btn-link text-danger p-0 small" title="Remove series" aria-label="Remove series" t-att-disabled="state.previewMode or state.inspector.chart.series.length &lt;= 1" t-on-click="() => this.onChartRemoveSeries(series_index)">
+                                            <i class="fa fa-times"/>
+                                        </button>
+                                    </td>
+                                    <td t-foreach="state.inspector.chart.categories" t-as="cat" t-key="cat_index" class="p-0 pb-1">
+                                        <input type="text" class="form-control form-control-sm" style="width: 62px;" t-att-value="series.values[cat_index]" t-att-disabled="state.previewMode" t-on-change="(ev) => this.onChartCellChange(series_index, cat_index, ev)"/>
+                                    </td>
+                                    <td class="p-0 pb-1"/>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <button type="button" class="btn btn-sm btn-outline-secondary w-100" t-att-disabled="state.previewMode" t-on-click="onChartAddSeries">
+                            <i class="fa fa-plus"/> Add series
+                        </button>
+                        <div class="small text-muted mt-2 mb-0">Cells accept numbers or {{field}} tokens.</div>
+                    </div>
+
+                    <!-- Table element (design D4): structural edits; cell
+                         text edits happen through double-click isolation. -->
+                    <div t-if="state.inspector.table and !state.tableEditing" class="o_social_image_editor_props_section mb-3 o_social_image_editor_table_props">
+                        <div class="o_social_image_editor_props_heading">Table</div>
+                        <div class="small text-muted mb-2" t-esc="state.inspector.table.rows + ' rows x ' + state.inspector.table.cols + ' columns'"/>
+                        <div class="d-flex gap-1 mb-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary flex-fill" t-on-click="onTableAddRow">
+                                <i class="fa fa-plus"/> Row
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary flex-fill" t-on-click="onTableRemoveRow">
+                                <i class="fa fa-minus"/> Row
+                            </button>
+                        </div>
+                        <div class="d-flex gap-1 mb-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary flex-fill" t-on-click="onTableAddColumn">
+                                <i class="fa fa-plus"/> Column
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary flex-fill" t-on-click="onTableRemoveColumn">
+                                <i class="fa fa-minus"/> Column
+                            </button>
+                        </div>
+                        <div class="small text-muted mb-0">Double-click the table to edit cell text.</div>
+                    </div>
+
+                    <!-- QR element (design D5): content, static or token. -->
+                    <div t-if="state.inspector.qrContent !== null" class="o_social_image_editor_props_section mb-3 o_social_image_editor_qr_props">
+                        <div class="o_social_image_editor_props_heading">QR code</div>
+                        <label class="d-flex align-items-center gap-2 mb-2 small" title="Encoded content; {{field}} tokens resolve per record">
+                            <span class="text-muted">Content</span>
+                            <input type="text" class="form-control form-control-sm" t-att-value="state.inspector.qrContent" t-att-disabled="state.previewMode" t-on-change="onQrContentChange"/>
+                        </label>
+                        <div class="small text-muted mb-0">{{field}} tokens resolve per record.</div>
                     </div>
 
                     <!-- Common basics: fill, stroke, opacity -->

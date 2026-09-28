@@ -5,6 +5,9 @@
 // Match {{field}} and {{dotted.field.path}} with optional chained pipe
 // transforms: {{name|upper}}, {{categ_id.name|title|trim}}. Mirrors the
 // TOKEN_RE in social_image_creator/models/social_image_binding.py.
+import { CHART_SPEC_PROP, substituteChartSpec } from './chart_spec.mjs'
+import { QR_PROP } from './qr_matrix.mjs'
+
 const TOKEN_RE = /\{\{\s*([a-zA-Z0-9_.-]+)\s*((?:\|[^}|]+)*)\}\}/g
 
 export class RequiredBindingError extends Error {
@@ -368,6 +371,12 @@ function markdownSegmentsToFabricStyles(stripped, segments) {
  *  - image layers with `_dataBinding: {field}` swap their src for the
  *    bound value (empty hides the layer); with `fitTargets` provided the
  *    pre-swap frame is captured for post-load cover-fit re-application
+ *  - chart groups with a `_chartSpec` dict get every string cell of
+ *    categories and series values substituted (geometry then regenerates
+ *    from the resolved data in dynamic_groups.mjs); QR groups with a
+ *    `_qrContent` string get it substituted the same way. Both walk nested
+ *    group children, so chart/QR elements keep resolving even when the
+ *    user grouped them inside another container
  *  - image layer srcs are restricted to the allowlist in
  *    absolutizeFileUrl: `data:` URLs and `/web/image/...` paths under
  *    `apiBase` only; anything else aborts with SceneImageUrlError
@@ -401,6 +410,26 @@ export function applyBindingsToScene(
     // Without an injected measure every candidate "fits", so autofit
     // leaves fontSize untouched instead of guessing from nothing.
     const measureText = typeof measure === 'function' ? measure : () => 0
+    // Chart and QR elements carry their data on custom group properties
+    // (`_chartSpec` / `_qrContent`, design D3/D5). Substitution happens
+    // before loadFromJSON so the geometry regenerated server-side from the
+    // resolved spec always reflects the record. The walk recurses into
+    // group children because the props can sit at any depth.
+    const resolveDynamicProps = (objects) => {
+        if (!Array.isArray(objects)) return
+        for (const o of objects) {
+            if (!o || typeof o !== 'object') continue
+            const chartSpec = o[CHART_SPEC_PROP]
+            if (chartSpec && typeof chartSpec === 'object' && !Array.isArray(chartSpec)) {
+                o[CHART_SPEC_PROP] = substituteChartSpec(chartSpec, bindings)
+            }
+            if (typeof o[QR_PROP] === 'string') {
+                o[QR_PROP] = substituteText(o[QR_PROP], bindings)
+            }
+            resolveDynamicProps(o.objects)
+        }
+    }
+    resolveDynamicProps(json.objects)
     for (const obj of json.objects) {
         if (!obj || typeof obj !== 'object') continue
         const hie = obj._hideIfEmpty

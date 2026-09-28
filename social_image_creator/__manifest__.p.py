@@ -23,6 +23,7 @@
     'assets': {
         'web.assets_backend': [
             'social_image_creator/static/src/lib/fabric_loader.js',
+            'social_image_creator/static/src/lib/qr_loader.js',
             'social_image_creator/static/src/js/dialog/*',
             'social_image_creator/static/src/js/fields/*',
             'social_image_creator/static/src/scss/*',

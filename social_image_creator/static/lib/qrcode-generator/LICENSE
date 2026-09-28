@@ -1,0 +1,4 @@
+qrcode-generator 1.4.4, MIT License, (c) 2009 Kazuhiko Arase
+https://github.com/kazuhikoarase/qrcode-generator
+
+Vendored from npm package qrcode-generator@1.4.4 (files qrcode.js and qrcode_UTF8.js).

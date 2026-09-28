@@ -24,6 +24,7 @@ import {
     SceneImageUrlError,
 } from './render_core.mjs'
 import { listRegisteredFonts, registerFontsInDir } from './fonts.mjs'
+import { regenerateDynamicGroups } from './dynamic_groups.mjs'
 
 const app = express()
 // MAX_BODY_MB is a plain number (e.g. "8") from env; express expects a
@@ -260,6 +261,13 @@ app.post('/render', requireAuth, async (req, res) => {
                 obj.setCoords?.()
             }
         }
+
+        // Chart and QR layers hold their data in _chartSpec / _qrContent;
+        // applyBindingsToScene has already substituted the record's tokens
+        // into those props. Rebuild the layers from the resolved data now
+        // that Fabric has loaded the scene, preserving each layer's
+        // placement (design D3/D5 in editor-grid-dynamic-elements).
+        await regenerateDynamicGroups(fabric, canvas)
 
         canvas.renderAll()
 

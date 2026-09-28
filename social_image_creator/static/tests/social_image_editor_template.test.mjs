@@ -77,11 +77,52 @@ const stripped = dialogSource
     .replace(/^import\b[^;]*;/gm, "")
     .replace("export class SocialImageEditorDialog", "class SocialImageEditorDialog")
     .concat("\nexport { SocialImageEditorDialog };\n");
+// The dialog under test references the pure utils and the shape-library
+// type guards by bare identifier; the harness import block is stripped,
+// so re-declare them from the real utils module and small stubs.
+const UTIL_NAMES = [
+    "EXTRA_PROPS",
+    "HISTORY_LIMIT",
+    "applyImageCoverFit",
+    "buildLayerDescriptors",
+    "buildToken",
+    "computeAlignmentDeltas",
+    "computeAutofitFontSize",
+    "computeDisplayScale",
+    "computeDistributePositions",
+    "computeGridLines",
+    "computeInsertIndex",
+    "computeSmartSpacing",
+    "DASH_PRESETS",
+    "DEFAULT_GRID_SPACING",
+    "detectStrokePattern",
+    "gradientAngleToCoords",
+    "gradientRadialCoords",
+    "gradientToConfig",
+    "GRID_SPACING_PRESETS",
+    "isEmptyBindingValue",
+    "moveItem",
+    "newLayerId",
+    "opacityPercentFromFraction",
+    "parseShadowColor",
+    "buildShadowColor",
+    "resolveTextForPreview",
+    "restoreSceneProps",
+    "roundToGrid",
+    "snapBoxFromRect",
+    "snapBoxToGuides",
+    "stashSceneProps",
+    "toHexColor",
+    "widestLine",
+];
 const preamble = [
+    `import * as __utils from ${JSON.stringify(join("/tmp", "social_image_editor_utils.template.mjs"))};`,
+    `const { ${UTIL_NAMES.join(", ")} } = __utils;`,
     "const Component = class {};",
     "const FileUploader = class {};",
     "const _t = (term) => term;",
-    `const EXTRA_PROPS = ${JSON.stringify(utils.EXTRA_PROPS)};`,
+    "const isTextType = (type) => [\"textbox\", \"i-text\", \"text\"].includes((type || \"\").toLowerCase());",
+    "const isImageType = (type) => (type || \"\").toLowerCase() === \"image\";",
 ].join("\n");
 const harnessTmp = join("/tmp", "social_image_editor_dialog.template.mjs");
 writeFileSync(harnessTmp, `${preamble}\n${stripped}`);
@@ -116,19 +157,53 @@ function makeDialog({ orm, activeObject = null, objects = [] } = {}) {
         fontPickerOpen: false,
         fontFilter: "",
         shapesOpen: false,
+        gridMenuOpen: false,
+        gridVisible: false,
+        gridSnap: false,
+        gridSpacing: 16,
+        insertDataOpen: false,
+        insertDataStep: "model",
+        insertDataSearch: "",
+        insertDataResults: [],
+        insertDataFieldFilter: "",
+        insertDataField: null,
+        bindingModel: null,
+        bindingModelName: "",
+        bindingFields: [],
+        inspector: { isText: false, isImage: false },
         penMode: false,
     };
     const removed = [];
     let current = activeObject;
     dlg._removed = removed;
+    dlg._snapGuides = { lines: [], distances: [] };
+    dlg._snapAlt = false;
+    dlg._snapShift = false;
+    dlg._moveStart = null;
     dlg._canvas = {
         getActiveObject: () => current,
         getObjects: () => objects,
+        add: (obj) => {
+            objects.push(obj);
+            current = obj;
+        },
+        insertAt: (index, obj) => {
+            objects.splice(index, 0, obj);
+            current = obj;
+        },
         remove: (obj) => removed.push(obj),
         discardActiveObject: () => {
             current = null;
         },
+        setActiveObject: (obj) => {
+            current = obj;
+        },
         requestRenderAll: () => {},
+        renderAll: () => {},
+        getWidth: () => 1200,
+        getHeight: () => 630,
+        getZoom: () => 1,
+        viewportTransform: [1, 0, 0, 1, 0, 0],
         toObject: () => ({ version: "6.9.1", objects: [] }),
         toSVG: () => '<svg xmlns="http://www.w3.org/2000/svg"></svg>',
         contextContainer: undefined,
@@ -265,6 +340,8 @@ const keyEvent = (key) => ({
     dlg.state.mediaPickerOpen = true;
     dlg.state.fontPickerOpen = true;
     dlg.state.shapesOpen = true;
+    dlg.state.gridMenuOpen = true;
+    dlg.state.insertDataOpen = true;
     escape();
     checkTrue(
         "first Escape closes the icon picker",
@@ -281,10 +358,20 @@ const keyEvent = (key) => ({
         !dlg.state.fontPickerOpen && dlg.state.shapesOpen
     );
     escape();
-    checkTrue("fourth Escape closes the shapes menu", !dlg.state.shapesOpen);
+    checkTrue(
+        "fourth Escape closes the shapes menu",
+        !dlg.state.shapesOpen && dlg.state.gridMenuOpen
+    );
+    escape();
+    checkTrue(
+        "fifth Escape closes the grid menu",
+        !dlg.state.gridMenuOpen && dlg.state.insertDataOpen
+    );
+    escape();
+    checkTrue("sixth Escape closes the insert data panel", !dlg.state.insertDataOpen);
     escape();
     await sleep(10);
-    checkTrue("fifth Escape closes the dialog", dlg.closedCount() === 1);
+    checkTrue("seventh Escape closes the dialog", dlg.closedCount() === 1);
 }
 
 // Source-order lint: the handler body wires Delete and the Escape unwind.
@@ -300,6 +387,8 @@ const keyEvent = (key) => ({
         "mediaPickerOpen",
         "fontPickerOpen",
         "shapesOpen",
+        "gridMenuOpen",
+        "insertDataOpen",
     ].map((name) => kdBody.indexOf(`this.state.${name}`));
     checkTrue(
         "keydown handler removes the selection on Delete/Backspace",
@@ -315,7 +404,7 @@ const keyEvent = (key) => ({
         escAt >= 0 &&
             pickerIdx.every((i) => i > escAt) &&
             pickerIdx.every((v, i) => i === 0 || v > pickerIdx[i - 1]) &&
-            kdBody.indexOf("this.close()") > pickerIdx[3]
+            kdBody.indexOf("this.close()") > pickerIdx[pickerIdx.length - 1]
     );
 }
 
@@ -465,6 +554,544 @@ checkTrue(
     "inspector copy: autofit applies at render",
     xml.includes("Autofit (shrink to fit at render)")
 );
+
+// ------------------------------------------------------------------
+// F. Grid: toolbar markup, prefs round trip, snapping, painter
+// (tasks 1.1-1.3)
+// ------------------------------------------------------------------
+
+checkTrue(
+    "toolbar: grid toggle + spacing dropdown + snap switch",
+    /t-on-click="toggleGrid"/.test(xml) &&
+        /t-on-click="toggleGridMenu"/.test(xml) &&
+        /gridSpacingPresets\(\)/.test(xml) &&
+        /t-on-change="onGridSnapChange"/.test(xml) &&
+        /t-ref="gridMenuRef"/.test(xml)
+);
+checkTrue(
+    "grid JS: prefs key + presets wired",
+    dialogSource.includes('"social_image_editor_grid"') &&
+        dialogSource.includes("_readGridPrefs") &&
+        dialogSource.includes("_writeGridPrefs") &&
+        dialogSource.includes('this._canvas.on("object:scaling"')
+);
+{
+    // Source wiring: the grid paints from the after:render chain on
+    // contextTop (never the scene), guarded by state.gridVisible and
+    // zoom-aware like the guides.
+    const ovStart = dialogSource.indexOf("_drawOverlays() {");
+    const ovEnd = dialogSource.indexOf("_drawGrid(ctx) {", ovStart);
+    const ovBody = dialogSource.slice(ovStart, ovEnd);
+    checkTrue(
+        "overlays hook: clear, grid, guides on contextTop",
+        ovStart >= 0 &&
+            ovEnd > ovStart &&
+            ovBody.includes("contextTop") &&
+            ovBody.includes("clearContext(ctx)") &&
+            ovBody.includes("_drawGrid(ctx)") &&
+            ovBody.includes("_drawSnapGuides(ctx)")
+    );
+    const gridStart = ovEnd;
+    const gridEnd = dialogSource.indexOf("_drawSnapGuides(ctx) {", gridStart);
+    const gridBody = dialogSource.slice(gridStart, gridEnd);
+    checkTrue(
+        "grid painter: visible guard, computeGridLines, zoom-multiplied",
+        gridStart >= 0 &&
+            gridEnd > gridStart &&
+            gridBody.includes("state.gridVisible") &&
+            gridBody.includes("computeGridLines(") &&
+            gridBody.includes("g.at * z") &&
+            !gridBody.includes("fc.add(")
+    );
+    // Snapping order: grid rounding runs after the guide selection and
+    // yields per axis (guide keeps priority), in both move and scaling.
+    const mvStart = dialogSource.indexOf("_onObjectMoving(ev) {");
+    const mvEnd = dialogSource.indexOf("_onObjectScaling(ev) {", mvStart);
+    const mvBody = dialogSource.slice(mvStart, mvEnd);
+    checkTrue(
+        "grid snap after guide selection, per axis",
+        mvStart >= 0 &&
+            mvEnd > mvStart &&
+            mvBody.indexOf("roundToGrid(") > mvBody.indexOf("snapBoxToGuides(") &&
+            mvBody.includes("snap.vAt == null") &&
+            mvBody.includes("snap.hAt == null") &&
+            mvBody.includes("!spacing.dx") &&
+            mvBody.includes("!spacing.dy")
+    );
+    const scEnd = dialogSource.indexOf("_drawOverlays() {", mvEnd);
+    const scBody = dialogSource.slice(mvEnd, scEnd);
+    checkTrue(
+        "scaling snap: alt-aware footprint rounding",
+        scBody.includes("roundToGrid(") &&
+            scBody.includes("obj.scaleX") &&
+            scBody.includes("_snapAlt")
+    );
+}
+
+function makeMoving(left, top, width = 40, height = 20) {
+    return {
+        left,
+        top,
+        width,
+        height,
+        getBoundingRect() {
+            return {
+                left: this.left,
+                top: this.top,
+                width: this.width,
+                height: this.height,
+            };
+        },
+        setCoords() {},
+    };
+}
+
+{
+    // Plain grid snap with no other objects: position rounds to the
+    // nearest intersection.
+    const dlg = makeDialog();
+    dlg.state.gridSnap = true;
+    dlg.state.gridSpacing = 16;
+    const moving = makeMoving(13, 27);
+    dlg._onObjectMoving({ target: moving });
+    check("grid snap rounds left/top", [moving.left, moving.top], [16, 32]);
+}
+{
+    // Snap toggle off: the raw drag position survives.
+    const dlg = makeDialog();
+    const moving = makeMoving(13, 27);
+    dlg._onObjectMoving({ target: moving });
+    check("grid snap off leaves position", [moving.left, moving.top], [13, 27]);
+}
+{
+    // Guide priority: the other object's right edge at x=100 is within
+    // the guide threshold of the moving box's right edge (99), so the
+    // x axis follows the guide (left becomes 60); the free y axis
+    // still snaps to the grid.
+    const dlg = makeDialog();
+    dlg.state.gridSnap = true;
+    dlg.state.gridSpacing = 16;
+    const other = makeMoving(100, 400);
+    dlg._canvas.getObjects = () => [other];
+    const moving = makeMoving(59, 27);
+    dlg._onObjectMoving({ target: moving });
+    check("guide wins over grid on its axis", moving.left, 60);
+    check("grid still snaps the free axis", moving.top, 32);
+}
+{
+    // Alt bypasses grid snap together with the guides.
+    const dlg = makeDialog();
+    dlg.state.gridSnap = true;
+    dlg._snapAlt = true;
+    const moving = makeMoving(13, 27);
+    dlg._onObjectMoving({ target: moving });
+    check("alt bypasses grid snap", [moving.left, moving.top], [13, 27]);
+}
+{
+    // Scaling snaps the scaled footprint (width*scaleX, height*scaleY).
+    const dlg = makeDialog();
+    dlg.state.gridSnap = true;
+    dlg.state.gridSpacing = 16;
+    const obj = { width: 100, height: 50, scaleX: 0.37, scaleY: 1, setCoords() {} };
+    dlg._onObjectScaling({ target: obj });
+    check("scaling snaps footprint", [obj.scaleX, obj.scaleY], [0.32, 0.96]);
+}
+{
+    const dlg = makeDialog();
+    const obj = { width: 100, height: 50, scaleX: 0.37, scaleY: 1, setCoords() {} };
+    dlg._onObjectScaling({ target: obj });
+    check("scaling snap off untouched", [obj.scaleX, obj.scaleY], [0.37, 1]);
+    const dlgAlt = makeDialog();
+    dlgAlt.state.gridSnap = true;
+    dlgAlt._snapAlt = true;
+    const objAlt = { width: 100, height: 50, scaleX: 0.37, scaleY: 1, setCoords() {} };
+    dlgAlt._onObjectScaling({ target: objAlt });
+    check("alt bypasses scaling snap", objAlt.scaleX, 0.37);
+}
+{
+    // The painter draws clipped segments on the contextTop 2d context
+    // only while the grid is visible, and never touches the scene.
+    const runPainter = (visible) => {
+        const strokes = [];
+        const dlg = makeDialog();
+        dlg.state.gridVisible = visible;
+        dlg.state.gridSpacing = 16;
+        dlg._canvas.contextTop = {
+            save: () => strokes.push(["save"]),
+            restore: () => strokes.push(["restore"]),
+            beginPath: () => strokes.push(["begin"]),
+            moveTo: (x, y) => strokes.push(["m", x, y]),
+            lineTo: (x, y) => strokes.push(["l", x, y]),
+            stroke: () => strokes.push(["stroke"]),
+        };
+        dlg._canvas.clearContext = () => strokes.push(["clear"]);
+        dlg._drawOverlays();
+        return { strokes, scene: dlg._canvas.getObjects() };
+    };
+    const on = runPainter(true);
+    checkTrue(
+        "grid painter draws segments on contextTop",
+        on.strokes.filter((s) => s[0] === "l").length > 0,
+        JSON.stringify(on.strokes)
+    );
+    checkTrue("overlays clear the top context first", on.strokes[0][0] === "clear");
+    check("grid painter adds no scene objects", on.scene.length, 0);
+    const off = runPainter(false);
+    check(
+        "grid hidden paints nothing",
+        off.strokes.filter((s) => s[0] === "l").length,
+        0
+    );
+}
+{
+    // Prefs round trip through localStorage; unknown values fall back.
+    const store = new Map();
+    window.localStorage = {
+        getItem: (k) => (store.has(k) ? store.get(k) : null),
+        setItem: (k, v) => store.set(k, v),
+    };
+    try {
+        const dlg = makeDialog();
+        dlg.state.gridVisible = true;
+        dlg.state.gridSnap = true;
+        dlg.state.gridSpacing = 32;
+        dlg._writeGridPrefs();
+        check(
+            "grid prefs persisted",
+            JSON.parse(store.get("social_image_editor_grid")),
+            { visible: true, snap: true, spacing: 32 }
+        );
+        check("grid prefs read back", dlg._readGridPrefs(), {
+            visible: true,
+            snap: true,
+            spacing: 32,
+        });
+        store.set("social_image_editor_grid", '{"spacing": 13}');
+        check("unknown spacing falls back", dlg._readGridPrefs().spacing, 16);
+    } finally {
+        delete window.localStorage;
+    }
+}
+{
+    // Toolbar actions.
+    const dlg = makeDialog();
+    let renders = 0;
+    dlg._canvas.requestRenderAll = () => renders++;
+    dlg.toggleGrid();
+    check("grid toggle flips visible", dlg.state.gridVisible, true);
+    checkTrue("grid toggle re-renders the canvas", renders === 1);
+    dlg.setGridSpacing(8);
+    check("spacing preset applied", dlg.state.gridSpacing, 8);
+    dlg.setGridSpacing(13);
+    check("unknown spacing falls back to default", dlg.state.gridSpacing, 16);
+    dlg.onGridSnapChange({ target: { checked: true } });
+    check("snap checkbox applied", dlg.state.gridSnap, true);
+}
+
+// ------------------------------------------------------------------
+// G. Insert Dynamic Data flow (tasks 2.1-2.3)
+// ------------------------------------------------------------------
+
+checkTrue(
+    "toolbar: insert dynamic data button + stepped panel",
+    /t-on-click="toggleInsertDataPanel"/.test(xml) &&
+        xml.includes("Insert Dynamic Data") &&
+        xml.includes("state.insertDataStep === 'model'") &&
+        xml.includes("state.insertDataStep === 'field'") &&
+        xml.includes("state.insertDataStep === 'target'") &&
+        /t-on-click="onInsertDataTokenClick"/.test(xml) &&
+        /t-on-click="onInsertDataBindImageClick"/.test(xml) &&
+        /t-ref="insertDataRef"/.test(xml)
+);
+checkTrue(
+    "insert data JS: model search domain excludes transient/abstract",
+    dialogSource.includes('["transient", "=", false]') &&
+        dialogSource.includes('["abstract", "=", false]') &&
+        dialogSource.includes('_t("Insert Dynamic Data")')
+);
+
+function makeInsertOrm() {
+    return {
+        written: [],
+        async call(model, method, args) {
+            if (model === "ir.model" && method === "name_search") {
+                return [
+                    [1, "Contact"],
+                    [2, "Product"],
+                ];
+            }
+            if (method === "get_binding_fields") {
+                return [
+                    { name: "name", type: "char", field_description: "Name" },
+                    { name: "image_1920", type: "binary", field_description: "Image" },
+                ];
+            }
+            return [];
+        },
+        async read() {
+            return [{ id: 1, model: "res.partner" }];
+        },
+        async write(model, ids, vals) {
+            this.written.push(vals);
+        },
+    };
+}
+
+{
+    // No binding model: the panel opens at the model step, preloads
+    // the search, and picking one persists model_id via the normal
+    // ORM write before the field step.
+    const orm = makeInsertOrm();
+    const dlg = makeDialog({ orm });
+    dlg.toggleInsertDataPanel();
+    check("panel opens", dlg.state.insertDataOpen, true);
+    check("model step without binding model", dlg.state.insertDataStep, "model");
+    await sleep(0);
+    check("model search preloaded", dlg.state.insertDataResults.length, 2);
+    await dlg.onInsertModelPicked({ id: 1, name: "Contact" });
+    check("model persisted via orm.write", orm.written, [{ model_id: 1 }]);
+    check(
+        "binding model set",
+        [dlg.state.bindingModel, dlg.state.bindingModelName],
+        [1, "res.partner"]
+    );
+    check("fields loaded from get_binding_fields", dlg.state.bindingFields.length, 2);
+    check("flow continues at field step", dlg.state.insertDataStep, "field");
+}
+{
+    // With a binding model the flow starts at the field step.
+    const orm = makeInsertOrm();
+    const dlg = makeDialog({ orm });
+    dlg.state.bindingModel = 1;
+    dlg.state.bindingModelName = "res.partner";
+    dlg.state.bindingFields = [
+        { name: "name", type: "char", field_description: "Name" },
+    ];
+    dlg.toggleInsertDataPanel();
+    check("field step with binding model", dlg.state.insertDataStep, "field");
+    dlg.state.insertDataFieldFilter = "nomatch";
+    check("field filter narrows", dlg.filteredInsertDataFields().length, 0);
+    dlg.state.insertDataFieldFilter = "na";
+    check("field filter matches name", dlg.filteredInsertDataFields().length, 1);
+    await dlg.onInsertDataFieldPicked(dlg.state.bindingFields[0]);
+    check("target step after field pick", dlg.state.insertDataStep, "target");
+    check("token preview", dlg.insertDataToken(), "{{name}}");
+    dlg.onInsertDataStepBack();
+    check("back returns to field step", dlg.state.insertDataStep, "field");
+}
+{
+    // Target step, text action with an active text layer: the token
+    // lands at the caret and parses with the binding token regex.
+    const text = {
+        type: "textbox",
+        text: "Hej ",
+        isEditing: false,
+        selectionStart: 4,
+        selectionEnd: 4,
+        set(key, value) {
+            this[key] = value;
+        },
+    };
+    const dlg = makeDialog({ activeObject: text, objects: [text] });
+    dlg._syncSelection = () => {};
+    dlg._onCanvasChanged = () => {};
+    dlg.state.insertDataField = { name: "name", type: "char" };
+    dlg.onInsertDataTokenClick();
+    check("token inserted into active text", text.text, "Hej {{name}}");
+    check(
+        "inserted token parses with BINDING_TOKEN_RE",
+        (text.text.match(utils.BINDING_TOKEN_RE) || []).length,
+        1
+    );
+    check("panel closed after insert", dlg.state.insertDataOpen, false);
+}
+{
+    // Target step, text action with no text layer: a new textbox
+    // holding the token appears at the canvas center.
+    const dlg = makeDialog();
+    dlg._syncSelection = () => {};
+    dlg._onCanvasChanged = () => {};
+    dlg._fabric = {
+        Textbox: class {
+            constructor(text, opts) {
+                this.type = "textbox";
+                this.text = text;
+                Object.assign(this, opts);
+            }
+        },
+    };
+    dlg.state.insertDataField = { name: "name", type: "char" };
+    dlg.onInsertDataTokenClick();
+    const created = dlg._canvas.getObjects()[0];
+    checkTrue("token textbox created", !!created);
+    check("new textbox holds the token", created.text, "{{name}}");
+    check("new textbox centered", [created.left, created.top], [450, 291]);
+    checkTrue("new textbox selected", dlg._canvas.getActiveObject() === created);
+}
+{
+    // Target step, image action: a binary field binds the active image
+    // layer through the same _dataBinding path as the Data panel.
+    const img = { type: "image" };
+    const dlg = makeDialog({ activeObject: img, objects: [img] });
+    dlg._syncSelection = () => {};
+    dlg._onCanvasChanged = () => {};
+    dlg.state.inspector = { isImage: true };
+    dlg.state.insertDataField = { name: "image_1920", type: "binary" };
+    checkTrue("bind offered for binary field + image layer", dlg.insertDataCanBindImage());
+    dlg.onInsertDataBindImageClick();
+    check("image layer bound", img._dataBinding, { field: "image_1920" });
+    check("panel closed after bind", dlg.state.insertDataOpen, false);
+}
+{
+    // Binary field but no image layer active: binding is refused.
+    const dlg = makeDialog();
+    dlg._syncSelection = () => {};
+    dlg._onCanvasChanged = () => {};
+    dlg.state.insertDataField = { name: "image_1920", type: "binary" };
+    checkTrue("bind needs an active image layer", !dlg.insertDataCanBindImage());
+    dlg.onInsertDataBindImageClick();
+    checkTrue("bind without image is a no-op", dlg._canvas.getObjects().length === 0);
+}
+
+// ------------------------------------------------------------------
+// H. Chart, table and QR elements (tasks 3.x-5.x): toolbar lint,
+// panels, capture round-trip, Escape unwind
+// ------------------------------------------------------------------
+
+checkTrue(
+    "toolbar: table/chart/QR entries with popovers",
+    /t-on-click="toggleTableMenu"/.test(xml) &&
+        /t-on-click="insertTable"/.test(xml) &&
+        /t-ref="tableMenuRef"/.test(xml) &&
+        /t-on-click="toggleChartMenu"/.test(xml) &&
+        /chartTypeOptions\(\)/.test(xml) &&
+        /t-on-click="\(\) => this\.insertChart\(opt\.type\)"/.test(xml) &&
+        /t-ref="chartMenuRef"/.test(xml) &&
+        /t-on-click="toggleQrMenu"/.test(xml) &&
+        /t-on-click="insertQr"/.test(xml) &&
+        /t-ref="qrMenuRef"/.test(xml)
+);
+checkTrue(
+    "QR insert: inline error slot wired",
+    /o_social_image_editor_qr_error/.test(xml) &&
+        dialogSource.includes("this.state.qrError") &&
+        dialogSource.includes("insertQr()") &&
+        dialogSource.includes("_ensureQrLib")
+);
+checkTrue(
+    "properties panel: chart/table/QR editors + editing banner",
+    /o_social_image_editor_chart_props/.test(xml) &&
+        /onChartTypeChange/.test(xml) &&
+        /onChartCellChange/.test(xml) &&
+        /onChartAddCategory/.test(xml) &&
+        /onChartAddSeries/.test(xml) &&
+        /o_social_image_editor_table_props/.test(xml) &&
+        /onTableAddRow/.test(xml) &&
+        /onTableRemoveRow/.test(xml) &&
+        /onTableAddColumn/.test(xml) &&
+        /onTableRemoveColumn/.test(xml) &&
+        /o_social_image_editor_qr_props/.test(xml) &&
+        /onQrContentChange/.test(xml) &&
+        /o_social_image_editor_table_editing/.test(xml) &&
+        /_exitTableEdit\(true\)/.test(xml)
+);
+checkTrue(
+    "inspector carries chart/qr/table copies",
+    dialogSource.includes("inspector.chart = obj[CHART_SPEC_PROP]") &&
+        dialogSource.includes('inspector.qrContent =') &&
+        dialogSource.includes("inspector.table = obj[TABLE_PROP]")
+);
+checkTrue(
+    "EXTRA_PROPS carries the three new props",
+    utils.EXTRA_PROPS.includes("_tableData") &&
+        utils.EXTRA_PROPS.includes("_chartSpec") &&
+        utils.EXTRA_PROPS.includes("_qrContent")
+);
+{
+    // Capture round trip: the three new props survive EXTRA_PROPS
+    // serialization exactly like the binding props do.
+    const dynamicGroup = {
+        type: "group",
+        _layerId: "l_dyn",
+        _tableData: {
+            rows: 2,
+            cols: 2,
+            header: true,
+            cellWidth: 120,
+            cells: { "0,0": "Reg", "1,1": "100%" },
+        },
+        _chartSpec: {
+            version: 1,
+            type: "bar-v",
+            title: "{{categ.name}}",
+            categories: ["A"],
+            series: [{ name: "S", values: ["{{product.weight}}"] }],
+            options: { width: 480, height: 320 },
+        },
+        _qrContent: "{{product.default_code}}",
+        toObject(extraProps) {
+            const out = { type: this.type };
+            for (const key of extraProps) {
+                if (this[key] !== undefined) {
+                    out[key] = this[key];
+                }
+            }
+            return out;
+        },
+    };
+    const dlg = makeDialog({ objects: [dynamicGroup] });
+    const scene = dlg._captureScene();
+    const json = JSON.parse(JSON.stringify(scene));
+    check(
+        "_tableData survives the capture round trip",
+        json.objects[0]._tableData.cells,
+        { "0,0": "Reg", "1,1": "100%" }
+    );
+    check(
+        "_chartSpec survives the capture round trip",
+        json.objects[0]._chartSpec.series[0].values,
+        ["{{product.weight}}"]
+    );
+    check(
+        "_qrContent survives the capture round trip",
+        json.objects[0]._qrContent,
+        "{{product.default_code}}"
+    );
+}
+{
+    // Escape unwinds the three new menus (in order) before closing.
+    const dlg = makeDialog({ orm: { write: async () => {} } });
+    dlg.state.chartMenuOpen = true;
+    dlg.state.tableMenuOpen = true;
+    dlg.state.qrMenuOpen = true;
+    const escape = () => dlg._onKeyDown(keyEvent("Escape"));
+    escape();
+    checkTrue("Escape closes the chart menu", !dlg.state.chartMenuOpen);
+    escape();
+    checkTrue("Escape closes the table menu", !dlg.state.tableMenuOpen);
+    escape();
+    checkTrue(
+        "Escape closes the QR menu and clears its error",
+        !dlg.state.qrMenuOpen && dlg.state.qrError === ""
+    );
+    escape();
+    await sleep(10);
+    checkTrue("Escape then closes the dialog", dlg.closedCount() === 1);
+}
+{
+    // A live table edit session is reassembled before a save flush so
+    // the persisted scene is always the grouped table.
+    const kdStart = dialogSource.indexOf("_flushSave() {");
+    const kdEnd = dialogSource.indexOf("async close()", kdStart);
+    const flushBody = dialogSource.slice(kdStart, kdEnd);
+    checkTrue(
+        "flush reassembles an open table edit session",
+        kdStart >= 0 &&
+            kdEnd > kdStart &&
+            flushBody.indexOf("_exitTableEdit(true)") <
+                flushBody.indexOf("_captureScene")
+    );
+}
 
 // ------------------------------------------------------------------
 // Accessibility lint: real buttons, accessible names, focus visibility

@@ -26,6 +26,13 @@ export const EXTRA_PROPS = [
     "_overflow",
     "_fillImage",
     "_iconName",
+    // Table, chart and QR elements (designs D3/D4/D5 in
+    // openspec/changes/editor-grid-dynamic-elements): plain-data props,
+    // no `type` key, so they round-trip through loadFromJSON untouched
+    // (D6: no schema change, old scenes load unchanged).
+    "_tableData",
+    "_chartSpec",
+    "_qrContent",
 ];
 
 export const HISTORY_LIMIT = 80;
@@ -165,10 +172,14 @@ export function computeDisplayScale(width, height, availWidth, availHeight) {
  * so they never need stashing. Only object-valued custom props are at
  * risk; this helper holds those aside before load and re-attaches them
  * after, sidestepping the whole family of bugs no matter what Fabric
- * chooses to do.
+ * chooses to do. It recurses into group `objects` arrays because chart
+ * specs ({type: 'bar-v', ...}) and grouped elements can sit at any depth
+ * (design D3/D6; mirrors the render-side collectTargets depth walk).
  *
  * @param {Object} scene parsed scene JSON (canvas.toObject() shape)
  * @returns {{sanitized: Object, stashed: Array<Array<{key, value}>>}}
+ *   Each entry may also carry a `.children` array mirroring the object's
+ *   `objects` array, one held-list per child.
  */
 export function stashSceneProps(scene) {
     if (!scene || !Array.isArray(scene.objects)) {
@@ -181,27 +192,48 @@ export function stashSceneProps(scene) {
             return obj;
         }
         const held = [];
-        const copy = { ...obj };
-        for (const key of Object.keys(copy)) {
-            const value = copy[key];
-            const isCustomProp = key.startsWith("_") || EXTRA_PROPS.includes(key);
-            const isEnlivenRisk =
-                value !== null && typeof value === "object" &&
-                typeof value.type === "string";
-            if (isCustomProp && isEnlivenRisk) {
-                held.push({ key, value });
-                delete copy[key];
-            }
-        }
+        const copy = stashOneObject(obj, held);
         stashed.push(held);
         return copy;
     });
     return { sanitized: { ...scene, objects }, stashed };
 }
 
+function stashOneObject(obj, held) {
+    const copy = { ...obj };
+    if (Array.isArray(copy.objects)) {
+        const childStashed = [];
+        copy.objects = copy.objects.map((child) => {
+            if (!child || typeof child !== "object") {
+                childStashed.push([]);
+                return child;
+            }
+            const childHeld = [];
+            const childCopy = stashOneObject(child, childHeld);
+            childStashed.push(childHeld);
+            return childCopy;
+        });
+        held.children = childStashed;
+    }
+    for (const key of Object.keys(copy)) {
+        const value = copy[key];
+        const isCustomProp = key.startsWith("_") || EXTRA_PROPS.includes(key);
+        const isEnlivenRisk =
+            value !== null && typeof value === "object" &&
+            typeof value.type === "string";
+        if (isCustomProp && isEnlivenRisk) {
+            held.push({ key, value });
+            delete copy[key];
+        }
+    }
+    return copy;
+}
+
 /**
  * Re-attach props held aside by stashSceneProps. `objects` must be the
- * canvas objects in the same order as the scene's objects list.
+ * canvas objects in the same order as the scene's objects list; children
+ * are matched by index through getObjects(), the same way the stashed
+ * mirror was built.
  */
 export function restoreSceneProps(objects, stashed) {
     (objects || []).forEach((obj, index) => {
@@ -211,6 +243,9 @@ export function restoreSceneProps(objects, stashed) {
         }
         for (const { key, value } of held) {
             obj[key] = value;
+        }
+        if (held.children && obj && typeof obj.getObjects === "function") {
+            restoreSceneProps(obj.getObjects(), held.children);
         }
     });
 }
@@ -293,6 +328,15 @@ export function isEmptyBindingValue(v) {
         v === false ||
         (typeof v === "string" && v.trim() === "")
     );
+}
+
+/**
+ * The {{field}} token a binding field name inserts into text. Parses
+ * with BINDING_TOKEN_RE, which mirrors the render service and the
+ * Python resolver, so one builder keeps every producer in sync.
+ */
+export function buildToken(fieldName) {
+    return `{{${fieldName}}}`;
 }
 
 /**
@@ -1111,4 +1155,90 @@ export function computeSmartSpacing(box, others, threshold) {
     }
 
     return { dx, dy, distances };
+}
+
+// ------------------------------------------------------------------
+// Grid overlay and snap-to-grid (pure; design D1 in
+// openspec/changes/editor-grid-dynamic-elements). The grid is a view
+// aid only: lines are painted on the upper canvas and never become
+// part of the scene, so exports stay clean.
+// ------------------------------------------------------------------
+
+/** Spacing presets offered in the grid dropdown, px. */
+export const GRID_SPACING_PRESETS = [8, 16, 32, 64];
+
+/** Default spacing when nothing was persisted. */
+export const DEFAULT_GRID_SPACING = 16;
+
+/**
+ * Round a single canvas coordinate to the nearest multiple of spacing.
+ * A non-positive or non-numeric spacing means "no grid": the value
+ * passes through (0 for non-numeric input).
+ */
+export function roundToGrid(value, spacing) {
+    const v = Number(value);
+    const s = Number(spacing);
+    if (!Number.isFinite(v)) {
+        return 0;
+    }
+    if (!Number.isFinite(s) || s <= 0) {
+        return v;
+    }
+    return Math.round(v / s) * s;
+}
+
+/** Round both coordinates of a point to the grid. */
+export function snapPointToGrid(point, spacing) {
+    return {
+        x: roundToGrid(point && point.x, spacing),
+        y: roundToGrid(point && point.y, spacing),
+    };
+}
+
+/** Round both dimensions of a size to the grid. */
+export function snapSizeToGrid(size, spacing) {
+    return {
+        width: roundToGrid(size && size.width, spacing),
+        height: roundToGrid(size && size.height, spacing),
+    };
+}
+
+/**
+ * Grid line segments clipped to the visible viewport, in canvas
+ * coordinates. `viewport` is {left, top, width, height} in canvas
+ * units (already pan/zoom-adjusted by the caller). Segments are
+ * {kind: "v"|"h", at, from, to} and the caller multiplies by the zoom
+ * when painting, exactly like the snap guides.
+ *
+ * When zoomed out far enough that the configured spacing would fuse
+ * into a solid fill (under ~3 screen px per step), the drawn step
+ * coarsens by powers of two. Drawing only: snapping keeps the
+ * configured spacing regardless of zoom.
+ */
+export function computeGridLines(viewport, spacing, zoom = 1) {
+    const lines = [];
+    if (!viewport || !(Number(spacing) > 0)) {
+        return lines;
+    }
+    const z = Number(zoom) > 0 ? Number(zoom) : 1;
+    let step = Number(spacing);
+    while (step * z < 3) {
+        step *= 2;
+    }
+    const left = Number(viewport.left) || 0;
+    const top = Number(viewport.top) || 0;
+    const width = Number(viewport.width) || 0;
+    const height = Number(viewport.height) || 0;
+    if (width <= 0 || height <= 0) {
+        return lines;
+    }
+    const right = left + width;
+    const bottom = top + height;
+    for (let x = Math.ceil(left / step) * step; x <= right + 1e-9; x += step) {
+        lines.push({ kind: "v", at: x, from: top, to: bottom });
+    }
+    for (let y = Math.ceil(top / step) * step; y <= bottom + 1e-9; y += step) {
+        lines.push({ kind: "h", at: y, from: left, to: right });
+    }
+    return lines;
 }

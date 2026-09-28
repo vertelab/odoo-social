@@ -110,6 +110,22 @@ server-side rendering through the Node render service in
   pipeline in preview via `resolveTextForPreview` and no longer bakes
   transformed text into the stored scene, so `{{tokens}}` survive
   capture intact.
+- Dynamic elements (editor change editor-grid-dynamic-elements): charts
+  and QR codes carry source-of-truth props (`_chartSpec`, `_qrContent`)
+  on their groups; the render service substitutes tokens in those props
+  in render_core, then regenerates the groups after `loadFromJSON` in
+  `dynamic_groups.mjs` (chart via `chartSpecToSvg` -> `loadSVGFromString`,
+  QR via `qr_matrix.mjs` matrix -> Rect children). The editor ships a
+  parity-locked copy of the chart module (`dialog/chart_library.js`,
+  checked by `scripts/check_chart_sync.py`) and the same QR geometry;
+  QR generation uses the vendored MIT `qrcode-generator` UMD
+  (`static/lib/qrcode-generator/`, loaded by `static/src/lib/qr_loader.js`
+  with UTF-8 bytes). Tables are static fabric groups rebuilt from
+  `_tableData` (`dialog/table_library.js`); cell text is edited through
+  double-click isolation and row/column ops preserve cell contents.
+- Grid: toggle + snap in the editor toolbar (state on `contextTop` only,
+  never exported); snap runs after smart-guide selection so guides keep
+  priority; presets 8/16/32/64 px, persisted per user in localStorage.
 
 ## Menus
 

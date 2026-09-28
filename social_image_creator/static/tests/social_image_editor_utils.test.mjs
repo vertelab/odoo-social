@@ -182,6 +182,61 @@ check(
     { model: "product", field: "image", type: "image" }
 );
 
+// Nested custom props: a chart grouped with a caption lives one level
+// down; its _chartSpec ({type: 'bar-v'}) must survive the same way.
+const nestedScene = {
+    version: "6.9.1",
+    objects: [
+        {
+            type: "Group",
+            _layerId: "g1",
+            objects: [
+                { type: "Textbox", text: "{{name}}", _layerId: "t1" },
+                {
+                    type: "Group",
+                    _layerId: "c1",
+                    _chartSpec: {
+                        version: 1,
+                        type: "bar-v",
+                        categories: ["A"],
+                        series: [{ name: "S", values: [1] }],
+                    },
+                },
+            ],
+        },
+    ],
+};
+const nested = utils.stashSceneProps(nestedScene);
+check(
+    "stash removes nested chart spec",
+    !("objects" in nested.sanitized.objects[0]) ||
+        !("_chartSpec" in nested.sanitized.objects[0].objects[1]),
+    true
+);
+const nestedReloaded = [
+    {
+        type: "Group",
+        getObjects() {
+            return this._objects;
+        },
+        _objects: [
+            { type: "Textbox", text: "{{name}}" },
+            { type: "Group", getObjects: () => [], _objects: [] },
+        ],
+    },
+];
+utils.restoreSceneProps(nestedReloaded, nested.stashed);
+check(
+    "restore re-attaches nested chart spec",
+    nestedReloaded[0]._objects[1]._chartSpec.type,
+    "bar-v"
+);
+check(
+    "nested chart data intact",
+    nestedReloaded[0]._objects[1]._chartSpec.series[0].values,
+    [1]
+);
+
 // newLayerId uniqueness
 const ids = new Set(Array.from({ length: 200 }, () => utils.newLayerId()));
 check("layer ids unique", ids.size, 200);
@@ -491,6 +546,117 @@ for (const obj of PARITY_OBJECTS) {
         }
     );
 }
+
+// ------------------------------------------------------------------
+// Grid helpers (tasks 1.1-1.3 of editor-grid-dynamic-elements):
+// rounding, point/size snapping and the viewport-clipped line list the
+// contextTop painter consumes. Snapping math is in canvas units and
+// independent of zoom; drawing coarsens when zoomed out.
+// ------------------------------------------------------------------
+
+check("grid presets", utils.GRID_SPACING_PRESETS, [8, 16, 32, 64]);
+check("grid default spacing", utils.DEFAULT_GRID_SPACING, 16);
+
+// roundToGrid
+check("round to grid exact", utils.roundToGrid(32, 16), 32);
+check("round to grid up", utils.roundToGrid(25, 16), 32);
+check("round to grid down", utils.roundToGrid(23, 16), 16);
+check("round to grid half up", utils.roundToGrid(24, 16), 32);
+check("round to grid zero", utils.roundToGrid(0, 16), 0);
+check("round to grid negative", utils.roundToGrid(-23, 16), -16);
+check("round to grid bad spacing", utils.roundToGrid(23, 0), 23);
+check("round to grid nan spacing", utils.roundToGrid(23, "x"), 23);
+check("round to grid nan value", utils.roundToGrid("x", 16), 0);
+
+// snapPointToGrid / snapSizeToGrid
+check(
+    "snap point to grid",
+    utils.snapPointToGrid({ x: 13, y: 27 }, 16),
+    { x: 16, y: 32 }
+);
+check(
+    "snap size to grid",
+    utils.snapSizeToGrid({ width: 37, height: 50 }, 16),
+    { width: 32, height: 48 }
+);
+
+// computeGridLines: 0..64 viewport at spacing 16, zoom 1: lines on
+// both axes at 0, 16, 32, 48, 64, each clipped to the viewport span.
+const gridLines = utils.computeGridLines(
+    { left: 0, top: 0, width: 64, height: 64 },
+    16,
+    1
+);
+check("grid lines count", gridLines.length, 10);
+check(
+    "grid vertical positions",
+    gridLines.filter((l) => l.kind === "v").map((l) => l.at),
+    [0, 16, 32, 48, 64]
+);
+check(
+    "grid segment clipped to viewport",
+    gridLines.find((l) => l.kind === "v" && l.at === 16),
+    { kind: "v", at: 16, from: 0, to: 64 }
+);
+// Offset viewport: only intersections inside the window are drawn.
+const offsetLines = utils.computeGridLines(
+    { left: 10, top: 10, width: 20, height: 20 },
+    16,
+    1
+);
+check(
+    "grid lines offset viewport",
+    offsetLines.map((l) => `${l.kind}:${l.at}`),
+    ["v:16", "h:16"]
+);
+// Panning moves the window in canvas coordinates.
+const pannedLines = utils.computeGridLines(
+    { left: 100, top: 0, width: 32, height: 16 },
+    16,
+    1
+);
+check(
+    "grid lines panned viewport",
+    pannedLines.filter((l) => l.kind === "v").map((l) => l.at),
+    [112, 128]
+);
+// Zoomed out below ~3 screen px per step: the drawn step coarsens by
+// powers of two (8 -> 16 at zoom 0.25) while snapping keeps spacing 8.
+const zoomedOut = utils.computeGridLines(
+    { left: 0, top: 0, width: 64, height: 16 },
+    8,
+    0.25
+);
+check(
+    "grid coarsens when zoomed out",
+    zoomedOut.filter((l) => l.kind === "v").map((l) => l.at),
+    [0, 16, 32, 48, 64]
+);
+// Guard rails.
+check(
+    "grid empty viewport",
+    utils.computeGridLines({ left: 0, top: 0, width: 0, height: 10 }, 16, 1),
+    []
+);
+check(
+    "grid bad spacing",
+    utils.computeGridLines({ left: 0, top: 0, width: 10, height: 10 }, 0, 1),
+    []
+);
+check("grid null viewport", utils.computeGridLines(null, 16, 1), []);
+
+// ------------------------------------------------------------------
+// buildToken (task 2.2): the token string the Insert Dynamic Data flow
+// writes into text layers; it must parse with the binding token regex
+// so preview and render resolve it.
+// ------------------------------------------------------------------
+check("build token", utils.buildToken("name"), "{{name}}");
+check("build token dotted", utils.buildToken("categ_id.name"), "{{categ_id.name}}");
+check(
+    "token parses with BINDING_TOKEN_RE",
+    ("Hej {{name}}!".match(utils.BINDING_TOKEN_RE) || []).length,
+    1
+);
 
 if (failures) {
     console.error(`${failures} check(s) failed`);

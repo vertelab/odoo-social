@@ -10,17 +10,21 @@ import {
     HISTORY_LIMIT,
     applyImageCoverFit,
     buildLayerDescriptors,
+    buildToken,
     computeAlignmentDeltas,
     computeAutofitFontSize,
     computeDisplayScale,
     computeDistributePositions,
+    computeGridLines,
     computeInsertIndex,
     computeSmartSpacing,
     DASH_PRESETS,
+    DEFAULT_GRID_SPACING,
     detectStrokePattern,
     gradientAngleToCoords,
     gradientRadialCoords,
     gradientToConfig,
+    GRID_SPACING_PRESETS,
     isEmptyBindingValue,
     moveItem,
     newLayerId,
@@ -28,13 +32,38 @@ import {
     parseShadowColor,
     buildShadowColor,
     resolveTextForPreview,
+    resolveTokens,
     restoreSceneProps,
+    roundToGrid,
     snapBoxFromRect,
     snapBoxToGuides,
     stashSceneProps,
     toHexColor,
     widestLine,
 } from "@social_image_creator/js/dialog/social_image_editor_utils";
+import {
+    chartSpecToSvg,
+    substituteChartSpec,
+    CHART_SPEC_PROP,
+} from "@social_image_creator/js/dialog/chart_library";
+import {
+    qrContentToMatrix,
+    qrMatrixToRectSpecs,
+    initQrGenerator,
+    QR_PROP,
+} from "@social_image_creator/js/dialog/qr_library";
+import { loadQr } from "@social_image_creator/lib/qr_loader";
+import {
+    TABLE_PROP,
+    addTableColumn,
+    addTableRow,
+    buildTableGroup,
+    normalizeTableData,
+    removeTableColumn,
+    removeTableRow,
+    starterTableData,
+    syncTableTexts,
+} from "@social_image_creator/js/dialog/table_library";
 import {
     BASIC_SHAPES,
     PARAM_SHAPES,
@@ -95,6 +124,12 @@ export class SocialImageEditorDialog extends Component {
         this.renameInputRef = useRef("renameInputRef");
         this.fontPickerRef = useRef("fontPickerRef");
         this.shapesMenuRef = useRef("shapesMenuRef");
+        this.gridMenuRef = useRef("gridMenuRef");
+        this.insertDataRef = useRef("insertDataRef");
+        this.chartMenuRef = useRef("chartMenuRef");
+        this.tableMenuRef = useRef("tableMenuRef");
+        this.qrMenuRef = useRef("qrMenuRef");
+        const gridPrefs = this._readGridPrefs();
         this.state = useState({
             busy: true,
             fabricVersion: null,
@@ -115,6 +150,13 @@ export class SocialImageEditorDialog extends Component {
             // Object toolbox
             penMode: false,
             shapesOpen: false,
+            // Grid overlay + snap-to-grid (design D1): drawn on
+            // contextTop so exports stay clean; the prefs persist per
+            // user via localStorage.
+            gridVisible: gridPrefs.visible,
+            gridSnap: gridPrefs.snap,
+            gridSpacing: gridPrefs.spacing,
+            gridMenuOpen: false,
             // Properties panel
             inspector: this._emptyInspector(),
             shapeParamDefs: [],
@@ -150,6 +192,31 @@ export class SocialImageEditorDialog extends Component {
             previewResults: [],
             previewRecordId: null,
             previewRecordName: "",
+            // Insert Dynamic Data stepped panel (design D2): model ->
+            // field -> target. Reuses the binding contract (model_id,
+            // get_binding_fields, {{field}} tokens, _dataBinding on
+            // image layers); a template without model_id gets one
+            // persisted through the normal ORM write in step 1.
+            insertDataOpen: false,
+            insertDataStep: "model",
+            insertDataSearch: "",
+            insertDataResults: [],
+            insertDataFieldFilter: "",
+            insertDataField: null,
+            // Chart, table and QR elements (designs D3/D4/D5): toolbar
+            // popovers for inserting, properties-panel editors for
+            // reworking an existing element in place.
+            chartMenuOpen: false,
+            tableMenuOpen: false,
+            tableRowsDraft: 3,
+            tableColsDraft: 3,
+            tableWidthDraft: 400,
+            qrMenuOpen: false,
+            qrContentDraft: "",
+            qrError: "",
+            // Set while a table is ungrouped for cell editing: the cell
+            // textboxes are loose on the canvas and directly editable.
+            tableEditing: null,
         });
 
         this._fabric = null;
@@ -185,6 +252,12 @@ export class SocialImageEditorDialog extends Component {
         // True while restoring the token scene after preview: load events
         // must not mark the (unchanged) scene dirty.
         this._suppressDirty = false;
+        // Lazy QR generator wiring (lib/qr_loader -> qr_library).
+        this._qrLibPromise = null;
+        // Set while a table is ungrouped for cell editing (see D4
+        // edit-isolation): original data, captured placement and the
+        // loose children waiting to be reassembled.
+        this._tableEdit = null;
 
         this._boundOnKeyDown = (ev) => this._onKeyDown(ev);
         this._boundOnResize = () => this._applyDisplayScale();
@@ -204,8 +277,9 @@ export class SocialImageEditorDialog extends Component {
             }
         };
         this._boundOnObjectMoving = (ev) => this._onObjectMoving(ev);
+        this._boundOnObjectScaling = (ev) => this._onObjectScaling(ev);
         this._boundOnDragStart = (ev) => this._onDragStart(ev);
-        this._boundDrawSnapGuides = () => this._drawSnapGuides();
+        this._boundDrawOverlays = () => this._drawOverlays();
         this._boundClearSnapGuides = () => {
             this._moveStart = null;
             this._clearSnapGuides();
@@ -307,13 +381,18 @@ export class SocialImageEditorDialog extends Component {
             "selection:updated": () => this._syncSelection(),
             "selection:cleared": () => this._syncSelection(),
             "editing:exited": (ev) => this._onTextEditingExited(ev),
+            "mouse:dblclick": (ev) => this._onCanvasDblClick(ev),
         });
         // Alignment guides + smart spacing while dragging (ported from
         // render-engine-os): guides drawn on contextTop, cleared on
         // mouse up. Alt bypasses snapping via the window listeners.
+        // The grid overlay paints through the same after:render hook,
+        // so it can never enter the exported scene.
         this._canvas.on("object:moving", this._boundOnObjectMoving);
+        this._canvas.on("object:scaling", this._boundOnObjectScaling);
         this._canvas.on("mouse:down", this._boundOnDragStart);
-        this._canvas.on("after:render", this._boundDrawSnapGuides);
+        this._canvas.on("mouse:down", (ev) => this._onCanvasPointerDown(ev));
+        this._canvas.on("after:render", this._boundDrawOverlays);
         this._canvas.on("mouse:up", this._boundClearSnapGuides);
         let scene = {};
         try {
@@ -429,16 +508,25 @@ export class SocialImageEditorDialog extends Component {
                 ["model"]
             );
             this.state.bindingModelName = (meta && meta.model) || "";
-            const fields = await this.orm.call(
-                "social.image.template",
-                "get_binding_fields",
-                [[this.props.resId]]
-            );
-            this.state.bindingFields = fields || [];
+            this.state.bindingFields = await this._fetchBindingFields();
         } catch (_) {
             this.state.bindingModelName = "";
             this.state.bindingFields = [];
         }
+    }
+
+    /**
+     * Bindable fields of the template's current binding model, via the
+     * model's get_binding_fields RPC. Shared by the initial load and
+     * the Insert Dynamic Data flow after a model is picked.
+     */
+    async _fetchBindingFields() {
+        const fields = await this.orm.call(
+            "social.image.template",
+            "get_binding_fields",
+            [[this.props.resId]]
+        );
+        return fields || [];
     }
 
     filteredBindingFields() {
@@ -489,7 +577,7 @@ export class SocialImageEditorDialog extends Component {
         if (!obj || !isTextType(obj.type) || !field) {
             return;
         }
-        const token = `{{${field}}}`;
+        const token = buildToken(field);
         const wasEditing = !!obj.isEditing;
         const ta = wasEditing ? obj.hiddenTextarea : null;
         const sourceText = ta ? ta.value : (obj.text ?? "");
@@ -624,6 +712,975 @@ export class SocialImageEditorDialog extends Component {
     }
 
     // ------------------------------------------------------------------
+    // Insert Dynamic Data (spec: template editor "Insert Dynamic Data
+    // flow", design D2): a stepped popover panel in the toolbar. Step 1
+    // model (persisted via the normal ORM write when the template had
+    // none), step 2 field, step 3 target: token into text or binding
+    // onto the active image layer. Everything reuses the binding
+    // contract and the Data panel machinery.
+    // ------------------------------------------------------------------
+
+    insertDataLabel() {
+        return _t("Insert Dynamic Data");
+    }
+
+    /**
+     * Open/close the stepped panel. With a binding model configured the
+     * flow starts at the field step; without one it starts at the model
+     * step and preloads the model search.
+     */
+    toggleInsertDataPanel() {
+        if (!this.state.insertDataOpen && !this._assertEditable()) {
+            return;
+        }
+        this.state.insertDataOpen = !this.state.insertDataOpen;
+        if (this.state.insertDataOpen) {
+            this._resetInsertDataPanel();
+            this.state.insertDataStep = this.state.bindingModel
+                ? "field"
+                : "model";
+            if (!this.state.bindingModel) {
+                this._searchInsertModels("");
+            }
+        }
+        this._syncGlobalPointerListener();
+    }
+
+    closeInsertDataPanel() {
+        this.state.insertDataOpen = false;
+        this._resetInsertDataPanel();
+        this._syncGlobalPointerListener();
+    }
+
+    _resetInsertDataPanel() {
+        this.state.insertDataStep = "model";
+        this.state.insertDataSearch = "";
+        this.state.insertDataResults = [];
+        this.state.insertDataFieldFilter = "";
+        this.state.insertDataField = null;
+    }
+
+    async onInsertDataSearchInput(ev) {
+        this.state.insertDataSearch = ev.target.value;
+        await this._searchInsertModels(this.state.insertDataSearch);
+    }
+
+    /**
+     * Step 1 search over ir.model. Non-transient and non-abstract
+     * models only; the fields of the chosen model come from the
+     * template's get_binding_fields either way.
+     */
+    async _searchInsertModels(term) {
+        try {
+            const results = await this.orm.call(
+                "ir.model",
+                "name_search",
+                [
+                    term || "",
+                    [
+                        ["transient", "=", false],
+                        ["abstract", "=", false],
+                    ],
+                ],
+                { limit: 20 }
+            );
+            this.state.insertDataResults = (results || []).map(([id, name]) => ({
+                id,
+                name,
+            }));
+        } catch (err) {
+            this.state.insertDataResults = [];
+            this._showMessage(_t("Model search failed: %s", err.message || err));
+        }
+    }
+
+    /**
+     * Step 1 pick: persist model_id on the template through the normal
+     * ORM write, then load the model's fields and continue to step 2.
+     */
+    async onInsertModelPicked(result) {
+        if (!result) {
+            return;
+        }
+        try {
+            await this.orm.write(this.props.resModel, [this.props.resId], {
+                model_id: result.id,
+            });
+        } catch (err) {
+            this._showMessage(
+                _t("Could not set the binding model: %s", err.message || err)
+            );
+            return;
+        }
+        this.state.bindingModel = result.id;
+        try {
+            const [meta] = await this.orm.read("ir.model", [result.id], ["model"]);
+            this.state.bindingModelName = (meta && meta.model) || "";
+            this.state.bindingFields = await this._fetchBindingFields();
+        } catch (err) {
+            this.state.bindingModelName = "";
+            this.state.bindingFields = [];
+            this._showMessage(
+                _t("Could not load the model fields: %s", err.message || err)
+            );
+        }
+        this.state.insertDataSearch = "";
+        this.state.insertDataResults = [];
+        this.state.insertDataStep = "field";
+    }
+
+    onInsertDataContinueToFields() {
+        if (this.state.bindingModel) {
+            this.state.insertDataStep = "field";
+        }
+    }
+
+    filteredInsertDataFields() {
+        const f = this.state.insertDataFieldFilter.toLowerCase().trim();
+        if (!f) {
+            return this.state.bindingFields;
+        }
+        return this.state.bindingFields.filter(
+            (field) =>
+                field.name.toLowerCase().includes(f) ||
+                (field.field_description || "").toLowerCase().includes(f)
+        );
+    }
+
+    onInsertDataFieldPicked(field) {
+        if (!field) {
+            return;
+        }
+        this.state.insertDataField = field;
+        this.state.insertDataStep = "target";
+    }
+
+    /**
+     * The {{field}} token for the chosen field, shown as a preview in
+     * the target step.
+     */
+    insertDataToken() {
+        const field = this.state.insertDataField;
+        return field ? buildToken(field.name) : "";
+    }
+
+    /**
+     * Binary field chosen AND an image layer active: the binding action
+     * is available (mirrors the Data panel chip rules).
+     */
+    insertDataCanBindImage() {
+        const field = this.state.insertDataField;
+        return !!(
+            field &&
+            field.type === "binary" &&
+            this.state.inspector &&
+            this.state.inspector.isImage
+        );
+    }
+
+    onInsertDataStepBack() {
+        if (this.state.insertDataStep === "target") {
+            this.state.insertDataStep = "field";
+        } else if (this.state.insertDataStep === "field") {
+            this.state.insertDataStep = "model";
+        }
+    }
+
+    /**
+     * Target step, text action: insert the token into the active text
+     * object (at the caret while editing), or create a new text layer
+     * holding the token at the canvas center.
+     */
+    onInsertDataTokenClick() {
+        const field = this.state.insertDataField;
+        if (!field) {
+            return;
+        }
+        const active = this._canvas && this._canvas.getActiveObject();
+        if (active && isTextType(active.type)) {
+            this.onInsertToken(field.name);
+        } else {
+            this._addTokenTextbox(field.name);
+        }
+        this.closeInsertDataPanel();
+    }
+
+    _addTokenTextbox(fieldName) {
+        if (!this._fabric) {
+            return;
+        }
+        const { Textbox } = this._fabric;
+        const { width, height } = this._dimensions;
+        const boxWidth = Math.min(Math.max(200, Math.round(width * 0.25)), width * 0.8);
+        this._addObject(
+            new Textbox(buildToken(fieldName), {
+                left: Math.round((width - boxWidth) / 2),
+                top: Math.round(height / 2) - 24,
+                width: boxWidth,
+                fontSize: 32,
+                fontFamily: "Arial, sans-serif",
+                fill: "#1a1a1a",
+                textAlign: "center",
+            })
+        );
+    }
+
+    /**
+     * Target step, image action: bind the active image layer to the
+     * binary field (same code path as the Data panel dropdown).
+     */
+    onInsertDataBindImageClick() {
+        const field = this.state.insertDataField;
+        if (!field || field.type !== "binary") {
+            return;
+        }
+        this.onBindImageField(field.name);
+        this.closeInsertDataPanel();
+    }
+
+    // ------------------------------------------------------------------
+    // Chart, table and QR elements (tasks 3.x-5.x, designs D3/D4/D5).
+    // All three are fabric groups carrying a plain-data custom prop
+    // (_chartSpec / _tableData / _qrContent, EXTRA_PROPS-persisted per
+    // D6) and regenerate in place through one shared path that mirrors
+    // render_service/dynamic_groups.mjs: preserve the placement
+    // transform, carry the prop onto the new group, keep the z-order
+    // slot.
+    // ------------------------------------------------------------------
+
+    // Shared regeneration plumbing -------------------------------------
+
+    /**
+     * Copy the placement transform from one layer to another (ported
+     * from copyPlacement in render_service/dynamic_groups.mjs so editor
+     * and render agree on what "in place" means).
+     */
+    _copyPlacement(src, dst) {
+        const placement = {
+            left: src.left,
+            top: src.top,
+            scaleX: src.scaleX ?? 1,
+            scaleY: src.scaleY ?? 1,
+            angle: src.angle ?? 0,
+            flipX: !!src.flipX,
+            flipY: !!src.flipY,
+            originX: src.originX || "left",
+            originY: src.originY || "top",
+            opacity: src.opacity ?? 1,
+            visible: src.visible !== false,
+        };
+        if (typeof dst.set === "function") {
+            dst.set(placement);
+        } else {
+            Object.assign(dst, placement);
+        }
+        if (src.selectable === false) dst.selectable = false;
+        if (src.evented === false) dst.evented = false;
+        if (src._layerName) dst._layerName = src._layerName;
+        dst.setCoords?.();
+    }
+
+    /**
+     * Swap `oldGroup` for `replacement` where it sat (canvas or a parent
+     * group), preserving z-order and layer identity, then reselect and
+     * report the change. `replacement`'s custom prop must already be
+     * attached by the caller (carried prop, idempotent regeneration).
+     */
+    _swapGroupInPlace(oldGroup, replacement) {
+        const fc = this._canvas;
+        if (!fc || !oldGroup || !replacement) {
+            return;
+        }
+        if (oldGroup._layerId) {
+            replacement._layerId = oldGroup._layerId;
+        }
+        this._copyPlacement(oldGroup, replacement);
+        this._insertGroupReplacement(oldGroup, replacement);
+        replacement.setCoords?.();
+        if (!oldGroup.group) {
+            fc.setActiveObject(replacement);
+        }
+        fc.requestRenderAll();
+        this._syncSelection();
+        this._onCanvasChanged();
+    }
+
+    /**
+     * Preview-mode variant of the swap: same placement/z-order
+     * semantics, but no selection or dirty side effects; the token
+     * scene snapshot restores verbatim on preview exit.
+     */
+    _swapPreviewGroup(oldGroup, replacement) {
+        if (!oldGroup || !replacement) {
+            return;
+        }
+        if (oldGroup._layerId) {
+            replacement._layerId = oldGroup._layerId;
+        }
+        this._copyPlacement(oldGroup, replacement);
+        this._insertGroupReplacement(oldGroup, replacement);
+        replacement.setCoords?.();
+    }
+
+    /**
+     * Remove `oldGroup` from its container and insert `replacement` at
+     * the same z-index (fabric 6 containers take insertAt(index, [])).
+     */
+    _insertGroupReplacement(oldGroup, replacement) {
+        const container = oldGroup.group || this._canvas;
+        if (!container) {
+            return;
+        }
+        const siblings =
+            typeof container.getObjects === "function" ? container.getObjects() : [];
+        const index = Math.max(0, siblings.indexOf(oldGroup));
+        container.remove(oldGroup);
+        if (typeof container.insertAt === "function") {
+            container.insertAt(index, [replacement]);
+        } else {
+            container.add(replacement);
+        }
+    }
+
+    // Chart ------------------------------------------------------------
+
+    /** The six chart types of the D3 contract, for picker and panel. */
+    chartTypeOptions() {
+        return [
+            { type: "bar-v", label: _t("Vertical bar") },
+            { type: "bar-h", label: _t("Horizontal bar") },
+            { type: "line", label: _t("Line") },
+            { type: "area", label: _t("Area") },
+            { type: "pie", label: _t("Pie") },
+            { type: "donut", label: _t("Donut") },
+        ];
+    }
+
+    /**
+     * Starter data table per the chart spec: three categories, one
+     * series "Series 1" with values 10/20/15, on a 480x320 canvas.
+     */
+    starterChartSpec(type) {
+        return {
+            version: 1,
+            type: type,
+            title: "",
+            categories: [_t("Category 1"), _t("Category 2"), _t("Category 3")],
+            series: [{ name: _t("Series 1"), values: [10, 20, 15] }],
+            options: { width: 480, height: 320 },
+        };
+    }
+
+    toggleChartMenu() {
+        if (!this.state.chartMenuOpen && !this._assertEditable()) {
+            return;
+        }
+        this.state.chartMenuOpen = !this.state.chartMenuOpen;
+        this._syncGlobalPointerListener();
+    }
+
+    /**
+     * Build the fabric group for a chart spec: spec -> SVG via the
+     * parity copy of render_service/chart_spec.mjs, SVG -> objects via
+     * the same loadSVGFromString path as icons. The group carries the
+     * spec on _chartSpec (design D6).
+     */
+    async _buildChartGroup(spec) {
+        const svg = chartSpecToSvg(spec);
+        const loaded = await this._fabric.loadSVGFromString(svg);
+        const objects = ((loaded && loaded.objects) || []).filter(Boolean);
+        let group = this._fabric.util.groupSVGElements(
+            objects,
+            (loaded && loaded.options) || {}
+        );
+        if (!group || group.type !== "group") {
+            group = new this._fabric.Group(group ? [group] : []);
+        }
+        group[CHART_SPEC_PROP] = spec;
+        return group;
+    }
+
+    /**
+     * Toolbar insert: generate the starter chart of the picked type and
+     * add it as one centered layer.
+     */
+    async insertChart(type) {
+        if (!this._fabric || !this._assertEditable()) {
+            return;
+        }
+        const spec = this.starterChartSpec(type);
+        try {
+            const group = await this._buildChartGroup(spec);
+            const { width, height } = this._dimensions;
+            group.set({
+                originX: "left",
+                originY: "top",
+                left: Math.floor((width - (group.width || 480)) / 2),
+                top: Math.floor((height - (group.height || 320)) / 2),
+            });
+            group._layerName = _t("Chart");
+            this.state.chartMenuOpen = false;
+            this._syncGlobalPointerListener();
+            this._addObject(group);
+        } catch (err) {
+            this._showMessage(_t("Chart failed to generate: %s", err.message || err));
+        }
+    }
+
+    /**
+     * Regenerate a chart layer in place from a (possibly edited) spec:
+     * carry the spec to the new group, keep the placement. Used by the
+     * properties-panel chart editor and by preview resolution.
+     */
+    async _commitChartSpec(group, spec) {
+        const replacement = await this._buildChartGroup(spec);
+        replacement[CHART_SPEC_PROP] = spec;
+        this._swapGroupInPlace(group, replacement);
+    }
+
+    _selectedChartGroup() {
+        const obj = this._canvas && this._canvas.getActiveObject();
+        return obj && obj[CHART_SPEC_PROP] ? obj : null;
+    }
+
+    /** Chart panel: switch type, keep the data table. */
+    onChartTypeChange(type) {
+        const group = this._selectedChartGroup();
+        const draft = this.state.inspector.chart;
+        if (!group || !draft) {
+            return;
+        }
+        draft.type = type;
+        this._commitChartDraft(group, draft);
+    }
+
+    onChartTitleChange(ev) {
+        const group = this._selectedChartGroup();
+        const draft = this.state.inspector.chart;
+        if (!group || !draft) {
+            return;
+        }
+        draft.title = ev.target.value;
+        this._commitChartDraft(group, draft);
+    }
+
+    onChartCategoryChange(index, ev) {
+        const group = this._selectedChartGroup();
+        const draft = this.state.inspector.chart;
+        if (!group || !draft || !draft.categories[index]) {
+            return;
+        }
+        draft.categories[index] = ev.target.value;
+        this._commitChartDraft(group, draft);
+    }
+
+    onChartSeriesNameChange(index, ev) {
+        const group = this._selectedChartGroup();
+        const draft = this.state.inspector.chart;
+        if (!group || !draft || !draft.series[index]) {
+            return;
+        }
+        draft.series[index].name = ev.target.value;
+        this._commitChartDraft(group, draft);
+    }
+
+    /**
+     * One data cell. Values stay strings in the spec: they may hold a
+     * {{token}}, and chartSpecToSvg coerces non-numeric input to 0 per
+     * the data-binding spec.
+     */
+    onChartCellChange(seriesIndex, categoryIndex, ev) {
+        const group = this._selectedChartGroup();
+        const draft = this.state.inspector.chart;
+        if (!group || !draft || !draft.series[seriesIndex]) {
+            return;
+        }
+        draft.series[seriesIndex].values[categoryIndex] = ev.target.value;
+        this._commitChartDraft(group, draft);
+    }
+
+    onChartAddCategory() {
+        const group = this._selectedChartGroup();
+        const draft = this.state.inspector.chart;
+        if (!group || !draft) {
+            return;
+        }
+        draft.categories.push(_t("Category"));
+        for (const series of draft.series) {
+            series.values.push("");
+        }
+        this._commitChartDraft(group, draft);
+    }
+
+    onChartRemoveCategory(index) {
+        const group = this._selectedChartGroup();
+        const draft = this.state.inspector.chart;
+        if (!group || !draft || draft.categories.length <= 1) {
+            return;
+        }
+        draft.categories.splice(index, 1);
+        for (const series of draft.series) {
+            series.values.splice(index, 1);
+        }
+        this._commitChartDraft(group, draft);
+    }
+
+    onChartAddSeries() {
+        const group = this._selectedChartGroup();
+        const draft = this.state.inspector.chart;
+        if (!group || !draft) {
+            return;
+        }
+        draft.series.push({
+            name: _t("Series %s", String(draft.series.length + 1)),
+            values: draft.categories.map(() => ""),
+        });
+        this._commitChartDraft(group, draft);
+    }
+
+    onChartRemoveSeries(index) {
+        const group = this._selectedChartGroup();
+        const draft = this.state.inspector.chart;
+        if (!group || !draft || draft.series.length <= 1) {
+            return;
+        }
+        draft.series.splice(index, 1);
+        this._commitChartDraft(group, draft);
+    }
+
+    /**
+     * Commit the panel draft: write it back onto the layer and
+     * regenerate the chart in place. Failures keep the last good chart
+     * on canvas and surface in the message line.
+     */
+    async _commitChartDraft(group, draft) {
+        try {
+            await this._commitChartSpec(group, draft);
+        } catch (err) {
+            this._showMessage(_t("Chart failed to update: %s", err.message || err));
+        }
+    }
+
+    // Table ------------------------------------------------------------
+
+    toggleTableMenu() {
+        if (!this.state.tableMenuOpen && !this._assertEditable()) {
+            return;
+        }
+        this.state.tableMenuOpen = !this.state.tableMenuOpen;
+        this._syncGlobalPointerListener();
+    }
+
+    /**
+     * Toolbar insert: build the table from the rows/cols/width prompt
+     * (evenly sized cells) and add it as one centered layer. The whole
+     * table is a single group carrying _tableData (design D4).
+     */
+    insertTable() {
+        if (!this._fabric || !this._assertEditable()) {
+            return;
+        }
+        const clamp = (value, fallback) => {
+            const n = Math.round(Number(value));
+            if (!Number.isFinite(n) || n < 1) {
+                return fallback;
+            }
+            return Math.min(50, n);
+        };
+        const rows = clamp(this.state.tableRowsDraft, 3);
+        const cols = clamp(this.state.tableColsDraft, 3);
+        const width = Math.max(40, Number(this.state.tableWidthDraft) || 400);
+        const cellWidth = Math.round(width / cols);
+        const group = buildTableGroup(
+            this._fabric,
+            starterTableData(rows, cols, cellWidth)
+        );
+        const { width: canvasW, height: canvasH } = this._dimensions;
+        group.set({
+            originX: "left",
+            originY: "top",
+            left: Math.floor((canvasW - group.width) / 2),
+            top: Math.floor((canvasH - group.height) / 2),
+        });
+        group._layerName = _t("Table");
+        this.state.tableMenuOpen = false;
+        this._syncGlobalPointerListener();
+        this._addObject(group);
+    }
+
+    onTableRowsDraftChange(ev) {
+        this.state.tableRowsDraft = ev.target.value;
+    }
+
+    onTableColsDraftChange(ev) {
+        this.state.tableColsDraft = ev.target.value;
+    }
+
+    onTableWidthDraftChange(ev) {
+        this.state.tableWidthDraft = ev.target.value;
+    }
+
+    _selectedTableGroup() {
+        const obj = this._canvas && this._canvas.getActiveObject();
+        return obj && obj[TABLE_PROP] ? obj : null;
+    }
+
+    /**
+     * Structural edit for the selected table: rebuild the group from
+     * the new data, preserving placement and entered cell text (the
+     * structural ops in table_library carry texts across).
+     */
+    _applyTableData(newData) {
+        const group = this._selectedTableGroup();
+        if (!group || !this._fabric) {
+            return;
+        }
+        const data = normalizeTableData(newData);
+        const rebuilt = buildTableGroup(this._fabric, data);
+        rebuilt[TABLE_PROP] = data;
+        this._swapGroupInPlace(group, rebuilt);
+    }
+
+    onTableAddRow() {
+        const group = this._selectedTableGroup();
+        if (!group) {
+            return;
+        }
+        this._applyTableData(addTableRow(group[TABLE_PROP]));
+    }
+
+    onTableRemoveRow() {
+        const group = this._selectedTableGroup();
+        if (!group) {
+            return;
+        }
+        this._applyTableData(removeTableRow(group[TABLE_PROP]));
+    }
+
+    onTableAddColumn() {
+        const group = this._selectedTableGroup();
+        if (!group) {
+            return;
+        }
+        this._applyTableData(addTableColumn(group[TABLE_PROP]));
+    }
+
+    onTableRemoveColumn() {
+        const group = this._selectedTableGroup();
+        if (!group) {
+            return;
+        }
+        this._applyTableData(removeTableColumn(group[TABLE_PROP]));
+    }
+
+    /**
+     * Double-click on a table group: ungroup it so the cell textboxes
+     * become directly editable (design D4 edit isolation, the same
+     * ungroup math as ungroupSelection). The session remembers the
+     * original data, placement and layer identity for reassembly.
+     */
+    _onCanvasDblClick(ev) {
+        const target = ev && ev.target;
+        if (!this._canvas || this.state.previewMode || this._tableEdit) {
+            return;
+        }
+        if (
+            !target ||
+            (target.type || "").toLowerCase() !== "group" ||
+            !target[TABLE_PROP]
+        ) {
+            return;
+        }
+        this._enterTableEdit(target);
+    }
+
+    _enterTableEdit(group) {
+        const fc = this._canvas;
+        if (!fc || !group || !group[TABLE_PROP] || this._tableEdit) {
+            return;
+        }
+        const data = normalizeTableData(group[TABLE_PROP]);
+        const session = {
+            data,
+            index: this._canvas.getObjects().indexOf(group),
+            children: [],
+            transform: {
+                left: group.left,
+                top: group.top,
+                scaleX: group.scaleX ?? 1,
+                scaleY: group.scaleY ?? 1,
+                angle: group.angle ?? 0,
+                flipX: !!group.flipX,
+                flipY: !!group.flipY,
+                originX: group.originX || "center",
+                originY: group.originY || "center",
+            },
+            layerId: group._layerId,
+            layerName: group._layerName,
+        };
+        const util = this._fabric.util;
+        const groupMatrix = group.calcTransformMatrix();
+        const items = [...group._objects];
+        group._objects = [];
+        fc.remove(group);
+        items.forEach((obj, i) => {
+            const finalMatrix = util.multiplyTransformMatrices(
+                groupMatrix,
+                obj.calcTransformMatrix()
+            );
+            const opts = util.qrDecompose(finalMatrix);
+            obj.set({
+                left: opts.translateX,
+                top: opts.translateY,
+                scaleX: opts.scaleX,
+                scaleY: opts.scaleY,
+                angle: opts.angle,
+                skewX: opts.skewX,
+                skewY: opts.skewY,
+                flipX: false,
+                flipY: false,
+                originX: "center",
+                originY: "center",
+            });
+            obj.setCoords();
+            // The cell markers are transient (never serialized), so a
+            // reloaded table derives them from the row-major child
+            // order: rect, textbox pairs per cell.
+            if (obj._tableCellRow == null) {
+                const pairIndex = Math.floor(i / 2);
+                obj._tableCellRow = Math.floor(pairIndex / data.cols);
+                obj._tableCellCol = pairIndex % data.cols;
+            }
+            const isText = typeof obj.text === "string";
+            obj.set({ selectable: isText, evented: isText });
+            fc.add(obj);
+            session.children.push(obj);
+        });
+        this._tableEdit = session;
+        this.state.tableEditing = { rows: data.rows, cols: data.cols };
+        fc.discardActiveObject();
+        fc.requestRenderAll();
+        this._syncLayers();
+    }
+
+    /**
+     * Click outside the loose cells ends the session (reassembly, same
+     * as the explicit Done button). Clicks on a loose child keep it
+     * open so text editing continues.
+     */
+    _onCanvasPointerDown(ev) {
+        const session = this._tableEdit;
+        if (!session || !this._canvas) {
+            return;
+        }
+        const target = ev && ev.target;
+        if (!target || !session.children.includes(target)) {
+            this._exitTableEdit(true);
+        }
+    }
+
+    /**
+     * Reassemble the table group: sync the edited cell texts back into
+     * _tableData, rebuild the group through the same path as the
+     * structural edits and restore the captured placement. With
+     * commit=false (unused today, kept for Escape-to-cancel semantics)
+     * the original texts win.
+     */
+    _exitTableEdit(commit) {
+        const session = this._tableEdit;
+        const fc = this._canvas;
+        if (!session || !fc) {
+            return;
+        }
+        this._tableEdit = null;
+        this.state.tableEditing = null;
+        let data = session.data;
+        if (commit) {
+            const entries = session.children
+                .filter((child) => typeof child.text === "string")
+                .map((child) => ({
+                    row: child._tableCellRow,
+                    col: child._tableCellCol,
+                    text: child.text,
+                }));
+            data = syncTableTexts(data, entries);
+        }
+        for (const child of session.children) {
+            fc.remove(child);
+        }
+        const rebuilt = buildTableGroup(this._fabric, data);
+        rebuilt[TABLE_PROP] = normalizeTableData(data);
+        rebuilt._layerId = session.layerId;
+        rebuilt._layerName = session.layerName;
+        if (typeof rebuilt.set === "function") {
+            rebuilt.set(session.transform);
+        } else {
+            Object.assign(rebuilt, session.transform);
+        }
+        rebuilt.setCoords?.();
+        // Back into the slot the group occupied before isolation.
+        const siblings = fc.getObjects();
+        const index = Math.max(
+            0,
+            Math.min(session.index, siblings.length)
+        );
+        if (typeof fc.insertAt === "function") {
+            fc.insertAt(index, rebuilt);
+        } else {
+            fc.add(rebuilt);
+        }
+        fc.setActiveObject(rebuilt);
+        fc.requestRenderAll();
+        this._syncSelection();
+        this._onCanvasChanged();
+    }
+
+    // QR ---------------------------------------------------------------
+
+    toggleQrMenu() {
+        if (!this.state.qrMenuOpen && !this._assertEditable()) {
+            return;
+        }
+        this.state.qrMenuOpen = !this.state.qrMenuOpen;
+        if (!this.state.qrMenuOpen) {
+            this.state.qrError = "";
+        }
+        this._syncGlobalPointerListener();
+    }
+
+    onQrContentDraftChange(ev) {
+        this.state.qrContentDraft = ev.target.value;
+        this.state.qrError = "";
+    }
+
+    /**
+     * Load the vendored QR generator once and wire it into qr_library
+     * (design D5: same library as the render side's npm package, a
+     * fixture test asserts identical matrices).
+     */
+    async _ensureQrLib() {
+        if (!this._qrLibPromise) {
+            this._qrLibPromise = loadQr().then((lib) => {
+                initQrGenerator(lib);
+                return lib;
+            });
+        }
+        return this._qrLibPromise;
+    }
+
+    /**
+     * Build the QR group: content -> module matrix -> one Rect per dark
+     * module. The group is modules * moduleSize square and carries the
+     * content on _qrContent (design D6).
+     */
+    _buildQrGroup(content, { moduleSize = 4, color = "#000000" } = {}) {
+        const matrix = qrContentToMatrix(content);
+        const specs = qrMatrixToRectSpecs(matrix, moduleSize, color);
+        const rects = specs.map(
+            (s) =>
+                new this._fabric.Rect({
+                    left: s.left,
+                    top: s.top,
+                    width: s.size,
+                    height: s.size,
+                    originX: "left",
+                    originY: "top",
+                    fill: s.fill,
+                    selectable: false,
+                    evented: false,
+                })
+        );
+        const group = new this._fabric.Group(rects);
+        if (!group.width) {
+            group.width = matrix.length * moduleSize;
+        }
+        if (!group.height) {
+            group.height = matrix.length * moduleSize;
+        }
+        group[QR_PROP] = content;
+        return group;
+    }
+
+    /**
+     * Toolbar insert: validate the content (inline error per the QR
+     * spec: unencodable or empty content does not insert), then add the
+     * code as one centered layer.
+     */
+    async insertQr() {
+        if (!this._fabric || !this._assertEditable()) {
+            return;
+        }
+        const content = String(this.state.qrContentDraft || "").trim();
+        if (!content) {
+            this.state.qrError = _t("Enter the QR content first.");
+            return;
+        }
+        let group;
+        try {
+            await this._ensureQrLib();
+            group = this._buildQrGroup(content, {
+                moduleSize: 4,
+                color: "#000000",
+            });
+        } catch (err) {
+            this.state.qrError = _t(
+                "The content cannot be encoded as a QR code."
+            );
+            return;
+        }
+        const { width, height } = this._dimensions;
+        group.set({
+            originX: "left",
+            originY: "top",
+            left: Math.floor((width - group.width) / 2),
+            top: Math.floor((height - group.height) / 2),
+        });
+        group._layerName = _t("QR code");
+        this.state.qrMenuOpen = false;
+        this.state.qrContentDraft = "";
+        this.state.qrError = "";
+        this._syncGlobalPointerListener();
+        this._addObject(group);
+    }
+
+    /**
+     * QR edit in the properties panel: re-encode the content and
+     * regenerate the layer in place, deriving module size and color
+     * from the layer being replaced (mirrors buildQrGroup on the render
+     * side, so a bound QR keeps its design-time size). Unencodable
+     * content keeps the previous code and reports in the message line.
+     */
+    async onQrContentChange(ev) {
+        const obj = this._canvas && this._canvas.getActiveObject();
+        if (!obj || typeof obj[QR_PROP] !== "string") {
+            return;
+        }
+        const content = String(ev.target.value || "").trim();
+        try {
+            await this._ensureQrLib();
+            const matrix = qrContentToMatrix(content);
+            const modules = matrix.length;
+            const moduleSize =
+                obj.width && obj.width > 0 ? obj.width / modules : 4;
+            const firstChild =
+                typeof obj.getObjects === "function" ? obj.getObjects()[0] : null;
+            const color =
+                firstChild && typeof firstChild.fill === "string" && firstChild.fill
+                    ? firstChild.fill
+                    : "#000000";
+            const replacement = this._buildQrGroup(content, {
+                moduleSize,
+                color,
+            });
+            replacement[QR_PROP] = content;
+            this._swapGroupInPlace(obj, replacement);
+        } catch (err) {
+            this._showMessage(_t("QR content cannot be encoded."));
+            this._syncSelection();
+        }
+    }
+
+    // ------------------------------------------------------------------
     // Live data preview (spec: template editor "Live data preview"):
     // snapshot the token scene, resolve bindings against a picked record
     // (resolution in Odoo, per design D1), mutate the live canvas, and
@@ -700,12 +1757,17 @@ export class SocialImageEditorDialog extends Component {
             this.state.previewRecordId = first.id;
             this.state.previewRecordName = first.name;
         }
+        // A table edit session must not leak into the snapshot: reassemble
+        // first so the captured (and later restored) scene is the grouped
+        // token scene.
+        if (this._tableEdit) {
+            this._exitTableEdit(true);
+        }
         this._previewSnapshot = this._captureScene();
         this._history.suspended = true;
         this.state.previewMode = true;
         this.state.previewSearch = "";
-        this.state.previewResults = [];
-        // Selection off so no edits land on the mutated canvas; they
+        this.state.previewResults = [];        // Selection off so no edits land on the mutated canvas; they
         // would be wiped (silently) on restore anyway.
         fc.skipTargetFind = true;
         fc.selection = false;
@@ -738,7 +1800,7 @@ export class SocialImageEditorDialog extends Component {
                 ctx.font = `${desc.fontStyle || "normal"} ${desc.fontWeight || "normal"} ${desc.fontSize}px ${desc.fontFamily || "sans-serif"}`;
                 return ctx.measureText(lineText).width;
             };
-            for (const obj of fc.getObjects()) {
+            for (const obj of [...fc.getObjects()]) {
                 // Conditional visibility (any layer type).
                 const hie = obj._hideIfEmpty;
                 if (hie && hie.field && isEmptyBindingValue(bindings[hie.field])) {
@@ -787,6 +1849,58 @@ export class SocialImageEditorDialog extends Component {
                             }
                         });
                     } else {
+                        obj.visible = false;
+                    }
+                }
+                // Chart layers (design D3): substitute bound cells, then
+                // regenerate the SVG group in place, mirroring
+                // regenerateDynamicGroups on the render side: placement
+                // preserved, _chartSpec carried onto the replacement so a
+                // second pass over the same bindings converges.
+                if (obj[CHART_SPEC_PROP]) {
+                    const resolvedSpec = substituteChartSpec(
+                        obj[CHART_SPEC_PROP],
+                        bindings
+                    );
+                    try {
+                        const rebuilt = await this._buildChartGroup(resolvedSpec);
+                        rebuilt[CHART_SPEC_PROP] = resolvedSpec;
+                        this._swapPreviewGroup(obj, rebuilt);
+                    } catch (err) {
+                        // A bad spec is an authoring bug; keep the layer
+                        // as-is so the rest of the preview still shows.
+                        console.error("editor preview: chart regeneration failed", err);
+                    }
+                }
+                // QR layers (design D5): resolve tokens in the content and
+                // regenerate the code from the resolved value. An empty or
+                // unencodable resolution hides the layer, exactly the
+                // render behavior for an empty record value.
+                if (typeof obj[QR_PROP] === "string") {
+                    const resolved = resolveTokens(obj[QR_PROP], bindings);
+                    try {
+                        await this._ensureQrLib();
+                        const matrix = qrContentToMatrix(resolved);
+                        const modules = matrix.length;
+                        const moduleSize =
+                            obj.width && obj.width > 0 ? obj.width / modules : 4;
+                        const firstChild =
+                            typeof obj.getObjects === "function"
+                                ? obj.getObjects()[0]
+                                : null;
+                        const color =
+                            firstChild &&
+                            typeof firstChild.fill === "string" &&
+                            firstChild.fill
+                                ? firstChild.fill
+                                : "#000000";
+                        const rebuilt = this._buildQrGroup(resolved, {
+                            moduleSize,
+                            color,
+                        });
+                        rebuilt[QR_PROP] = resolved;
+                        this._swapPreviewGroup(obj, rebuilt);
+                    } catch (err) {
                         obj.visible = false;
                     }
                 }
@@ -1204,15 +2318,112 @@ export class SocialImageEditorDialog extends Component {
         }
         this._snapGuides.lines = lines;
         this._snapGuides.distances = spacing.distances;
+
+        // Snap-to-grid (design D1) runs last: smart guides keep
+        // priority, so on each axis grid rounding applies only when no
+        // guide and no equal-gap spacing snap won there. Alt bypasses
+        // grid snap together with the guides (early return above).
+        if (this.state.gridSnap && !this._snapAlt) {
+            const gridStep = Number(this.state.gridSpacing) || DEFAULT_GRID_SPACING;
+            if (snap.vAt == null && !spacing.dx) {
+                moving.left = roundToGrid(moving.left || 0, gridStep);
+            }
+            if (snap.hAt == null && !spacing.dy) {
+                moving.top = roundToGrid(moving.top || 0, gridStep);
+            }
+            moving.setCoords();
+        }
     }
 
-    _drawSnapGuides() {
+    /**
+     * Snap-to-grid while resizing: round the scaled footprint (width x
+     * scaleX, height x scaleY) back onto the grid. Same priority idea
+     * as moving: only when the snap toggle is on and Alt is not held.
+     * A rounding that would collapse an object to zero leaves it put.
+     */
+    _onObjectScaling(ev) {
+        const obj = ev && ev.target;
+        if (!obj || !this.state.gridSnap || this._snapAlt) {
+            return;
+        }
+        const gridStep = Number(this.state.gridSpacing) || DEFAULT_GRID_SPACING;
+        const scaledW = (Number(obj.width) || 0) * (Number(obj.scaleX) || 1);
+        const scaledH = (Number(obj.height) || 0) * (Number(obj.scaleY) || 1);
+        const snappedW = roundToGrid(scaledW, gridStep);
+        const snappedH = roundToGrid(scaledH, gridStep);
+        if (obj.width && snappedW > 0) {
+            obj.scaleX = snappedW / obj.width;
+        }
+        if (obj.height && snappedH > 0) {
+            obj.scaleY = snappedH / obj.height;
+        }
+        obj.setCoords?.();
+    }
+
+    /**
+     * after:render hook for everything painted on contextTop (never
+     * part of the scene, so exports stay clean): the grid first, the
+     * snap guides and spacing labels on top.
+     */
+    _drawOverlays() {
         const fc = this._canvas;
         const ctx = fc && fc.contextTop;
         if (!ctx) {
             return;
         }
         fc.clearContext(ctx);
+        this._drawGrid(ctx);
+        this._drawSnapGuides(ctx);
+    }
+
+    /**
+     * Grid overlay (design D1): viewport-clipped lines computed in
+     * canvas coordinates and painted like the snap guides (canvas
+     * value x zoom). Never touches the scene or the lower canvas.
+     */
+    _drawGrid(ctx) {
+        if (!this.state.gridVisible) {
+            return;
+        }
+        const fc = this._canvas;
+        if (!fc) {
+            return;
+        }
+        const z = fc.getZoom() || 1;
+        const vpt = fc.viewportTransform || [1, 0, 0, 1, 0, 0];
+        const viewport = {
+            left: -vpt[4] / z,
+            top: -vpt[5] / z,
+            width: fc.getWidth() / z,
+            height: fc.getHeight() / z,
+        };
+        const spacing = Number(this.state.gridSpacing) || DEFAULT_GRID_SPACING;
+        const lines = computeGridLines(viewport, spacing, z);
+        if (!lines.length) {
+            return;
+        }
+        ctx.save();
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = "rgba(100, 116, 139, 0.35)";
+        ctx.beginPath();
+        for (const g of lines) {
+            if (g.kind === "v") {
+                ctx.moveTo(g.at * z, g.from * z);
+                ctx.lineTo(g.at * z, g.to * z);
+            } else {
+                ctx.moveTo(g.from * z, g.at * z);
+                ctx.lineTo(g.to * z, g.at * z);
+            }
+        }
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    _drawSnapGuides(ctx) {
+        const fc = this._canvas;
+        if (!fc || !ctx) {
+            return;
+        }
         const lines = this._snapGuides.lines;
         const distances = this._snapGuides.distances || [];
         if (!lines.length && !distances.length) {
@@ -1300,6 +2511,8 @@ export class SocialImageEditorDialog extends Component {
         const ctx = this._canvas && this._canvas.contextTop;
         if (ctx) {
             this._canvas.clearContext(ctx);
+            // The grid is not drag state: put it back immediately.
+            this._drawGrid(ctx);
         }
     }
 
@@ -1383,6 +2596,10 @@ export class SocialImageEditorDialog extends Component {
             hideIfEmptyField: null,
             required: false,
             bindField: null,
+            // Table, chart and QR panel copies (designs D3/D4/D5)
+            chart: null,
+            qrContent: null,
+            table: null,
         };
     }
 
@@ -1503,6 +2720,17 @@ export class SocialImageEditorDialog extends Component {
         inspector.required = !!(obj._required && obj._required.field);
         inspector.bindField =
             inspector.dataBindingField || inspector.hideIfEmptyField;
+        // Table, chart and QR elements (designs D3/D4/D5): deep copies for
+        // the properties-panel editors; the panel commits through the
+        // regeneration path, never by mutating these directly.
+        inspector.chart = obj[CHART_SPEC_PROP]
+            ? JSON.parse(JSON.stringify(obj[CHART_SPEC_PROP]))
+            : null;
+        inspector.qrContent =
+            typeof obj[QR_PROP] === "string" ? obj[QR_PROP] : null;
+        inspector.table = obj[TABLE_PROP]
+            ? JSON.parse(JSON.stringify(obj[TABLE_PROP]))
+            : null;
         this.state.inspector = inspector;
     }
 
@@ -1877,6 +3105,8 @@ export class SocialImageEditorDialog extends Component {
             const ctx = this._canvas.contextTop;
             if (ctx) {
                 this._canvas.clearContext(ctx);
+                // The grid is not pen state: put it back immediately.
+                this._drawGrid(ctx);
             }
             this._canvas.defaultCursor = "default";
             this._canvas.hoverCursor = "move";
@@ -1892,11 +3122,106 @@ export class SocialImageEditorDialog extends Component {
     }
 
     /**
+     * Grid overlay toggle (design D1). The grid itself is painted on
+     * contextTop in the after:render hook, so toggling only needs a
+     * re-render; prefs persist per user.
+     */
+    toggleGrid() {
+        this.state.gridVisible = !this.state.gridVisible;
+        this._writeGridPrefs();
+        if (this._canvas) {
+            this._canvas.requestRenderAll();
+        }
+    }
+
+    toggleGridMenu() {
+        this.state.gridMenuOpen = !this.state.gridMenuOpen;
+        this._syncGlobalPointerListener();
+    }
+
+    onGridSnapChange(ev) {
+        this.state.gridSnap = !!(ev.target && ev.target.checked);
+        this._writeGridPrefs();
+    }
+
+    setGridSpacing(spacing) {
+        this.state.gridSpacing = GRID_SPACING_PRESETS.includes(spacing)
+            ? spacing
+            : DEFAULT_GRID_SPACING;
+        this._writeGridPrefs();
+        if (this._canvas) {
+            this._canvas.requestRenderAll();
+        }
+    }
+
+    gridSpacingPresets() {
+        return GRID_SPACING_PRESETS;
+    }
+
+    /**
+     * Per-user grid prefs from localStorage. Unknown or invalid values
+     * fall back to hidden grid, snap off, default spacing.
+     */
+    _readGridPrefs() {
+        const fallback = {
+            visible: false,
+            snap: false,
+            spacing: DEFAULT_GRID_SPACING,
+        };
+        let raw = null;
+        try {
+            raw =
+                window.localStorage &&
+                window.localStorage.getItem("social_image_editor_grid");
+        } catch (_) {
+            return fallback;
+        }
+        if (!raw) {
+            return fallback;
+        }
+        try {
+            const parsed = JSON.parse(raw);
+            return {
+                visible: !!parsed.visible,
+                snap: !!parsed.snap,
+                spacing: GRID_SPACING_PRESETS.includes(parsed.spacing)
+                    ? parsed.spacing
+                    : DEFAULT_GRID_SPACING,
+            };
+        } catch (_) {
+            return fallback;
+        }
+    }
+
+    _writeGridPrefs() {
+        try {
+            if (window.localStorage) {
+                window.localStorage.setItem(
+                    "social_image_editor_grid",
+                    JSON.stringify({
+                        visible: this.state.gridVisible,
+                        snap: this.state.gridSnap,
+                        spacing: this.state.gridSpacing,
+                    })
+                );
+            }
+        } catch (_) {}
+    }
+
+    /**
      * One shared window mousedown listener for all open dropdowns;
      * attached while at least one menu is open.
      */
     _syncGlobalPointerListener() {
-        if (this.state.fontPickerOpen || this.state.shapesOpen) {
+        if (
+            this.state.fontPickerOpen ||
+            this.state.shapesOpen ||
+            this.state.gridMenuOpen ||
+            this.state.insertDataOpen ||
+            this.state.chartMenuOpen ||
+            this.state.tableMenuOpen ||
+            this.state.qrMenuOpen
+        ) {
             window.addEventListener("mousedown", this._boundOnPointerDown);
         } else {
             window.removeEventListener("mousedown", this._boundOnPointerDown);
@@ -2724,6 +4049,12 @@ export class SocialImageEditorDialog extends Component {
         if ((grp.type || "").toLowerCase() !== "group") {
             return;
         }
+        // A table ungroups through the edit-isolation path only: plain
+        // ungrouping would detach the cell texts from _tableData.
+        if (grp[TABLE_PROP]) {
+            this._enterTableEdit(grp);
+            return;
+        }
         const util = this._fabric.util;
         const groupMatrix = grp.calcTransformMatrix();
         const items = [...grp._objects];
@@ -2866,6 +4197,37 @@ export class SocialImageEditorDialog extends Component {
             const el = this.shapesMenuRef.el;
             if (el && !el.contains(ev.target)) {
                 this.state.shapesOpen = false;
+            }
+        }
+        if (this.state.gridMenuOpen) {
+            const el = this.gridMenuRef.el;
+            if (el && !el.contains(ev.target)) {
+                this.state.gridMenuOpen = false;
+            }
+        }
+        if (this.state.insertDataOpen) {
+            const el = this.insertDataRef.el;
+            if (el && !el.contains(ev.target)) {
+                this.closeInsertDataPanel();
+            }
+        }
+        if (this.state.chartMenuOpen) {
+            const el = this.chartMenuRef.el;
+            if (el && !el.contains(ev.target)) {
+                this.state.chartMenuOpen = false;
+            }
+        }
+        if (this.state.tableMenuOpen) {
+            const el = this.tableMenuRef.el;
+            if (el && !el.contains(ev.target)) {
+                this.state.tableMenuOpen = false;
+            }
+        }
+        if (this.state.qrMenuOpen) {
+            const el = this.qrMenuRef.el;
+            if (el && !el.contains(ev.target)) {
+                this.state.qrMenuOpen = false;
+                this.state.qrError = "";
             }
         }
         this._syncGlobalPointerListener();
@@ -3449,6 +4811,35 @@ export class SocialImageEditorDialog extends Component {
                 this._syncGlobalPointerListener();
                 return;
             }
+            if (this.state.gridMenuOpen) {
+                this.state.gridMenuOpen = false;
+                this._syncGlobalPointerListener();
+                return;
+            }
+            if (this.state.insertDataOpen) {
+                this.closeInsertDataPanel();
+                return;
+            }
+            if (this.state.tableEditing) {
+                this._exitTableEdit(true);
+                return;
+            }
+            if (this.state.chartMenuOpen) {
+                this.state.chartMenuOpen = false;
+                this._syncGlobalPointerListener();
+                return;
+            }
+            if (this.state.tableMenuOpen) {
+                this.state.tableMenuOpen = false;
+                this._syncGlobalPointerListener();
+                return;
+            }
+            if (this.state.qrMenuOpen) {
+                this.state.qrMenuOpen = false;
+                this.state.qrError = "";
+                this._syncGlobalPointerListener();
+                return;
+            }
             ev.preventDefault();
             this.close();
             return;
@@ -3542,6 +4933,11 @@ export class SocialImageEditorDialog extends Component {
         if (this.state.previewMode) {
             // Never persist the resolved preview over the token scene.
             await this._exitPreview();
+        }
+        if (this._tableEdit) {
+            // Never persist a table mid-edit (ungrouped loose cells):
+            // reassemble so the saved scene is the grouped table.
+            this._exitTableEdit(true);
         }
         if (!this._canvas || !this._dirty || this._saving) {
             return true;
