@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Multi-company scoping of image templates (spec: image-templates,
+         design decision D4). A marketing user only sees templates of
+         their companies or with no company; the marketing manager sees
+         all.
+
+         group_social_marketing_manager implies group_social_marketing_user,
+         so the restrictive rule alone would hit managers too. Odoo ORs
+         the record rules of a user's groups together, which is why the
+         permissive (1, '=', 1) rule for the manager group wins for
+         managers while plain users match only the company rule. This is
+         the same pattern as CRM's Personal Leads / All Leads rules.
+
+         Create stays unrestricted (perm_create=0 on both rules): a user
+         may create a template for any company. -->
+    <record id="social_image_template_rule_company" model="ir.rule">
+        <field name="name">Image Template - Multi-Company</field>
+        <field name="model_id" ref="model_social_image_template"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('social_marketing.group_social_marketing_user'))]"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="0"/>
+        <field name="perm_unlink" eval="1"/>
+    </record>
+    <record id="social_image_template_rule_company_manager" model="ir.rule">
+        <field name="name">Image Template - All Companies (Manager)</field>
+        <field name="model_id" ref="model_social_image_template"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('social_marketing.group_social_marketing_manager'))]"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="0"/>
+        <field name="perm_unlink" eval="1"/>
+    </record>
+</odoo>

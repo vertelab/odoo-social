@@ -14,6 +14,13 @@ export class RequiredBindingError extends Error {
     }
 }
 
+export class SceneImageUrlError extends Error {
+    constructor(message) {
+        super(message)
+        this.name = 'SceneImageUrlError'
+    }
+}
+
 export function xmlEscape(value) {
     return String(value)
         .replace(/&/g, '&amp;')
@@ -176,7 +183,9 @@ export function prepareCoverFit(obj, fitTargets) {
  *  - image layers with `_dataBinding: {field}` swap their src for the
  *    bound value (empty hides the layer); with `fitTargets` provided the
  *    pre-swap frame is captured for post-load cover-fit re-application
- *  - image layer srcs are absolutized for /web/image/... paths
+ *  - image layer srcs are restricted to the allowlist in
+ *    absolutizeFileUrl: `data:` URLs and `/web/image/...` paths under
+ *    `apiBase` only; anything else aborts with SceneImageUrlError
  * When `escapeXml` is true the substituted text is XML-escaped.
  *
  * Do NOT pass `escapeXml: true` for the SVG path in server.mjs: Fabric's
@@ -225,7 +234,15 @@ export function applyBindingsToScene(
                     obj.opacity = 0
                 }
             }
-            obj.src = absolutizeFileUrl(obj.src, apiBase)
+            try {
+                obj.src = absolutizeFileUrl(obj.src, apiBase)
+            } catch (err) {
+                if (err instanceof SceneImageUrlError) {
+                    const layerName = obj._layerName || obj.type || 'layer'
+                    throw new SceneImageUrlError(`Layer "${layerName}": ${err.message}`)
+                }
+                throw err
+            }
         }
         if (typeof obj.text !== 'string') {
             continue
@@ -239,6 +256,19 @@ export function applyBindingsToScene(
     return json
 }
 
+/**
+ * Strict URL allowlist for scene image srcs (design D3 in
+ * openspec/changes/creator-hardening). Fabric's node build loads image
+ * srcs through JSDOM with `resources: 'usable'`, so every src in a scene
+ * is a potential server-side fetch. Allowed:
+ *  - `data:` URLs (self-contained, incl. binary-field bindings from Odoo)
+ *  - `/web/image/...` paths, absolutized against `apiBase`
+ *  - absolute http(s) URLs that start with `apiBase` (trailing slash
+ *    trimmed, path boundary enforced), i.e. images already served by the
+ *    configured Odoo
+ * Everything else (other hosts, `file://`, other relative paths) throws
+ * SceneImageUrlError naming the offending URL.
+ */
 export function absolutizeFileUrl(src, apiBase = '') {
     if (typeof src !== 'string' || !src) {
         return src
@@ -246,11 +276,54 @@ export function absolutizeFileUrl(src, apiBase = '') {
     if (src.startsWith('data:')) {
         return src
     }
-    if (src.startsWith('http://') || src.startsWith('https://')) {
-        return src
-    }
     if (src.startsWith('/web/image/')) {
         return `${apiBase}${src}`
     }
-    return src
+    if (src.startsWith('http://') || src.startsWith('https://')) {
+        const base = String(apiBase).replace(/\/+$/, '')
+        // Exact base or a path under it; the boundary check stops a host
+        // that merely shares a prefix with the base (odoo:8069.evil...).
+        if (src === base || src.startsWith(`${base}/`)) {
+            return src
+        }
+        throw new SceneImageUrlError(
+            `Image URL "${src}" is not under the configured API base "${base}"`
+        )
+    }
+    throw new SceneImageUrlError(
+        `Image URL "${src}" is not allowed: only data: URLs and /web/image paths under the configured API base may be rendered`
+    )
+}
+
+/**
+ * Pre-flight scan over a Fabric scene JSON (design D3): walk every object,
+ * including nested group `.objects` arrays, and refuse scenes whose image
+ * layers carry an src the allowlist rejects, naming the layer. server.mjs
+ * runs this on the incoming scene and on the post-binding scene before
+ * loadFromJSON, so a bad src is caught before JSDOM would fetch it.
+ * Non-image objects and images without an src pass.
+ */
+export function assertSceneImageUrlsSafe(sceneJson, apiBase = '') {
+    const walk = (objects) => {
+        if (!Array.isArray(objects)) return
+        for (const obj of objects) {
+            if (!obj || typeof obj !== 'object') continue
+            if (
+                (obj.type === 'image' || obj.type === 'Image') &&
+                typeof obj.src === 'string' &&
+                obj.src
+            ) {
+                try {
+                    absolutizeFileUrl(obj.src, apiBase)
+                } catch (err) {
+                    const layerName = obj._layerName || obj.type
+                    throw new SceneImageUrlError(`Layer "${layerName}": ${err.message}`)
+                }
+            }
+            walk(obj.objects)
+        }
+    }
+    if (sceneJson && typeof sceneJson === 'object') {
+        walk(sceneJson.objects)
+    }
 }

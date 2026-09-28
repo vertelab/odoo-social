@@ -247,6 +247,62 @@ check('required satisfied passes',
           {'image_1920': 'data:image/png;base64,AAA', 'name': 'x'}),
       None)
 
+# --- guard callback ----------------------------------------------------------
+# A recording fake guard must be called on the root record and on every
+# traversed record (x2one target, first record of an x2many hop), and a
+# denying guard must abort with BindingError naming the token.
+visited = []
+
+
+def recording_guard(record):
+    visited.append(record)
+
+
+visited[:] = []
+check('resolve without guard still works',
+      binding.resolve_field_path(PRODUCT, 'categ_id.name'), 'Chairs')
+check('guard default is None', binding.resolve_field_path(PRODUCT, 'name'),
+      'Stol\nmed nackstöd')
+
+binding.resolve_field_path(PRODUCT, 'categ_id.name', guard=recording_guard)
+check('guard sees root and x2one hop', visited, [PRODUCT, CHAIR_CATEGORY])
+
+visited[:] = []
+binding.resolve_field_path(PRODUCT, 'tag_ids.name', guard=recording_guard)
+# x2many hops guard the first-record slice, like an Odoo recordset [:1].
+check('guard sees root and x2many first record',
+      visited[0] is PRODUCT and list(visited[1]) == [TAG_A], True)
+
+visited[:] = []
+binding.build_bindings(PRODUCT, SCENE, guard=recording_guard)
+check('build_bindings guard visits root',
+      visited[0] if visited else None, PRODUCT)
+check('build_bindings guard visited every hop model',
+      sorted({getattr(record, '_name', '?') for record in visited}),
+      ['product.category', 'product.product', 'product.tag'])
+
+
+def denying_guard(record):
+    if record is CHAIR_CATEGORY:
+        raise RuntimeError('denied by canary rule')
+
+
+try:
+    binding.resolve_field_path(PRODUCT, 'categ_id.name', guard=denying_guard)
+    check('denying guard raises', 'no error', 'BindingError')
+except binding.BindingError as e:
+    check('denying guard raises', 'ok', 'ok')
+    check('denying guard names token', "'categ_id.name'" in str(e), True)
+    check('denying guard keeps reason', 'denied by canary rule' in str(e), True)
+
+try:
+    binding.build_bindings(PRODUCT, SCENE, guard=denying_guard)
+    check('denying guard raises in build_bindings', 'no error', 'BindingError')
+except binding.BindingError as e:
+    check('denying guard raises in build_bindings', 'ok', 'ok')
+    check('denying guard aborts before value', 'denied by canary rule' in str(e),
+          True)
+
 if FAILURES:
     print('\n%d check(s) FAILED' % FAILURES)
     sys.exit(1)

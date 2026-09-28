@@ -61,7 +61,9 @@ class SocialMarketingPost(models.Model):
     def _render_pending_image(self):
         """Render the configured template for the configured record and
         attach the PNG to the post. Raises UserError on every failure so
-        the caller can block publishing."""
+        the caller can block publishing. The record is resolved through
+        the template's _bound_record, so the publishing user's read
+        access is enforced before any value is read."""
         self.ensure_one()
         template = self.image_template_id
         if not template:
@@ -70,15 +72,8 @@ class SocialMarketingPost(models.Model):
             raise UserError(_(
                 "No record chosen for the image template on post %s.") %
                 self.display_name)
-        record = self.env[self.image_template_record_model].browse(
-            self.image_template_record_id).exists()
-        if not record:
-            raise UserError(_(
-                "Record %(model)s,%(id)s for the image template no longer "
-                "exists.") % {
-                'model': self.image_template_record_model,
-                'id': self.image_template_record_id,
-            })
+        record = template._bound_record(
+            self.image_template_record_model, self.image_template_record_id)
         attachment = template.render_for_record(
             record, variant_index=self.image_variant_index)
         self.write({

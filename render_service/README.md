@@ -12,8 +12,8 @@ POST /render
   Authorization: Bearer <RENDER_TOKEN>
   {
     "scene_json": { ... Fabric canvas.toJSON() ... },
-    "width": 1200,
-    "height": 630,
+    "width": 1200,                   # integer 16..8192
+    "height": 630,                   # integer 16..8192, width*height <= 67108864
     "bindings": { "headline": "Sommarerbjudande", "cta": "Läs mer" },
     "format": "png" | "svg"          # default png
   }
@@ -46,10 +46,20 @@ Custom props (namespaced with `_`, they survive Fabric `loadFromJSON`):
   semantics (scale to fill, crop overflow centered), matching the editor
   preview.
 
-Image layers store either `data:` URLs (self-contained, from the browser
-editor or from Odoo binary fields) or `/web/image/...` URLs (Odoo
-attachments); relative `/web/image` paths are rewritten against
-`API_BASE_URL` so the container can fetch them.
+Image layers may only reference `data:` URLs (self-contained, from the
+browser editor or from Odoo binary fields) or `/web/image/...` paths
+under `API_BASE_URL`; relative `/web/image` paths are rewritten against
+`API_BASE_URL` so the container can fetch them. Anything else (other
+http(s) hosts, `file://`, other relative paths) is refused with HTTP
+400 naming the offending layer, before any fetch happens. The scan
+walks nested groups and runs both on the scene as posted and on the
+scene after binding substitution.
+
+`/web/image` fetches carry no credentials, so they only render public
+attachments. Images that are not public must be bound from Odoo as
+binary fields, which the binding engine already encodes as `data:` URLs
+(see `_dataBinding` above); an absolute URL under `API_BASE_URL` in the
+scene passes the allowlist but still fetches unauthenticated.
 
 Binding resolution itself lives in Odoo
 (`social_image_creator/models/social_image_binding.py`): the model walks
@@ -84,21 +94,34 @@ Bump both in the same commit.
 ## Security
 
 - Bearer token (`RENDER_TOKEN`); unauthenticated requests are rejected
-  with 401 (unless `RENDER_TOKEN` is unset = dev mode).
+  with 401. Startup refuses an empty token and the known placeholder
+  values (`change-me`, `changeme`, `change_me`, `token`, `secret`,
+  `password`, case-insensitive); `RENDER_ALLOW_NO_AUTH=1` is the
+  explicit opt-in for local development.
+- Scene image srcs are allowlisted: `data:` URLs and `/web/image` paths
+  under `API_BASE_URL` only, scanned before Fabric loads the scene.
+  See "Image layers" above for the non-public-image rule.
+- Canvas size is capped: width and height must be integers 16..8192
+  with a pixel product of at most 67108864; larger requests get a 400
+  without a canvas being allocated.
 - Binding values are injected as text only. For `format=svg` output the
   substituted text is XML-escaped, so a value like `<script>` can never
   inject markup into the produced SVG. PNG output is raster and inert.
 - Request body limited to 8 MB (`MAX_BODY_MB`).
+- Run the container without outbound network access beyond the Odoo
+  API (`API_BASE_URL`), e.g. with firewall or proxy egress rules. The
+  allowlist is the primary control; a strict egress profile means a bad
+  URL cannot leak data even if the allowlist is ever bypassed.
 
 ## Environment
 
-| Variable        | Default            | Description                              |
-|-----------------|--------------------|------------------------------------------|
-| `PORT`          | `8600`             | HTTP port                                |
-| `RENDER_TOKEN`  | `change-me`        | Bearer token (set from Odoo pillar)      |
-| `API_BASE_URL`  | `http://odoo:8069` | Odoo base for `/web/image` URL rewriting |
-| `MAX_BODY_MB`   | `8`                | Max JSON body size in MB                 |
-| `FONTS_DIR`     | `./fonts`          | Directory scanned for font registration |
+| Variable        | Default            | Description                                          |
+|-----------------|--------------------|------------------------------------------------------|
+| `PORT`          | `8600`             | HTTP port                                            |
+| `RENDER_TOKEN`  | (none, required)   | Bearer token; empty and placeholder values refuse startup |
+| `API_BASE_URL`  | `http://odoo:8069` | Odoo base for `/web/image` URL rewriting             |
+| `MAX_BODY_MB`   | `8`                | Max JSON body size in MB                             |
+| `FONTS_DIR`     | `./fonts`          | Directory scanned for font registration              |
 
 ## Tests
 

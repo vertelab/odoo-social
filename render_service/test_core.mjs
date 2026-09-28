@@ -1,6 +1,13 @@
 // render_service/test_core.mjs: unit tests for render_core.mjs (no canvas needed)
 import assert from 'node:assert/strict'
-import { applyBindingsToScene, substituteText, xmlEscape, absolutizeFileUrl } from './render_core.mjs'
+import {
+    absolutizeFileUrl,
+    applyBindingsToScene,
+    assertSceneImageUrlsSafe,
+    SceneImageUrlError,
+    substituteText,
+    xmlEscape,
+} from './render_core.mjs'
 
 // 1. Token substitution
 assert.equal(substituteText('Hej {{headline}}!', { headline: 'Världen' }), 'Hej Världen!')
@@ -72,10 +79,122 @@ assert.equal(scene.objects[0].text, '{{headline}}')
 assert.equal(scene.objects[1].visible, undefined)
 console.log('✓ source scene not mutated')
 
-// 6. absolutizeFileUrl
+// 6. absolutizeFileUrl: strict allowlist (design D3)
+// data: URLs pass through untouched
 assert.equal(absolutizeFileUrl('data:image/png;base64,AAA'), 'data:image/png;base64,AAA')
-assert.equal(absolutizeFileUrl('http://x/y.png', 'http://b'), 'http://x/y.png')
+// empty and non-string srcs are left alone
+assert.equal(absolutizeFileUrl(''), '')
+assert.equal(absolutizeFileUrl(undefined), undefined)
+assert.equal(absolutizeFileUrl(null), null)
+// /web/image paths are absolutized against apiBase
 assert.equal(absolutizeFileUrl('/web/image/1', 'http://odoo:8069'), 'http://odoo:8069/web/image/1')
-console.log('✓ absolutizeFileUrl')
+// without apiBase the path stays relative (callers must pass apiBase)
+assert.equal(absolutizeFileUrl('/web/image/1', ''), '/web/image/1')
+// absolute URLs under apiBase pass; trailing slash on apiBase is trimmed
+assert.equal(absolutizeFileUrl('http://odoo:8069/web/image/1', 'http://odoo:8069'), 'http://odoo:8069/web/image/1')
+assert.equal(absolutizeFileUrl('http://odoo:8069/web/image/1', 'http://odoo:8069/'), 'http://odoo:8069/web/image/1')
+// everything else throws, naming the offending URL
+for (const bad of [
+    'http://127.0.0.1/x.png',
+    'https://evil.example/x.png',
+    'file:///etc/passwd',
+    '/img/local.png',
+    '../secrets.png',
+    'not-a-url',
+]) {
+    assert.throws(() => absolutizeFileUrl(bad, 'http://odoo:8069'), /not allowed|not under/, bad)
+}
+// a host that merely shares a prefix with the base is still foreign
+assert.throws(
+    () => absolutizeFileUrl('http://odoo:8069.evil.example/x.png', 'http://odoo:8069'),
+    /not under the configured API base/
+)
+// with an empty apiBase no absolute URL can match, so they all fail closed
+assert.throws(
+    () => absolutizeFileUrl('http://odoo:8069/web/image/1', ''),
+    SceneImageUrlError
+)
+// the error names the offending URL
+{
+    const err = (() => {
+        try {
+            absolutizeFileUrl('file:///etc/passwd', 'http://odoo:8069')
+        } catch (e) {
+            return e
+        }
+    })()
+    assert.ok(err instanceof SceneImageUrlError)
+    assert.ok(err.message.includes('file:///etc/passwd'), 'error names the offending URL')
+}
+console.log('✓ absolutizeFileUrl (strict allowlist, all branches)')
+
+// 7. assertSceneImageUrlsSafe: pre-flight walk over every image object
+{
+    // flat scene with a bad src: throws naming the layer and the URL
+    const flat = {
+        version: '6.9.1',
+        objects: [
+            { type: 'textbox', text: 'hej' },
+            { type: 'image', _layerName: 'Hero', src: 'http://127.0.0.1/x.png' },
+        ],
+    }
+    assert.throws(
+        () => assertSceneImageUrlsSafe(flat, 'http://odoo:8069'),
+        (err) =>
+            err instanceof SceneImageUrlError &&
+            err.message.includes('Hero') &&
+            err.message.includes('http://127.0.0.1/x.png')
+    )
+    // no _layerName: falls back to the type
+    assert.throws(
+        () => assertSceneImageUrlsSafe({ objects: [{ type: 'image', src: 'file:///etc/passwd' }] }, 'http://odoo:8069'),
+        /Layer "image"/
+    )
+
+    // nested group objects are walked too
+    const nested = {
+        version: '6.9.1',
+        objects: [
+            {
+                type: 'group',
+                objects: [{ type: 'image', _layerName: 'Badge', src: 'file:///etc/passwd' }],
+            },
+        ],
+    }
+    assert.throws(() => assertSceneImageUrlsSafe(nested, 'http://odoo:8069'), /Badge/)
+
+    // non-image objects (even with an src prop) and images without src pass;
+    // allowlisted srcs pass
+    const clean = {
+        version: '6.9.1',
+        objects: [
+            { type: 'rect', src: 'http://evil.example/x.png' }, // not an image: src ignored
+            { type: 'image' }, // no src
+            { type: 'image', src: '' },
+            { type: 'image', src: 'data:image/png;base64,AAA' },
+            { type: 'image', src: '/web/image/42' },
+            { type: 'image', src: 'http://odoo:8069/web/image/42' },
+        ],
+    }
+    assert.doesNotThrow(() => assertSceneImageUrlsSafe(clean, 'http://odoo:8069'))
+
+    // empty apiBase: data: and relative /web/image still pass, absolute URLs fail
+    const cleanRelativeOnly = {
+        objects: [
+            { type: 'image', src: 'data:image/png;base64,AAA' },
+            { type: 'image', src: '/web/image/42' },
+        ],
+    }
+    assert.doesNotThrow(() => assertSceneImageUrlsSafe(cleanRelativeOnly, ''))
+    assert.throws(
+        () => assertSceneImageUrlsSafe({ objects: [{ type: 'image', src: 'http://odoo:8069/web/image/1' }] }, ''),
+        SceneImageUrlError
+    )
+
+    // a non-object scene does not crash the scan
+    assert.doesNotThrow(() => assertSceneImageUrlsSafe(null, 'http://odoo:8069'))
+    assert.doesNotThrow(() => assertSceneImageUrlsSafe('nope', 'http://odoo:8069'))
+    console.log('✓ assertSceneImageUrlsSafe (flat, nested, non-image ignored, empty apiBase)')
+}
 
 console.log('\nALL render_core TESTS PASSED')

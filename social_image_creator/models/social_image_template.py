@@ -9,7 +9,7 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 from odoo import _, api, fields, models
-from odoo.exceptions import UserError
+from odoo.exceptions import AccessError, UserError
 
 from .social_image_binding import (
     BindingError,
@@ -18,6 +18,12 @@ from .social_image_binding import (
 )
 
 _logger = logging.getLogger(__name__)
+
+# Name of the dynamic server action created per bound model so bulk
+# creation shows up in that model's list view Action menu. Found by name
+# plus binding_model_id to stay idempotent (design decision D5).
+BULK_ACTION_NAME = 'Create Posts from Image Template'
+BULK_ACTION_CODE = "action = env['social.image.bulk.wizard'].action_open()"
 
 # Field types a template token may bind against. Image fields are `binary`
 # in Odoo, so they are covered by the `binary` entry.
@@ -222,6 +228,7 @@ class SocialImageTemplate(models.Model):
             vals['variants'] = self._validated_variants(variants)
         records = super().create(vals_list)
         records._sync_legacy_from_variants()
+        records._sync_bulk_actions()
         return records
 
     def write(self, vals):
@@ -262,11 +269,13 @@ class SocialImageTemplate(models.Model):
                 for record, record_variants in zip(self, merged):
                     result = bool(record.write(
                         dict(vals, variants=record_variants))) and result
+                self._sync_bulk_actions()
                 return result
         result = super().write(vals)
         if variants is not None:
             super(SocialImageTemplate, self).write({'variants': variants})
         self._sync_legacy_from_variants()
+        self._sync_bulk_actions()
         return result
 
     def _sync_legacy_from_variants(self):
@@ -280,6 +289,78 @@ class SocialImageTemplate(models.Model):
                 'height': primary['height'],
                 'scene_json': primary.get('scene_json') or '{}',
             })
+
+    @api.model
+    def _sync_bulk_actions(self):
+        """Ensure every model bound by at least one template has a server
+        action named 'Create Posts from Image Template' in its list view
+        Action menu, and remove the actions of models no longer bound
+        (spec: wizard-bulk-create, design decision D5).
+
+        Actions are found by name plus binding_model_id, so the sync is
+        idempotent. They are created as sudo because which models end up
+        bound is admin-curated data, not a per-user decision; the wizard
+        itself still validates that the chosen template's binding model
+        matches the source model, and only marketing users reach it."""
+        bound_models = sorted({
+            template.model_id.model
+            for template in self.sudo().search([('model_id', '!=', False)])
+        })
+        ServerAction = self.env['ir.actions.server'].sudo()
+        existing = ServerAction.search([('name', '=', BULK_ACTION_NAME)])
+        existing_by_model = {
+            action.binding_model_id.model: action
+            for action in existing if action.binding_model_id
+        }
+        marketing_group = self.env.ref(
+            'social_marketing.group_social_marketing_user')
+        for model_name in bound_models:
+            if model_name in existing_by_model:
+                continue
+            model = self.env['ir.model'].sudo().search(
+                [('model', '=', model_name)], limit=1)
+            if not model:
+                continue
+            ServerAction.create({
+                'name': BULK_ACTION_NAME,
+                'model_id': model.id,
+                'binding_model_id': model.id,
+                'binding_type': 'action',
+                'state': 'code',
+                'code': BULK_ACTION_CODE,
+                'groups_id': [(4, marketing_group.id)],
+            })
+        stale = existing.filtered(
+            lambda action: not action.binding_model_id
+            or action.binding_model_id.model not in bound_models)
+        stale.unlink()
+
+    def unlink(self):
+        result = super().unlink()
+        # Keep the Action menus in sync when the last template of a model
+        # is deleted. Skipped during module uninstall: the dynamic actions
+        # have no xmlid and would otherwise be recreated after their
+        # records are gone (design decision D5, risks).
+        if not self.env.context.get('module_uninstall'):
+            self._sync_bulk_actions()
+        return result
+
+    @api.model
+    def action_sync_bulk_actions(self):
+        """Manual sync from the Settings action of the same name: rebuild
+        the dynamic bulk-creation server actions. Returns a notification."""
+        self._sync_bulk_actions()
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Bulk creation actions synced'),
+                'message': _(
+                    'Server actions offering bulk post creation are up to '
+                    'date for the bound models.'),
+                'type': 'success',
+            },
+        }
 
     def get_primary_variant(self):
         """Return the primary variant dict, or None."""
@@ -343,21 +424,102 @@ class SocialImageTemplate(models.Model):
         return variant
 
     # ------------------------------------------------------------------
+    # Binding model validation (spec: data-binding, design decision D2)
+    # ------------------------------------------------------------------
+
+    @api.constrains('model_id')
+    def _check_binding_model(self):
+        """Reject transient and abstract models server-side (the view
+        domain alone never stopped a write), and enforce the optional
+        admin-curated allowlist from ir.config_parameter."""
+        for template in self:
+            if not template.model_id:
+                continue
+            model_name = template.model_id.model
+            model = self.env.get(model_name)
+            if model is None or model._transient or model._abstract:
+                raise UserError(_(
+                    "Template %(template)s: model %(model)s cannot be bound. "
+                    "Transient and abstract models are not allowed.")
+                    % {'template': template.name, 'model': model_name})
+            allowed = self.env['ir.config_parameter'].sudo().get_param(
+                'social_image_creator.allowed_binding_models', '') or ''
+            allowed_models = {
+                name.strip() for name in allowed.split(',') if name.strip()}
+            if allowed_models and model_name not in allowed_models:
+                raise UserError(_(
+                    "Template %(template)s: model %(model)s is not in the "
+                    "allowed binding models list (%(allowed)s). Ask an "
+                    "administrator to update the "
+                    "social_image_creator.allowed_binding_models system "
+                    "parameter.") % {
+                    'template': template.name, 'model': model_name,
+                    'allowed': ', '.join(sorted(allowed_models))})
+
+    # ------------------------------------------------------------------
+    # Access-controlled record resolution (spec: data-binding, D1)
+    # ------------------------------------------------------------------
+
+    def _bound_record(self, model_name, record_id):
+        """Resolve `record_id` of `model_name` with the current user's read
+        access fully enforced: the model must exist, the ACL must grant
+        read (check_access_rights) and record rules must admit the row
+        (a search() that matches nothing when a rule hides it).
+
+        Raises UserError naming the model and id on denial; no field value
+        is touched before this passes. Every entry point that takes a
+        user-controlled record id routes through here."""
+        self.ensure_one()
+        if not model_name or model_name not in self.env:
+            raise UserError(_(
+                "Binding model %s is not available.") % model_name)
+        model = self.env[model_name]
+        try:
+            model.check_access_rights('read')
+        except AccessError as e:
+            raise UserError(_(
+                "You do not have read access to model %(model)s (%(error)s).") % {
+                'model': model_name, 'error': e})
+        record = model.search([('id', '=', record_id)], limit=1)
+        if not record:
+            raise UserError(_(
+                "Record %(id)s of model %(model)s does not exist or you "
+                "do not have read access to it.") % {
+                'id': record_id, 'model': model_name})
+        return record
+
+    def _binding_access_guard(self):
+        """Return a guard callback enforcing read access on the root
+        record and every traversed relation hop. Converts AccessError to
+        BindingError; the pure binding module wraps it with the token
+        name, so a denied hop aborts resolution without leaking values."""
+        def guard(record):
+            try:
+                record.check_access_rights('read')
+                record.check_access_rule('read')
+            except AccessError as e:
+                raise BindingError(str(e))
+        return guard
+
+    # ------------------------------------------------------------------
     # Binding model fields (feeds the future field picker)
     # ------------------------------------------------------------------
 
     def get_binding_fields(self):
         """Return the bindable fields of the template's binding model as a
         list of ``{name, type, field_description}`` dicts, sorted by name.
-        Fields starting with an underscore are excluded. Returns an empty
-        list when no binding model is set."""
+        Fields starting with an underscore are excluded, as are fields
+        the current user may not read (field.is_accessible). Returns an
+        empty list when no binding model is set."""
         self.ensure_one()
         if not self.model_id:
             return []
         model = self.env[self.model_id.model]
         result = []
         for name, field in sorted(model._fields.items()):
-            if name.startswith('_') or field.type not in BINDABLE_FIELD_TYPES:
+            if (name.startswith('_')
+                    or field.type not in BINDABLE_FIELD_TYPES
+                    or not field.is_accessible(self.env)):
                 continue
             result.append({
                 'name': name,
@@ -425,6 +587,12 @@ class SocialImageTemplate(models.Model):
         render service. Required layers with empty values and unresolvable
         paths raise UserError naming the layer / token. Returns the
         ``ir.attachment``.
+
+        Every resolution runs under the access guard: the root record and
+        each traversed relation hop must be readable by the current user,
+        otherwise UserError is raised before anything is sent to the
+        render service. Callers that hold only a record id should resolve
+        it through _bound_record() first (every UI entry point does).
         """
         self.ensure_one()
         if not self.model_id:
@@ -441,7 +609,8 @@ class SocialImageTemplate(models.Model):
         except ValueError:
             raise UserError(_("Template scene is not valid JSON."))
         try:
-            bindings = build_bindings(record, scene)
+            bindings = build_bindings(
+                record, scene, guard=self._binding_access_guard())
             check_required_layers(scene, bindings)
         except BindingError as e:
             raise UserError(str(e))
@@ -453,15 +622,15 @@ class SocialImageTemplate(models.Model):
         editor's live data preview. `scene_json` (a Fabric JSON string)
         may override the stored scene so the preview matches unsaved
         editor state. Returns ``{field_path: value}`` with binary fields
-        as data URLs."""
+        as data URLs.
+
+        The record is resolved through _bound_record, so ACLs and record
+        rules of the current user apply before any value is read, and
+        every traversed relation hop is checked by the guard."""
         self.ensure_one()
         if not self.model_id:
             return {}
-        record = self.env[self.model_id.model].browse(record_id).exists()
-        if not record:
-            raise UserError(_(
-                "Record %(id)s not found for model %(model)s.") % {
-                'id': record_id, 'model': self.model_id.model})
+        record = self._bound_record(self.model_id.model, record_id)
         if scene_json:
             try:
                 scene = json.loads(scene_json)
@@ -473,7 +642,8 @@ class SocialImageTemplate(models.Model):
             except ValueError:
                 scene = {}
         try:
-            return build_bindings(record, scene)
+            return build_bindings(
+                record, scene, guard=self._binding_access_guard())
         except BindingError as e:
             raise UserError(str(e))
 

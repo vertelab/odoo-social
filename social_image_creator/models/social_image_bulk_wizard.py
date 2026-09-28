@@ -114,15 +114,21 @@ class SocialImageBulkWizard(models.TransientModel):
         for record in records:
             try:
                 with self.env.cr.savepoint():
+                    # Re-resolve through the template so the current
+                    # user's read access is enforced per record; a denied
+                    # record lands in failure_details like any other
+                    # per-record failure.
+                    bound_record = template._bound_record(
+                        record._name, record.id)
                     post = Post.create({
-                        'message': record.display_name,
+                        'message': bound_record.display_name,
                         'image_template_id': template.id,
-                        'image_template_record_model': record._name,
-                        'image_template_record_id': record.id,
+                        'image_template_record_model': bound_record._name,
+                        'image_template_record_id': bound_record.id,
                         'image_variant_index': self.variant_index,
                     })
                     attachment = template.render_for_record(
-                        record, format='png',
+                        bound_record, format='png',
                         variant_index=self.variant_index)
                     post.write({'image_ids': [(4, attachment.id)]})
             except Exception as e:

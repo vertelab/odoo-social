@@ -22,7 +22,6 @@ COPY server.mjs render_core.mjs fonts.mjs ./
 COPY fonts ./fonts
 
 ENV PORT=8600
-ENV RENDER_TOKEN=change-me
 ENV API_BASE_URL=http://odoo:8069
 
 EXPOSE 8600

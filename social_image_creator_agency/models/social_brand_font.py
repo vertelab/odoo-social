@@ -12,6 +12,33 @@ MAX_FONT_SIZE = 5 * 1024 * 1024
 # fontconfig (see render_service/fonts/README.md).
 ALLOWED_FONT_EXTENSIONS = ('ttf', 'otf', 'woff', 'woff2')
 
+# Magic signatures of the font containers we accept, longest first so
+# e.g. the TTF 00 01 00 00 sfnt version is checked before 'true'.
+# Content validation, not the file name, decides: a renamed payload is
+# refused (spec: agency-brand-kit).
+FONT_MAGIC_SIGNATURES = (
+    (b'\x00\x01\x00\x00', 'TTF'),
+    (b'true', 'TTF'),
+    (b'OTTO', 'OTF'),
+    (b'wOFF', 'WOFF'),
+    (b'wOF2', 'WOFF2'),
+)
+
+FONT_FORMAT_LABELS = 'TTF, OTF, WOFF, WOFF2'
+
+
+def sniff_font_format(data):
+    """Return the font format name for raw file bytes ('TTF', 'OTF',
+    'WOFF' or 'WOFF2'), or None when the content does not carry a known
+    font signature. Kept pure (no Odoo imports touch it) so check-style
+    tests can import it directly."""
+    if not isinstance(data, (bytes, bytearray)) or not data:
+        return None
+    for magic, label in FONT_MAGIC_SIGNATURES:
+        if data[:len(magic)] == magic:
+            return label
+    return None
+
 
 class SocialBrandFont(models.Model):
     """An uploaded brand font (spec: agency-brand-kit).
@@ -52,6 +79,20 @@ class SocialBrandFont(models.Model):
                 raise ValidationError(_(
                     "Font file %s is larger than 5 MB.") %
                     (font.filename or font.name or ''))
+
+    @api.constrains('file')
+    def _check_file_signature(self):
+        for font in self:
+            if not font.file:
+                continue
+            if sniff_font_format(font.file) is None:
+                raise ValidationError(_(
+                    "File %(name)s is not a valid font: its content does "
+                    "not match any of the supported formats "
+                    "(%(formats)s). A renamed file is not enough, upload "
+                    "a real font binary.") % {
+                    'name': font.filename or font.name or '',
+                    'formats': FONT_FORMAT_LABELS})
 
     @api.constrains('filename')
     def _check_extension(self):

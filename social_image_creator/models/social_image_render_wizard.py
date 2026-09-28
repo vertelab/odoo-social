@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 # Vertel Sverige AB AGPL-3
 
+from datetime import timedelta
+
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
@@ -28,6 +30,8 @@ class SocialImageRenderWizard(models.TransientModel):
 
     _name = 'social.image.render.wizard'
     _description = 'Render Image Template'
+
+    PREVIEW_AGE_LIMIT_HOURS = 24
 
     template_id = fields.Many2one(
         'social.image.template', string='Template', required=True)
@@ -137,7 +141,11 @@ class SocialImageRenderWizard(models.TransientModel):
         temporary "(preview)" attachment. Failures land in
         ``preview_error`` so a broken render service or a required
         layer without a value explains itself instead of erroring the
-        dialog."""
+        dialog.
+
+        Previous "(preview)" attachments of the same template are
+        unlinked first, so at most one live preview attachment exists
+        per template (spec: image-templates)."""
         self.preview_attachment_id = False
         self.preview_error = False
         if not self.template_id:
@@ -145,12 +153,22 @@ class SocialImageRenderWizard(models.TransientModel):
         if self.template_id.model_id and not self.record_id:
             # Nothing to resolve against yet; wait for the record.
             return
+        template = self.template_id
+        preview_name = '%s (preview).png' % template.name
+        # One live preview per template; a daily cron (see
+        # data/social_image_preview_cron.xml) removes leftovers older
+        # than 24 hours as a backstop for crashes between these steps.
+        self.env['ir.attachment'].search([
+            ('name', '=', preview_name),
+            ('res_model', '=', 'social.image.template'),
+            ('res_id', '=', template.id),
+        ]).unlink()
         try:
             attachment = self._render_attachment(format='png')
         except UserError as e:
             self.preview_error = str(e)
             return
-        attachment.write({'name': '%s (preview).png' % self.template_id.name})
+        attachment.write({'name': preview_name})
         self.preview_attachment_id = attachment.id
 
     def action_preview(self):
@@ -159,6 +177,21 @@ class SocialImageRenderWizard(models.TransientModel):
         self.ensure_one()
         self._refresh_preview()
         return self._reload_action()
+
+    @api.model
+    def _cron_cleanup_previews(self):
+        """Daily backstop for the preview lifecycle: remove leftover
+        "(preview)" attachments older than 24 hours. The render wizard
+        already unlinks a template's previous preview before rendering a
+        new one; this cron catches whatever a crash between those steps
+        left behind (spec: image-templates)."""
+        cutoff = fields.Datetime.now() - timedelta(
+            hours=self.PREVIEW_AGE_LIMIT_HOURS)
+        return self.env['ir.attachment'].sudo().search([
+            ('name', '=like', '% (preview).png'),
+            ('res_model', '=', 'social.image.template'),
+            ('create_date', '<', cutoff),
+        ]).unlink()
 
     def _reload_action(self):
         return {
@@ -180,18 +213,18 @@ class SocialImageRenderWizard(models.TransientModel):
 
     def _get_bound_record(self):
         """Return the record chosen in the wizard, validated against the
-        template's binding model. Raises UserError on any inconsistency."""
+        template's binding model. The record is resolved through the
+        template's _bound_record, so the current user's read access is
+        enforced before any value is read. Raises UserError on any
+        inconsistency."""
         self.ensure_one()
         if not self.record_id:
             return None
         if not self.record_model or self.record_model not in self.env:
             raise UserError(_(
                 "Record model %s is not available.") % self.record_model)
-        record = self.env[self.record_model].browse(self.record_id).exists()
-        if not record:
-            raise UserError(_(
-                "Record %s,%s no longer exists.") %
-                (self.record_model, self.record_id))
+        record = self.template_id._bound_record(
+            self.record_model, self.record_id)
         if (self.template_id.model_id
                 and record._name != self.template_id.model_id.model):
             raise UserError(_(

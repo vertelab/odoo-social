@@ -8,7 +8,9 @@
 //
 // Security: binding values are injected as *text only*. For SVG output the
 // substituted text is XML-escaped so values can never inject markup into
-// the produced SVG (PNG output is raster and inherently inert).
+// the produced SVG (PNG output is raster and inherently inert). Scene image
+// srcs are allowlisted (data: and the API base /web/image paths only) and
+// scanned before Fabric loads the scene; see render_core.mjs.
 
 import express from 'express'
 import { registerFont } from 'canvas'
@@ -16,8 +18,10 @@ import { registerFont } from 'canvas'
 import * as fabric from 'fabric/node'
 import {
     applyBindingsToScene,
+    assertSceneImageUrlsSafe,
     computeCoverFit,
     RequiredBindingError,
+    SceneImageUrlError,
 } from './render_core.mjs'
 import { listRegisteredFonts, registerFontsInDir } from './fonts.mjs'
 
@@ -69,6 +73,27 @@ if (!TOKEN && !ALLOW_NO_AUTH) {
     process.exit(1)
 }
 
+// Known placeholder tokens are how the service ends up deployed with a
+// credential everyone knows. Refuse the usual ones (case-insensitive);
+// a placeholder is never a valid configuration, even next to the
+// RENDER_ALLOW_NO_AUTH escape hatch.
+const PLACEHOLDER_TOKENS = new Set([
+    'change-me',
+    'changeme',
+    'change_me',
+    'token',
+    'secret',
+    'password',
+])
+
+if (TOKEN && PLACEHOLDER_TOKENS.has(TOKEN.toLowerCase())) {
+    console.error(
+        'render-odoo: RENDER_TOKEN is a known placeholder value and unsafe to run with. ' +
+            'Set a real token, or set RENDER_ALLOW_NO_AUTH=1 for local development.'
+    )
+    process.exit(1)
+}
+
 function requireAuth(req, res, next) {
     if (!TOKEN) {
         return next() // explicitly opted in via RENDER_ALLOW_NO_AUTH=1
@@ -108,6 +133,30 @@ app.post('/render', requireAuth, async (req, res) => {
             return res.status(400).json({ error: 'format must be png or svg' })
         }
 
+        // Dimension caps: a canvas is allocated at the requested size, so
+        // absurd dimensions are memory exhaustion, not rendering.
+        if (!Number.isInteger(width) || width < 16 || width > 8192) {
+            return res.status(400).json({
+                error: `width must be an integer between 16 and 8192, got ${JSON.stringify(width)}`,
+            })
+        }
+        if (!Number.isInteger(height) || height < 16 || height > 8192) {
+            return res.status(400).json({
+                error: `height must be an integer between 16 and 8192, got ${JSON.stringify(height)}`,
+            })
+        }
+        if (width * height > 67108864) {
+            return res.status(400).json({
+                error: `width*height must not exceed 67108864 pixels, got ${width * height}`,
+            })
+        }
+
+        // Pre-flight URL allowlist on the scene as posted: JSDOM fetches
+        // image srcs during loadFromJSON, so reject anything outside
+        // data: and the API base /web/image paths before any other
+        // processing; even binding-less renders go through this.
+        assertSceneImageUrlsSafe(scene_json, API_BASE)
+
         const wantSvg = format === 'svg'
         // Låt INTE applyBindingsToScene XML-escapra åt oss.
         //
@@ -124,6 +173,9 @@ app.post('/render', requireAuth, async (req, res) => {
             apiBase: API_BASE,
             fitTargets,
         })
+        // Binding substitution can swap in a new src (_dataBinding), so
+        // scan the post-binding scene too, before Fabric/JSDOM touches it.
+        assertSceneImageUrlsSafe(json, API_BASE)
 
         const canvas = new fabric.StaticCanvas(null, {
             width,
@@ -200,9 +252,10 @@ app.post('/render', requireAuth, async (req, res) => {
         const buf = nodeCanvas.toBuffer('image/png')
         return res.type('image/png').send(buf)
     } catch (err) {
-        if (err instanceof RequiredBindingError) {
-            // A layer marked _required resolved to empty: the caller (Odoo)
-            // surfaces this to the user, naming the layer.
+        if (err instanceof RequiredBindingError || err instanceof SceneImageUrlError) {
+            // A layer marked _required resolved to empty, or a scene image
+            // src fell outside the allowlist: the caller (Odoo) surfaces
+            // this to the user, naming the layer.
             return res.status(400).json({ error: err.message })
         }
         console.error('render error', err)

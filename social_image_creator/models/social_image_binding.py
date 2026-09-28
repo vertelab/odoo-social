@@ -81,7 +81,26 @@ def collect_scene_fields(scene):
     return fields
 
 
-def resolve_field_path(record, path):
+def _run_guard(guard, record, path):
+    """Invoke `guard` on `record`, converting any failure to BindingError
+    naming the token.
+
+    Guards are plain callables supplied by the caller; the Odoo layer
+    passes one that runs check_access_rights/check_access_rule and raises
+    on denial. Keeping the callback Odoo-free lets this module stay
+    standalone-testable (design decision D1).
+    """
+    if guard is None:
+        return
+    try:
+        guard(record)
+    except Exception as e:
+        raise BindingError(
+            "Token %r: access check failed on model %s (%s)."
+            % (path, getattr(record, '_name', '?'), e))
+
+
+def resolve_field_path(record, path, guard=None):
     """Walk a dotted field path against `record` and return the raw value.
 
     Relation hops traverse readable x2one relations directly and x2many
@@ -89,11 +108,17 @@ def resolve_field_path(record, path):
     computed relation (unreadable in batch), raises BindingError naming
     the token. A missing value along the way (empty relation) returns
     None, which formats to an empty string downstream.
+
+    When `guard` is given it is invoked on the root record and on every
+    traversed record (the target of an x2one hop, the first record of an
+    x2many hop); a guard failure aborts with BindingError naming the
+    token and no value is exposed.
     """
     parts = [p for p in str(path or '').split('.') if p]
     if not parts:
         raise BindingError("Empty token path.")
     current = record
+    _run_guard(guard, current, path)
     for index, part in enumerate(parts):
         fields = getattr(current, '_fields', None) or {}
         if part not in fields:
@@ -120,6 +145,7 @@ def resolve_field_path(record, path):
         else:
             # x2many: predictable, keep it to the first record.
             current = value[:1]
+        _run_guard(guard, current, path)
     return None
 
 
@@ -164,15 +190,17 @@ def is_empty_value(value):
             or (isinstance(value, str) and value.strip() == ''))
 
 
-def build_bindings(record, scene):
+def build_bindings(record, scene, guard=None):
     """Resolve every field referenced by `scene` against `record`.
 
     Returns ``{field_path: formatted_value}``; raises BindingError naming
-    the offending token when a path cannot be resolved.
+    the offending token when a path cannot be resolved. When `guard` is
+    given it is passed to resolve_field_path and invoked on the root
+    record and every traversed relation hop.
     """
     bindings = {}
     for path in collect_scene_fields(scene):
-        value = resolve_field_path(record, path)
+        value = resolve_field_path(record, path, guard=guard)
         bindings[path] = format_binding_value(value)
     return bindings
 

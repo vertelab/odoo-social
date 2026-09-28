@@ -58,6 +58,17 @@ async function waitForPort(port, tries = 40) {
     console.log('✓ empty RENDER_TOKEN refuses to start (exit 1)')
 }
 
+// 1b. A known placeholder token must stop the process too: it is the
+// value that used to ship in the Dockerfile, and it is not a credential.
+{
+    const { child, output } = start({ RENDER_TOKEN: 'change-me' }, 8790)
+    const code = await new Promise((resolve) => child.on('exit', resolve))
+    assert.equal(code, 1, `expected exit 1 with a placeholder token, got ${code}`)
+    assert.match(output(), /placeholder/i)
+    assert.match(output(), /RENDER_ALLOW_NO_AUTH=1/, 'must name the escape hatch')
+    console.log('✓ placeholder RENDER_TOKEN refuses to start (exit 1)')
+}
+
 // 2. RENDER_ALLOW_NO_AUTH=1 is the explicit opt-in and lets it run.
 {
     const { child } = start({ RENDER_TOKEN: '', RENDER_ALLOW_NO_AUTH: '1' }, 8792)

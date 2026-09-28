@@ -18,7 +18,22 @@
                 <field name="width"/>
                 <field name="height"/>
                 <field name="placeholder_ids" widget="many2many_tags" string="Placeholders"/>
+                <field name="company_id" optional="hide" groups="base.group_multi_company"/>
             </list>
+        </field>
+    </record>
+
+    <record id="social_image_template_view_search" model="ir.ui.view">
+        <field name="name">social.image.template.view.search</field>
+        <field name="model">social.image.template</field>
+        <field name="arch" type="xml">
+            <search string="Image Templates">
+                <field name="name"/>
+                <field name="model_id"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_by_company" string="Company" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
+                </group>
+            </search>
         </field>
     </record>
 
@@ -36,6 +51,7 @@
                         <group>
                             <field name="width" readonly="1"/>
                             <field name="height" readonly="1"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
                         </group>
                     </group>
                     <group string="Variants" colspan="2">
@@ -60,11 +76,18 @@
         </field>
     </record>
 
+    <record id="menu_social_image_studio" model="ir.ui.menu">
+        <field name="name">Image Studio</field>
+        <field name="parent_id" ref="menu_social_marketing_global"/>
+        <field name="sequence">25</field>
+        <field name="groups" eval="[(4, ref('social_marketing.group_social_marketing_user')), (4, ref('social_marketing.group_social_marketing_manager'))]"/>
+    </record>
+
     <record id="menu_social_image_template" model="ir.ui.menu">
         <field name="name">Image Templates</field>
-        <field name="parent_id" ref="menu_social_marketing_global"/>
+        <field name="parent_id" ref="menu_social_image_studio"/>
         <field name="action" ref="action_social_image_template"/>
-        <field name="sequence">25</field>
+        <field name="sequence">10</field>
     </record>
 
     <record id="action_social_image_size" model="ir.actions.act_window">
@@ -107,9 +130,19 @@
 
     <record id="menu_social_image_size" model="ir.ui.menu">
         <field name="name">Image Sizes</field>
-        <field name="parent_id" ref="menu_social_marketing_global"/>
+        <field name="parent_id" ref="menu_social_marketing_configuration"/>
         <field name="action" ref="action_social_image_size"/>
-        <field name="sequence">26</field>
+        <field name="sequence">45</field>
+    </record>
+
+    <record id="action_social_image_template_sync_bulk_actions" model="ir.actions.server">
+        <field name="name">Sync Bulk Creation Actions</field>
+        <field name="model_id" ref="model_social_image_template"/>
+        <field name="binding_model_id" ref="model_social_image_template"/>
+        <field name="binding_type">action</field>
+        <field name="state">code</field>
+        <field name="code">action = model.action_sync_bulk_actions()</field>
+        <field name="groups_id" eval="[(4, ref('social_marketing.group_social_marketing_user'))]"/>
     </record>
 
 </data>
