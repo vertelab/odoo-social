@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2026 Vertel Sverige AB.
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!-- Breadcrumbs -->
+    <template id="portal_my_home_menu_social_post"
+              name="Portal layout: social post menu entries"
+              inherit_id="portal.portal_breadcrumbs" priority="40">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'social_post'"
+                t-attf-class="breadcrumb-item #{'active ' if not post else ''}">
+                <a t-if="post" t-attf-href="/my/social-posts?{{ keep_query() }}">Social posts</a>
+                <t t-else="">Social posts</t>
+            </li>
+            <li t-if="post" class="breadcrumb-item active">
+                <span t-out="post.display_name"/>
+            </li>
+        </xpath>
+    </template>
+
+    <!-- Card on the portal home page -->
+    <template id="portal_my_home_social_post" name="Social posts"
+              inherit_id="portal.portal_my_home" customize_show="True"
+              priority="40">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="before">
+            <t t-set="portal_client_category_enable" t-value="True"/>
+        </xpath>
+        <div id="portal_client_category" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="title">Social posts</t>
+                <t t-set="url" t-value="'/my/social-posts'"/>
+                <t t-set="text">Read the posts we drafted for your brand and approve or reject them</t>
+                <t t-set="placeholder_count" t-value="'social_post_count'"/>
+            </t>
+        </div>
+    </template>
+
+    <!-- List -->
+    <template id="portal_my_social_posts" name="My Social Posts">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Social posts</t>
+            </t>
+
+            <t t-if="not posts">
+                <p class="alert alert-info">
+                    There is nothing here right now. Posts show up on this page
+                    when we have drafted them for your brand.
+                </p>
+            </t>
+            <t t-if="posts" t-call="portal.portal_table">
+                <thead>
+                    <tr class="active">
+                        <th name="post_message">Post</th>
+                        <th name="post_brand">Brand</th>
+                        <th name="post_planned" class="d-none d-md-table-cell">Planned</th>
+                        <th name="post_state">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-foreach="posts" t-as="post">
+                        <td>
+                            <a t-attf-href="/my/social-posts/#{post.id}">
+                                <span t-out="post.message_plain[:80] if post.message_plain else 'Post'"/>
+                            </a>
+                        </td>
+                        <td><span t-out="post.brand_id.name"/></td>
+                        <td class="d-none d-md-table-cell">
+                            <span t-field="post.scheduled_date"/>
+                        </td>
+                        <td>
+                            <t t-call="social_marketing_agency.portal_social_post_badge"/>
+                        </td>
+                    </tr>
+                </tbody>
+            </t>
+        </t>
+    </template>
+
+    <!-- Status badge, shared by the list and the detail page -->
+    <template id="portal_social_post_badge" name="Social Post Status Badge">
+        <span t-if="post.approval_state == 'awaiting_customer'"
+              class="badge rounded-pill text-bg-info">Waiting for your answer</span>
+        <span t-elif="post.approval_state == 'approved'"
+              class="badge rounded-pill text-bg-success">Approved</span>
+        <span t-elif="post.approval_state == 'rejected'"
+              class="badge rounded-pill text-bg-danger">Rejected</span>
+        <span t-elif="post.approval_state == 'pending_approval'"
+              class="badge rounded-pill text-bg-secondary">With the agency</span>
+        <span t-else="" class="badge rounded-pill text-bg-secondary">Draft</span>
+    </template>
+
+    <!-- Detail -->
+    <template id="portal_social_post_page" name="Social Post"
+              inherit_id="portal.portal_sidebar" primary="True">
+        <xpath expr="//div[hasclass('o_portal_sidebar')]" position="inside">
+            <div class="row o_portal_social_post_sidebar">
+
+                <t t-call="portal.portal_record_sidebar">
+                    <t t-set="classes" t-value="'col-lg-4 col-xxl-3 d-print-none'"/>
+                    <t t-set="title">
+                        <h5 class="mb-0">Status</h5>
+                    </t>
+                    <t t-set="entries">
+                        <div class="mt-2">
+                            <t t-call="social_marketing_agency.portal_social_post_badge"/>
+                        </div>
+                        <div t-if="post.approval_state == 'rejected' and post.rejection_reason"
+                             class="mt-3">
+                            <h6 class="mb-1">Your reason</h6>
+                            <p class="mb-0 text-muted" t-out="post.rejection_reason"/>
+                        </div>
+                        <div class="mt-4">
+                            <a href="/my/social-posts" class="btn btn-link p-0">
+                                <i class="fa fa-arrow-left"/> Back to all posts
+                            </a>
+                        </div>
+                    </t>
+                </t>
+
+                <div id="social_post_content" class="col-12 col-lg-8 col-xxl-9">
+
+                    <div t-if="message == 'approved'" class="alert alert-success">
+                        Thank you. The post is approved and we will publish it.
+                    </div>
+                    <div t-if="message == 'rejected'" class="alert alert-info">
+                        Thank you. The post is rejected and sent back to us with your reason.
+                    </div>
+                    <div t-if="message == 'reason_required'" class="alert alert-warning">
+                        Write a short reason before you reject the post. We need it to fix the draft.
+                    </div>
+                    <div t-if="message == 'action_refused'" class="alert alert-danger">
+                        This post can no longer be approved or rejected. Someone may have changed it in the meantime.
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h4 class="card-title" t-out="post.brand_id.name"/>
+                            <div class="o_social_post_message" t-field="post.message"/>
+
+                            <div t-if="post.image_ids" class="row g-2 mt-3">
+                                <div t-foreach="post.image_ids" t-as="image"
+                                     class="col-6 col-md-4">
+                                    <img class="img img-fluid rounded"
+                                         t-attf-src="/web/image/#{image.id}"
+                                         t-att-alt="image.name"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Where it goes out</h5>
+                            <p t-if="not post.account_ids" class="text-muted mb-0">
+                                No account has been picked yet.
+                            </p>
+                            <ul t-if="post.account_ids" class="list-unstyled mb-0">
+                                <li t-foreach="post.account_ids" t-as="account">
+                                    <span t-out="account.name"/>
+                                    <span class="text-muted"> on </span>
+                                    <span t-out="account.media_id.name"/>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div t-if="post.approval_state == 'awaiting_customer'"
+                         class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Your answer</h5>
+                            <p class="text-muted">
+                                Approve the post to let us publish it as it is
+                                written above. Reject it to send it back to us,
+                                and tell us what to change.
+                            </p>
+
+                            <form t-attf-action="/my/social-posts/#{post.id}/approve"
+                                  method="post" class="mb-4">
+                                <input type="hidden" name="csrf_token"
+                                       t-att-value="request.csrf_token()"/>
+                                <input t-if="access_token" type="hidden"
+                                       name="access_token" t-att-value="access_token"/>
+                                <button type="submit" class="btn btn-primary">
+                                    Approve this post
+                                </button>
+                            </form>
+
+                            <form t-attf-action="/my/social-posts/#{post.id}/reject"
+                                  method="post">
+                                <input type="hidden" name="csrf_token"
+                                       t-att-value="request.csrf_token()"/>
+                                <input t-if="access_token" type="hidden"
+                                       name="access_token" t-att-value="access_token"/>
+                                <div class="mb-2">
+                                    <label for="reason" class="form-label">
+                                        Why are you rejecting it?
+                                    </label>
+                                    <textarea id="reason" name="reason" rows="3"
+                                              class="form-control" required="required"
+                                              placeholder="Tell us what to change"/>
+                                </div>
+                                <button type="submit" class="btn btn-secondary">
+                                    Reject this post
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+</odoo>

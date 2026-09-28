@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record model="ir.ui.view" id="utm_campaign_view_form">
+        <field name="name">utm.campaign.view.form.inherit.social.mass.mailing</field>
+        <field name="model">utm.campaign</field>
+        <field name="inherit_id" ref="utm.utm_campaign_view_form"/>
+        <field name="arch" type="xml">
+            <!-- The mailings stat button of mass_mailing only shows when the
+                 campaign feature is activated. Fall back to our own so a
+                 campaign always reaches its mailings. -->
+            <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
+                <button name="action_redirect_to_mailings"
+                    type="object" class="oe_stat_button order-9" icon="fa-envelope-o"
+                    invisible="mailing_mail_count == 0 or is_mailing_campaign_activated"
+                    groups="mass_mailing.group_mass_mailing_user">
+                    <field name="mailing_mail_count" widget="statinfo" string="Mailings"/>
+                </button>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Channels" name="social_mass_mailing_channels" class="order-1">
+                    <group>
+                        <group string="Social Media" name="channel_social"
+                            groups="social_marketing.group_social_marketing_user">
+                            <field name="social_marketing_posts_count"/>
+                            <field name="social_marketing_engagement"/>
+                            <button name="action_redirect_to_social_marketing_media_posts"
+                                type="object" string="View Posts" class="btn-link"
+                                invisible="social_marketing_posts_count == 0"/>
+                        </group>
+                        <group string="Email" name="channel_mailing"
+                            groups="mass_mailing.group_mass_mailing_user">
+                            <field name="mailing_mail_count"/>
+                            <field name="mailing_sent_total"/>
+                            <field name="mailing_delivered_total"/>
+                            <field name="mailing_opened_total"/>
+                            <field name="mailing_clicked_total"/>
+                            <field name="mailing_replied_total"/>
+                            <button name="action_redirect_to_mailings"
+                                type="object" string="View Mailings" class="btn-link"
+                                invisible="mailing_mail_count == 0"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

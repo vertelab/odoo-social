@@ -33,4 +33,25 @@ model.env['social_marketing.live.post'].refresh_statistics()</field>
         <field name="user_id" ref="base.user_root"/>
         <field name="active" eval="False"/>
     </record>
+
+    <record id="ir_cron_check_token_expiry" model="ir.cron">
+        <field name="name">Social: Warn About Expiring Credentials</field>
+        <field name="model_id" ref="model_social_marketing_account"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_check_token_expiry()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="user_id" ref="base.user_root"/>
+        <field name="active" eval="True"/>
+    </record>
+    <record id="ir_cron_delete_expired_private_posts" model="ir.cron">
+        <field name="name">Social: Delete Expired Direct Messages</field>
+        <field name="model_id" ref="model_social_marketing_stream_post"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_delete_expired_private_posts()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="user_id" ref="base.user_root"/>
+        <field name="active" eval="True"/>
+    </record>
 </odoo>

@@ -26,6 +26,7 @@ class SocialAccount(models.Model):
     The statistics computation is run manually when visualizing the Feed. """
 
     _name = 'social_marketing.account'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
     _description = 'Social Account'
 
     def _get_default_company(self):
@@ -85,6 +86,27 @@ class SocialAccount(models.Model):
         help="Total number of times the account's content was displayed.")
     last_backfilled_date = fields.Date('Last Backfilled Date', readonly=True,
         help="Tracks the most recent date covered by the historical statistics backfill.")
+
+    # --- Token health -------------------------------------------------
+    # Social credentials expire. Without an expiry date and a warning ahead
+    # of it, publishing simply stops one day with no visible cause.
+    token_expiry_date = fields.Datetime(
+        'Credentials Expire On', tracking=True,
+        help="When the access token of this account expires. Set by the "
+             "platform module at (re)authentication time.")
+    token_expiry_state = fields.Selection([
+        ('unknown', 'Unknown'),
+        ('ok', 'Valid'),
+        ('expiring', 'Expiring Soon'),
+        ('expired', 'Expired'),
+    ], string='Credentials Status', compute='_compute_token_expiry_state',
+        store=True,
+        help="Valid, expiring within the warning window, or already expired.")
+    token_warning_sent_date = fields.Datetime(
+        'Expiry Warning Sent', readonly=True, copy=False,
+        help="When the last credentials expiry warning was raised. Prevents "
+             "the cron from warning about the same expiry over and over.")
+
 
     def _compute_statistics(self):
         """ Every social module should override this method if it 'has_account_stats'.
@@ -320,7 +342,88 @@ class SocialAccount(models.Model):
         self._backfill_account_statistics(
             retention_days, window_days, fields.Date.today())
         return True
+    @api.model
+    def _get_token_warning_days(self):
+        """ How many days ahead of expiry a warning should be raised. """
+        return int(self.env['ir.config_parameter'].sudo().get_param(
+            'social_token_expiry_warning_days', '7'))
 
+    @api.depends('token_expiry_date')
+    def _compute_token_expiry_state(self):
+        now = fields.Datetime.now()
+        warning_days = self._get_token_warning_days()
+        for account in self:
+            if not account.token_expiry_date:
+                account.token_expiry_state = 'unknown'
+            elif account.token_expiry_date <= now:
+                account.token_expiry_state = 'expired'
+            elif account.token_expiry_date <= now + timedelta(days=warning_days):
+                account.token_expiry_state = 'expiring'
+            else:
+                account.token_expiry_state = 'ok'
+
+    def _notify_token_expiring(self):
+        """ Raise a visible warning that these credentials are about to die.
+
+        An activity plus a chatter message, not only a log line: the point is
+        that somebody notices before publishing quietly stops.
+        """
+        activity_type = self.env.ref(
+            'mail.mail_activity_data_todo', raise_if_not_found=False)
+        for account in self:
+            body = _(
+                "The credentials of %(account)s expire on %(date)s. "
+                "Renew them before then, otherwise publishing to this account "
+                "will stop.",
+                account=account.display_name,
+                date=account.token_expiry_date)
+            account.message_post(body=body)
+            if activity_type:
+                account.activity_schedule(
+                    act_type_xmlid='mail.mail_activity_data_todo',
+                    summary=_('Renew social credentials'),
+                    note=body,
+                    user_id=account._get_token_warning_user().id,
+                )
+            account.token_warning_sent_date = fields.Datetime.now()
+        return self
+
+    def _get_token_warning_user(self):
+        """ Who should act on an expiring token. """
+        self.ensure_one()
+        manager = self.env.ref(
+            'social_marketing.group_social_marketing_manager',
+            raise_if_not_found=False)
+        if manager and manager.users:
+            return manager.users[0]
+        return self.env.user
+
+    @api.model
+    def _cron_check_token_expiry(self):
+        """ Warn about accounts whose credentials expire within the window.
+
+        Only warns once per expiry: an account that was already warned about
+        its current ``token_expiry_date`` is skipped, so the cron does not
+        nag every day.
+        """
+        warning_days = self._get_token_warning_days()
+        horizon = fields.Datetime.now() + timedelta(days=warning_days)
+        candidates = self.search([
+            ('token_expiry_date', '!=', False),
+            ('token_expiry_date', '<=', horizon),
+        ])
+        to_warn = candidates.filtered(
+            lambda account: not account.token_warning_sent_date
+            or account.token_warning_sent_date < account._warning_window_start())
+        if to_warn:
+            to_warn._notify_token_expiring()
+        return to_warn
+
+    def _warning_window_start(self):
+        """ Start of the warning window for this account's current expiry. """
+        self.ensure_one()
+        return self.token_expiry_date - timedelta(
+            days=self._get_token_warning_days())
     def _filter_by_media_types(self, media_types):
         return self.filtered(lambda account: account.media_type in media_types)
 

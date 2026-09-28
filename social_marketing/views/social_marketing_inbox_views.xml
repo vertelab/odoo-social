@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- The inbox: every incoming item across the streams, as a queue
+             rather than a feed. Unhandled items are the default view. -->
+        <record id="social_marketing_inbox_view_list" model="ir.ui.view">
+            <field name="name">social_marketing.stream.post.view.list.inbox</field>
+            <field name="model">social_marketing.stream.post</field>
+            <field name="arch" type="xml">
+                <list string="Inbox" create="0" default_order="published_date desc"
+                      decoration-bf="inbox_state == 'new'"
+                      decoration-muted="inbox_state in ('closed', 'ignored')">
+                    <field name="published_date" string="Received"/>
+                    <field name="interaction_type"/>
+                    <field name="media_type" optional="show"/>
+                    <field name="author_name"/>
+                    <field name="message"/>
+                    <field name="stream_id" optional="hide"/>
+                    <field name="assigned_user_id" widget="many2one_avatar_user"/>
+                    <field name="is_private" optional="hide"/>
+                    <field name="inbox_state" widget="badge"
+                           decoration-info="inbox_state == 'new'"
+                           decoration-warning="inbox_state == 'assigned'"
+                           decoration-success="inbox_state == 'answered'"/>
+                    <button name="action_inbox_assign" type="object" icon="fa-user-plus"
+                            string="Assign to me" title="Assign to me"
+                            invisible="inbox_state not in ('new', 'assigned')"/>
+                    <button name="action_inbox_answered" type="object" icon="fa-reply"
+                            string="Answered" title="Mark answered"
+                            invisible="inbox_state in ('answered', 'closed', 'ignored')"/>
+                    <button name="action_inbox_close" type="object" icon="fa-check"
+                            string="Close" title="Close"
+                            invisible="inbox_state in ('closed', 'ignored')"/>
+                    <button name="action_inbox_ignore" type="object" icon="fa-ban"
+                            string="Ignore" title="Ignore"
+                            invisible="inbox_state in ('closed', 'ignored')"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="social_marketing_inbox_view_form" model="ir.ui.view">
+            <field name="name">social_marketing.stream.post.view.form.inbox</field>
+            <field name="model">social_marketing.stream.post</field>
+            <field name="arch" type="xml">
+                <form string="Inbox Item" create="0">
+                    <header>
+                        <button name="action_inbox_assign" type="object" string="Assign to me"
+                                class="btn-primary"
+                                invisible="inbox_state not in ('new', 'assigned')"/>
+                        <button name="action_inbox_answered" type="object" string="Mark Answered"
+                                class="btn-primary"
+                                invisible="inbox_state in ('answered', 'closed', 'ignored')"/>
+                        <button name="action_inbox_close" type="object" string="Close"
+                                invisible="inbox_state in ('closed', 'ignored')"/>
+                        <button name="action_inbox_ignore" type="object" string="Ignore"
+                                invisible="inbox_state in ('closed', 'ignored')"/>
+                        <button name="action_inbox_reopen" type="object" string="Reopen"
+                                invisible="inbox_state == 'new'"/>
+                        <field name="inbox_state" widget="statusbar"
+                               statusbar_visible="new,assigned,answered,closed"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="author_name" readonly="1"/>
+                                <field name="author_link" widget="url" readonly="1"/>
+                                <field name="interaction_type"/>
+                                <field name="is_private" readonly="1"/>
+                            </group>
+                            <group>
+                                <field name="published_date" readonly="1"/>
+                                <field name="stream_id" readonly="1"/>
+                                <field name="media_type" readonly="1"/>
+                                <field name="post_link" widget="url" readonly="1"/>
+                            </group>
+                        </group>
+                        <group string="Handling">
+                            <group>
+                                <field name="assigned_user_id"/>
+                            </group>
+                            <group>
+                                <field name="answered_by_user_id" readonly="1"/>
+                                <field name="answered_date" readonly="1"/>
+                            </group>
+                        </group>
+                        <group string="Message">
+                            <field name="message" nolabel="1" readonly="1"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="social_marketing_inbox_view_search" model="ir.ui.view">
+            <field name="name">social_marketing.stream.post.view.search.inbox</field>
+            <field name="model">social_marketing.stream.post</field>
+            <field name="arch" type="xml">
+                <search string="Inbox">
+                    <field name="message"/>
+                    <field name="author_name"/>
+                    <field name="assigned_user_id"/>
+                    <field name="stream_id"/>
+                    <filter name="filter_unhandled" string="Unhandled"
+                            domain="[('inbox_state', 'in', ['new', 'assigned'])]"/>
+                    <filter name="filter_new" string="New"
+                            domain="[('inbox_state', '=', 'new')]"/>
+                    <filter name="filter_assigned_to_me" string="Assigned to me"
+                            domain="[('assigned_user_id', '=', uid)]"/>
+                    <separator/>
+                    <filter name="filter_answered" string="Answered"
+                            domain="[('inbox_state', '=', 'answered')]"/>
+                    <filter name="filter_closed" string="Closed"
+                            domain="[('inbox_state', '=', 'closed')]"/>
+                    <filter name="filter_ignored" string="Ignored"
+                            domain="[('inbox_state', '=', 'ignored')]"/>
+                    <separator/>
+                    <filter name="filter_comments" string="Comments"
+                            domain="[('interaction_type', '=', 'comment')]"/>
+                    <filter name="filter_mentions" string="Mentions"
+                            domain="[('interaction_type', '=', 'mention')]"/>
+                    <filter name="filter_direct_messages" string="Direct Messages"
+                            domain="[('interaction_type', '=', 'direct_message')]"/>
+                    <separator/>
+                    <filter name="filter_last_week" string="Last 7 Days"
+                            domain="[('published_date', '&gt;=', (context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                    <group expand="0" string="Group By">
+                        <filter name="group_by_inbox_state" string="State"
+                                context="{'group_by': 'inbox_state'}"/>
+                        <filter name="group_by_interaction_type" string="Type"
+                                context="{'group_by': 'interaction_type'}"/>
+                        <filter name="group_by_media_type" string="Platform"
+                                context="{'group_by': 'media_type'}"/>
+                        <filter name="group_by_assigned_user" string="Assigned To"
+                                context="{'group_by': 'assigned_user_id'}"/>
+                        <filter name="group_by_stream" string="Stream"
+                                context="{'group_by': 'stream_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_social_marketing_inbox" model="ir.actions.act_window">
+            <field name="name">Inbox</field>
+            <field name="res_model">social_marketing.stream.post</field>
+            <field name="view_mode">list,form</field>
+            <field name="search_view_id" ref="social_marketing_inbox_view_search"/>
+            <field name="context">{'search_default_filter_unhandled': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Nothing waiting for you
+                </p>
+                <p>
+                    Comments, mentions and messages that arrive on your social
+                    accounts land here so they can be picked up, answered and
+                    marked handled.
+                </p>
+            </field>
+        </record>
+
+        <record id="action_social_marketing_inbox_view_list" model="ir.actions.act_window.view">
+            <field name="sequence">1</field>
+            <field name="view_mode">list</field>
+            <field name="view_id" ref="social_marketing_inbox_view_list"/>
+            <field name="act_window_id" ref="action_social_marketing_inbox"/>
+        </record>
+
+        <record id="action_social_marketing_inbox_view_form" model="ir.actions.act_window.view">
+            <field name="sequence">2</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="social_marketing_inbox_view_form"/>
+            <field name="act_window_id" ref="action_social_marketing_inbox"/>
+        </record>
+
+        <menuitem id="menu_social_marketing_inbox"
+                  parent="social_marketing.menu_social_marketing_global"
+                  action="action_social_marketing_inbox"
+                  name="Inbox"
+                  sequence="15"/>
+
+    </data>
+</odoo>

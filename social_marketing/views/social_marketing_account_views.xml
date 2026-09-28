@@ -23,8 +23,12 @@
         <field name="name">social_marketing.account.view.tree</field>
         <field name="model">social_marketing.account</field>
         <field name="arch" type="xml">
-            <list string="Social Accounts" create="0">
+            <list string="Social Accounts" create="0"
+                  decoration-warning="token_expiry_state == 'expiring'"
+                  decoration-danger="token_expiry_state == 'expired'">
                 <field name="name" />
+                <field name="token_expiry_state" optional="show"/>
+                <field name="token_expiry_date" optional="hide"/>
                 <field name="social_account_handle"/>
                 <field name="media_id" />
                 <field name="create_uid" widget="many2one_avatar_user"/>
@@ -54,8 +58,24 @@
                             <field name="media_id" options="{'no_open': True}" />
                             <field name="company_id" options="{'no_create': True}" groups="base.group_multi_company"/>
                         </group>
+                        <group name="social_marketing_account_token" string="Credentials">
+                            <field name="token_expiry_state"/>
+                            <field name="token_expiry_date"/>
+                            <field name="token_warning_sent_date"/>
+                        </group>
                     </group>
+                    <div class="alert alert-warning" role="alert"
+                         invisible="token_expiry_state != 'expiring'">
+                        The credentials of this account expire soon. Renew them
+                        now, otherwise publishing to this account will stop.
+                    </div>
+                    <div class="alert alert-danger" role="alert"
+                         invisible="token_expiry_state != 'expired'">
+                        The credentials of this account have expired. Publishing
+                        to this account will fail until they are renewed.
+                    </div>
                 </sheet>
+                <chatter/>
             </form>
         </field>
     </record>

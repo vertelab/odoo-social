@@ -34,6 +34,15 @@ class SocialBrand(models.Model):
         help="If enabled, customer users of this brand get full editing rights "
              "on their own data; otherwise they can only read and approve.")
 
+    publishing_paused = fields.Boolean(
+        'Publishing Paused',
+        help="Killswitch. While set, nothing is published for this brand: "
+             "queued and scheduled posts are stopped at dispatch, not just "
+             "hidden in the interface. Other brands are unaffected.")
+    publishing_paused_reason = fields.Char(
+        'Pause Reason',
+        help="Shown on the blocked posts so it is clear why they did not go out.")
+
     default_policy_id = fields.Many2one(
         'communication.policy', string='Default Policy',
         help="Default communication policy used for posts of this brand.")
@@ -44,6 +53,20 @@ class SocialBrand(models.Model):
     # Relations
     document_ids = fields.One2many('social.agency.document', 'brand_id', string='Underlag')
     document_count = fields.Integer('Underlag', compute='_compute_document_count')
+
+    # Brand kit (colours, fonts, logos, media bank) read by the image builder
+    color_ids = fields.One2many(
+        'social.brand.color', 'brand_id', string='Kit Colors')
+    color_count = fields.Integer('Kit Colors', compute='_compute_color_count')
+    font_ids = fields.One2many(
+        'social.brand.font', 'brand_id', string='Kit Fonts')
+    font_count = fields.Integer('Kit Fonts', compute='_compute_font_count')
+    logo_ids = fields.One2many(
+        'social.brand.logo', 'brand_id', string='Kit Logos')
+    logo_count = fields.Integer('Kit Logos', compute='_compute_logo_count')
+    asset_ids = fields.One2many(
+        'social.brand.asset', 'brand_id', string='Kit Assets')
+    asset_count = fields.Integer('Kit Assets', compute='_compute_asset_count')
 
     # Credentials for login-required research media (last30days engine)
     credential_ids = fields.One2many(
@@ -86,6 +109,26 @@ class SocialBrand(models.Model):
         for brand in self:
             brand.credential_count = len(brand.credential_ids)
 
+    @api.depends('color_ids')
+    def _compute_color_count(self):
+        for brand in self:
+            brand.color_count = len(brand.color_ids)
+
+    @api.depends('font_ids')
+    def _compute_font_count(self):
+        for brand in self:
+            brand.font_count = len(brand.font_ids)
+
+    @api.depends('logo_ids')
+    def _compute_logo_count(self):
+        for brand in self:
+            brand.logo_count = len(brand.logo_ids)
+
+    @api.depends('asset_ids')
+    def _compute_asset_count(self):
+        for brand in self:
+            brand.asset_count = len(brand.asset_ids)
+
     @api.depends('listening_topic_ids',
                  'listening_topic_ids.trend_research_report')
     def _compute_trend_research_stats(self):
@@ -95,6 +138,30 @@ class SocialBrand(models.Model):
             brand.listening_topic_count = len(topics)
             brand.trend_report_done_count = len(done)
             brand.trend_report_label = '%d/%d' % (len(done), len(topics))
+
+    # Brand kit lookups used by the image builder
+    def get_kit_color(self, role):
+        """Return the hex string of the first kit colour with ``role``.
+
+        Returns False when the brand has no colour in that role, so a caller
+        can fall back to its own default.
+        """
+        self.ensure_one()
+        # sorted() applies the comodel _order (sequence, id); the raw
+        # One2many can still be in creation order inside a transaction.
+        color = self.color_ids.sorted().filtered(
+            lambda c: c.role == role)[:1]
+        return color.hex if color else False
+
+    def get_kit_logo(self, variant):
+        """Return the first kit logo record with ``variant``.
+
+        Returns an empty ``social.brand.logo`` recordset when the brand has
+        no logo in that variant.
+        """
+        self.ensure_one()
+        return self.logo_ids.sorted().filtered(
+            lambda logo: logo.variant == variant)[:1]
 
     @api.model_create_multi
     def create(self, vals_list):

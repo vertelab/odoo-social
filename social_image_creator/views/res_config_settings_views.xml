@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.social.image.creator</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="Social Image Creator" string="Social Image Creator" name="social_image_creator" groups="social_marketing.group_social_marketing_manager">
+                    <block title="Image Templates" name="social_image_template_settings">
+                        <setting string="Render Service URL"
+                                 help="Base URL of the Node render service for image templates (e.g. http://render-odoo:8600). Set from pillar in production.">
+                            <field name="social_marketing_render_service_url"/>
+                        </setting>
+                        <setting string="Render Service Token"
+                                 help="Bearer token for the render service. Secret: never commit; set from pillar in production.">
+                            <field name="social_marketing_render_service_token" widget="password"/>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+</odoo>

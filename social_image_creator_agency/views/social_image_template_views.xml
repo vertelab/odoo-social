@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Brand scoping on templates: form field, list column and a search
+         view with brand filters (the base module ships no search view, so
+         this one becomes the default once the glue module is installed). -->
+    <record id="social_image_template_view_form_brand" model="ir.ui.view">
+        <field name="name">social.image.template.view.form.brand</field>
+        <field name="model">social.image.template</field>
+        <field name="inherit_id" ref="social_image_creator.social_image_template_view_form"/>
+        <field name="arch" type="xml">
+            <field name="model_id" position="after">
+                <field name="brand_id"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="social_image_template_view_list_brand" model="ir.ui.view">
+        <field name="name">social.image.template.view.list.brand</field>
+        <field name="model">social.image.template</field>
+        <field name="inherit_id" ref="social_image_creator.social_image_template_view_list"/>
+        <field name="arch" type="xml">
+            <field name="model_id" position="after">
+                <field name="brand_id" optional="show"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="social_image_template_view_search_brand" model="ir.ui.view">
+        <field name="name">social.image.template.view.search.brand</field>
+        <field name="model">social.image.template</field>
+        <field name="arch" type="xml">
+            <search string="Image Templates">
+                <field name="name"/>
+                <field name="brand_id"/>
+                <filter name="branded" string="Branded"
+                        domain="[('brand_id', '!=', False)]"/>
+                <filter name="unbranded" string="Company Level"
+                        domain="[('brand_id', '=', False)]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_by_brand" string="Brand"
+                            context="{'group_by': 'brand_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+</odoo>

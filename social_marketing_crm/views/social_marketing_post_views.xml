@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record model="ir.ui.view" id="social_marketing_post_view_form">
+        <field name="name">social_marketing.post.view.form.inherit.social.crm</field>
+        <field name="model">social_marketing.post</field>
+        <field name="inherit_id" ref="social_marketing.social_marketing_post_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button class="oe_stat_button" name="action_redirect_to_leads"
+                    type="object" icon="fa-star"
+                    groups="sales_team.group_sale_salesman"
+                    invisible="crm_lead_count == 0">
+                    <field name="crm_lead_count" string="Leads" widget="statinfo"/>
+                </button>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="after">
+                <group name="social_crm_attribution" string="Lead Attribution"
+                    groups="sales_team.group_sale_salesman"
+                    invisible="state == 'draft'">
+                    <field name="crm_currency_id" invisible="1"/>
+                    <field name="crm_lead_won_count"/>
+                    <field name="crm_expected_revenue"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

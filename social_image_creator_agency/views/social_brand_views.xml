@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Brand kit on the brand form: color palette + uploaded fonts.
+         The base brand form has a notebook whose only page is Underlag. -->
+    <record id="view_social_brand_form_brand_kit" model="ir.ui.view">
+        <field name="name">social.brand.form.brand_kit</field>
+        <field name="model">social.brand</field>
+        <field name="inherit_id" ref="social_marketing_agency.view_social_brand_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Brand Kit" name="brand_kit">
+                    <group string="Color Palette">
+                        <field name="palette" nolabel="1"
+                               placeholder='["#003366", "#ff6600"]'/>
+                    </group>
+                    <field name="font_ids">
+                        <list editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="name"/>
+                            <field name="filename"/>
+                            <field name="file" filename="filename"/>
+                            <button name="action_download_for_render_service"
+                                    type="object" icon="fa-download"
+                                    title="Download for render service (copy into render_service/fonts/)"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

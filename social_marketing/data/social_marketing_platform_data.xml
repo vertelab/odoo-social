@@ -6,36 +6,54 @@
             <field name="code">linkedin</field>
             <field name="sequence">10</field>
             <field name="color">0</field>
+            <field name="max_text_length">3000</field>
+            <field name="max_image_count">9</field>
+            <field name="allowed_media_types">image,video</field>
         </record>
         <record id="platform_facebook" model="social_marketing.platform">
             <field name="name">Facebook</field>
             <field name="code">facebook</field>
             <field name="sequence">20</field>
             <field name="color">1</field>
+            <field name="max_text_length">63206</field>
+            <field name="max_image_count">10</field>
+            <field name="allowed_media_types">image,video</field>
         </record>
         <record id="platform_instagram" model="social_marketing.platform">
             <field name="name">Instagram</field>
             <field name="code">instagram</field>
             <field name="sequence">30</field>
             <field name="color">2</field>
+            <field name="max_text_length">2200</field>
+            <field name="max_image_count">10</field>
+            <field name="allowed_media_types">image,video</field>
         </record>
         <record id="platform_twitter" model="social_marketing.platform">
             <field name="name">Twitter / X</field>
             <field name="code">twitter</field>
             <field name="sequence">40</field>
             <field name="color">3</field>
+            <field name="max_text_length">280</field>
+            <field name="max_image_count">4</field>
+            <field name="allowed_media_types">image,video</field>
         </record>
         <record id="platform_youtube" model="social_marketing.platform">
             <field name="name">YouTube</field>
             <field name="code">youtube</field>
             <field name="sequence">50</field>
             <field name="color">4</field>
+            <field name="max_text_length">5000</field>
+            <field name="max_image_count">1</field>
+            <field name="allowed_media_types">video</field>
         </record>
         <record id="platform_blog" model="social_marketing.platform">
             <field name="name">Blog</field>
             <field name="code">blog</field>
             <field name="sequence">60</field>
             <field name="color">5</field>
+            <field name="max_text_length">0</field>
+            <field name="max_image_count">0</field>
+            <field name="allowed_media_types">image,video</field>
         </record>
     </data>
 </odoo>

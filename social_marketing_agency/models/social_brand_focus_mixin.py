@@ -40,5 +40,15 @@ class SocialBrandFocusMixin(models.AbstractModel):
     def _search(self, domain, offset=0, limit=None, order=None):
         brand_id = self._get_focus_brand()
         if brand_id and 'brand_id' in self._fields:
-            domain = list(domain) + [('brand_id', '=', brand_id)]
+            # Shared records (brand_id = False) stay visible alongside the
+            # focused brand, the same way _get_company_domain() treats
+            # company_id = False on social_marketing.post. Filtering on
+            # ('brand_id', '=', brand_id) alone hides every record that was
+            # created without a brand — by an import, a cron or sudo() — and
+            # Odoo reports that as an AccessError on a record that does
+            # exist, which is what masked the real error behind an OwlError
+            # in the web client (2026-09-23).
+            domain = list(domain) + ['|',
+                                     ('brand_id', '=', False),
+                                     ('brand_id', '=', brand_id)]
         return super()._search(domain, offset=offset, limit=limit, order=order)

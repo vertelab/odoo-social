@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data noupdate="1">
+
+    <record id="social_image_size_instagram_square" model="social.image.size">
+        <field name="name">Instagram Square</field>
+        <field name="width">1080</field>
+        <field name="height">1080</field>
+        <field name="sequence">10</field>
+    </record>
+
+    <record id="social_image_size_instagram_portrait" model="social.image.size">
+        <field name="name">Instagram Portrait</field>
+        <field name="width">1080</field>
+        <field name="height">1350</field>
+        <field name="sequence">20</field>
+    </record>
+
+    <record id="social_image_size_instagram_story" model="social.image.size">
+        <field name="name">Instagram Story</field>
+        <field name="width">1080</field>
+        <field name="height">1920</field>
+        <field name="sequence">30</field>
+    </record>
+
+    <record id="social_image_size_linkedin_post" model="social.image.size">
+        <field name="name">LinkedIn Post</field>
+        <field name="width">1200</field>
+        <field name="height">627</field>
+        <field name="sequence">40</field>
+    </record>
+
+    <record id="social_image_size_open_graph" model="social.image.size">
+        <field name="name">Open Graph</field>
+        <field name="width">1200</field>
+        <field name="height">630</field>
+        <field name="sequence">50</field>
+    </record>
+
+    <record id="social_image_size_x_header" model="social.image.size">
+        <field name="name">X/Twitter Header</field>
+        <field name="width">1500</field>
+        <field name="height">500</field>
+        <field name="sequence">60</field>
+    </record>
+
+    <record id="social_image_size_full_hd" model="social.image.size">
+        <field name="name">Full HD</field>
+        <field name="width">1920</field>
+        <field name="height">1080</field>
+        <field name="sequence">70</field>
+    </record>
+
+</data>
+</odoo>

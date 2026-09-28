@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data>
+
+    <!-- "Create Image from Template" on the post form. Lives here and not
+         in social_marketing: the button opens the render wizard action,
+         which this module owns. -->
+    <record id="social_marketing_post_view_form_render_button" model="ir.ui.view">
+        <field name="name">social_marketing.post.view.form.render.button</field>
+        <field name="model">social_marketing.post</field>
+        <field name="inherit_id" ref="social_marketing.social_marketing_post_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/field[@name='state']" position="before">
+                <button name="%(social_image_creator.action_social_image_render_wizard)d"
+                    string="Create Image from Template" type="action"
+                    class="btn-secondary"
+                    invisible="state != 'draft'"
+                    groups="social_marketing.group_social_marketing_user"/>
+            </xpath>
+        </field>
+    </record>
+
+</data>
+</odoo>

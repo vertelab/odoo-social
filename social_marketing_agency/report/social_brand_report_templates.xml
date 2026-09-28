@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="report_social_brand_performance_document">
+        <t t-set="attribution" t-value="report['attribution']"/>
+        <t t-set="activity" t-value="report['activity']"/>
+        <div class="page">
+            <style>
+                .o_social_report h2 { font-size: 16px; margin-top: 18px; margin-bottom: 6px; }
+                .o_social_report h1 { font-size: 22px; margin-bottom: 2px; }
+                .o_social_report table { width: 100%; border-collapse: collapse; margin-bottom: 6px; }
+                .o_social_report th, .o_social_report td { border-bottom: 1px solid #dddddd; padding: 4px 6px; text-align: left; vertical-align: top; }
+                .o_social_report th { background-color: #f4f4f4; }
+                .o_social_report td.o_num, .o_social_report th.o_num { text-align: right; white-space: nowrap; }
+                .o_social_report .o_muted { color: #777777; }
+                .o_social_report .o_headline { font-size: 30px; font-weight: bold; }
+            </style>
+            <div class="o_social_report">
+
+                <h1 t-out="report['brand'].name"/>
+                <div>
+                    <span>Social media report for </span>
+                    <span t-out="report['partner'].name or 'the customer'"/>
+                </div>
+                <div>
+                    <span>Period </span>
+                    <span t-out="report['date_from']"/>
+                    <span> to </span>
+                    <span t-out="report['date_to']"/>
+                </div>
+
+                <h2>Published volume</h2>
+                <t t-if="report['post_count']">
+                    <div>
+                        <span class="o_headline" t-out="report['post_count']"/>
+                        <span> posts published in the period, </span>
+                        <span t-out="report['publication_count']"/>
+                        <span> publications across the platforms below.</span>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Platform</th>
+                                <th class="o_num">Publications</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="report['platform_lines']" t-as="line">
+                                <td t-out="line['name']"/>
+                                <td class="o_num" t-out="line['count']"/>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="o_muted">
+                        A post published to several platforms counts once per platform here,
+                        and once in the number of posts above.
+                    </div>
+                </t>
+                <t t-else="">
+                    <div>
+                        No posts were published for this brand in the period. Everything
+                        below is reported for the same empty period.
+                    </div>
+                </t>
+
+                <h2>Engagement on the published posts</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Measurement</th>
+                            <th class="o_num">Period total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="report['engagement_lines']" t-as="line">
+                            <td t-out="line['label']"/>
+                            <td class="o_num">
+                                <span t-if="line['measured']" t-out="line['value']"/>
+                                <span t-else="" class="o_muted">Not measured</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Clicks on tracked links in the posts</td>
+                            <td class="o_num" t-out="report['click_count']"/>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="o_muted">
+                    Engagement figures are the latest measurement taken inside the period
+                    for every publication, added together.
+                </div>
+
+                <t t-if="attribution['available']">
+                    <h2>What the posts produced</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Result</th>
+                                <th class="o_num">Period total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-if="attribution['crm']">
+                                <tr>
+                                    <td>Leads attributed to the posts</td>
+                                    <td class="o_num" t-out="attribution['crm']['lead_count']"/>
+                                </tr>
+                                <tr>
+                                    <td>Of those, leads already won</td>
+                                    <td class="o_num" t-out="attribution['crm']['lead_won_count']"/>
+                                </tr>
+                                <tr>
+                                    <td>Expected value of the open leads</td>
+                                    <td class="o_num">
+                                        <span t-out="attribution['crm']['expected_revenue']"
+                                              t-options="{'widget': 'monetary', 'display_currency': attribution['currency']}"/>
+                                    </td>
+                                </tr>
+                            </t>
+                            <t t-if="attribution['sale']">
+                                <tr>
+                                    <td>Quotations attributed to the posts</td>
+                                    <td class="o_num" t-out="attribution['sale']['quotation_count']"/>
+                                </tr>
+                                <tr>
+                                    <td>Confirmed orders attributed to the posts</td>
+                                    <td class="o_num" t-out="attribution['sale']['order_count']"/>
+                                </tr>
+                                <tr>
+                                    <td>Revenue on those confirmed orders</td>
+                                    <td class="o_num">
+                                        <span t-out="attribution['sale']['order_revenue']"
+                                              t-options="{'widget': 'monetary', 'display_currency': attribution['currency']}"/>
+                                    </td>
+                                </tr>
+                            </t>
+                            <t t-if="attribution['mailing']">
+                                <tr>
+                                    <td>Newsletters sent in the same campaigns</td>
+                                    <td class="o_num" t-out="attribution['mailing']['sent']"/>
+                                </tr>
+                                <tr>
+                                    <td>Newsletters opened</td>
+                                    <td class="o_num" t-out="attribution['mailing']['opened']"/>
+                                </tr>
+                                <tr>
+                                    <td>Clicks in those newsletters</td>
+                                    <td class="o_num" t-out="attribution['mailing']['clicked']"/>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                    <div class="o_muted">
+                        A lead or an order is attributed to a post when it came in through
+                        a tracked link published with that post.
+                    </div>
+                </t>
+
+                <t t-if="report['top_post_lines']">
+                    <h2>The posts that performed best</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Post</th>
+                                <th>Published</th>
+                                <th>Platforms</th>
+                                <th class="o_num">Engagements</th>
+                                <th class="o_num">Clicks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="report['top_post_lines']" t-as="line">
+                                <td t-out="line['message']"/>
+                                <td t-out="line['published_date']"/>
+                                <td t-out="line['platforms']"/>
+                                <td class="o_num" t-out="line['engagement']"/>
+                                <td class="o_num" t-out="line['clicks']"/>
+                            </tr>
+                        </tbody>
+                    </table>
+                </t>
+
+                <h2>The work behind the posts</h2>
+                <t t-if="activity['step_count']">
+                    <div>
+                        <span t-out="activity['step_count']"/>
+                        <span> review steps were recorded for this brand in the period, of which </span>
+                        <span t-out="activity['approval_count']"/>
+                        <span> approvals.</span>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Review step</th>
+                                <th class="o_num">Times recorded</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="activity['stage_lines']" t-as="line">
+                                <td t-out="line['label']"/>
+                                <td class="o_num" t-out="line['count']"/>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <t t-if="activity['approval_lines']">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Approved</th>
+                                    <th>Post</th>
+                                    <th>Approved by</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="activity['approval_lines']" t-as="line">
+                                    <td t-out="line['date']"/>
+                                    <td t-out="line['post']"/>
+                                    <td t-out="line['actor']"/>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div t-if="activity['approval_lines_hidden']" class="o_muted">
+                            <span t-out="activity['approval_lines_hidden']"/>
+                            <span> further approvals are not listed individually.</span>
+                        </div>
+                    </t>
+                </t>
+                <t t-else="">
+                    <div>No review steps were recorded for this brand in the period.</div>
+                </t>
+
+                <t t-if="report['notes']">
+                    <h2>What this report does not measure</h2>
+                    <ul>
+                        <li t-foreach="report['notes']" t-as="note">
+                            <span t-out="note"/>
+                        </li>
+                    </ul>
+                </t>
+
+            </div>
+        </div>
+    </template>
+
+    <template id="report_social_brand_performance">
+        <t t-call="web.html_container">
+            <t t-foreach="reports" t-as="report">
+                <!-- web.internal_layout reads o, doc and company. They are set
+                     here so the layout never meets an undefined name. -->
+                <t t-set="o" t-value="report['wizard']"/>
+                <t t-set="doc" t-value="report['wizard']"/>
+                <t t-set="company" t-value="report['wizard'].env.company"/>
+                <t t-call="web.internal_layout">
+                    <t t-call="social_marketing_agency.report_social_brand_performance_document"/>
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>

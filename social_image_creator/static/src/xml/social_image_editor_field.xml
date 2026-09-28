@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <div t-name="social.SocialImageEditorField" class="o_social_image_editor_launcher d-flex align-items-center gap-3">
+        <div class="o_social_image_editor_preview border rounded bg-light d-flex align-items-center justify-content-center">
+            <img t-if="previewSrc" t-att-src="previewSrc" alt="Design preview"/>
+            <i t-else="" class="fa fa-picture-o fa-2x text-muted" title="No design yet"/>
+        </div>
+        <div>
+            <button type="button" class="btn btn-primary" t-on-click="openEditor" t-att-disabled="isNew">
+                <i class="fa fa-pencil"/> Edit Design
+            </button>
+            <div t-if="isNew" class="text-muted small mt-1">
+                Save the record to enable the editor.
+            </div>
+        </div>
+    </div>
+
+</templates>
