@@ -11,7 +11,9 @@
     'depends': ['social_marketing'],
     'data': [
         'security/ir.model.access.csv',
+        'security/company_rules.xml',
         'data/social_image_size_data.xml',
+        'data/social_image_preview_cron.xml',
         'views/social_image_template_views.xml',
         'views/social_image_render_wizard_views.xml',
         'views/social_data_binding_views.xml',
