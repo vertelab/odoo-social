@@ -58,9 +58,18 @@
 
         &:hover .o_social_image_editor_layer_btn,
         &.active .o_social_image_editor_layer_btn,
+        &:focus-within .o_social_image_editor_layer_btn,
         .o_social_image_editor_layer_btn .fa-eye-slash,
         .o_social_image_editor_layer_btn .fa-lock {
             visibility: visible;
+        }
+    }
+
+    // Bottom message line (toast): dismiss button + Retry share one slim bar.
+    .o_social_image_editor_message_bar {
+        .btn-close {
+            width: 0.6rem;
+            height: 0.6rem;
         }
     }
 

@@ -6,6 +6,18 @@
         <field name="name">Image Templates</field>
         <field name="res_model">social.image.template</field>
         <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first image template
+            </p>
+            <p>
+                An image template is a reusable design with named size
+                variants, for example a post and a story, and placeholders
+                that fill in from your records. Create one with the New
+                button, design it in the editor, then render images for
+                posts and pages from it.
+            </p>
+        </field>
     </record>
 
     <record id="social_image_template_view_list" model="ir.ui.view">
@@ -46,7 +58,8 @@
                     <group>
                         <group>
                             <field name="name"/>
-                            <field name="model_id"/>
+                            <field name="model_id"
+                                   options="{'no_create': True, 'no_open': True}"/>
                         </group>
                         <group>
                             <field name="width" readonly="1"/>
@@ -56,7 +69,6 @@
                     </group>
                     <group string="Variants" colspan="2">
                         <field name="variants_summary" readonly="1" nolabel="1"/>
-                        <field name="variants" readonly="1" nolabel="1"/>
                     </group>
                     <group string="Placeholders" colspan="2">
                         <field name="placeholder_ids">
@@ -69,7 +81,6 @@
                     <group string="Design" colspan="2">
                         <field name="scene_json" widget="social_image_editor" class="o_image_template_scene_json"/>
                         <field name="svg_master" widget="image" class="o_image_template_svg_preview"/>
-                        <field name="png_master" widget="image" class="o_image_template_png_preview"/>
                     </group>
                 </sheet>
             </form>

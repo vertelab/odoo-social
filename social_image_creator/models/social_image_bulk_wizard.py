@@ -4,6 +4,8 @@
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
+from .social_image_render_wizard import resolve_variant_index
+
 
 class SocialImageBulkWizard(models.TransientModel):
     """Create one draft ``social_marketing.post`` per selected record,
@@ -25,9 +27,22 @@ class SocialImageBulkWizard(models.TransientModel):
         'social.image.template', string='Template', required=True,
         domain="[('model_id', '!=', False)]",
         help="Template bound to the model of the selected records.")
+    variant_name = fields.Selection(
+        selection='_variant_name_selection', string='Variant',
+        help="Variant of the template to render, chosen by its name.")
     variant_index = fields.Integer(
-        'Variant Index', default=0,
-        help="Variant of the template to render; 0 is the primary variant.")
+        'Variant Index', compute='_compute_variant_state',
+        inverse='_inverse_variant_index',
+        help="Technical: index of the chosen variant, resolved from the "
+             "name at render time; kept for API callers that still pass "
+             "an index.")
+    variant_fallback = fields.Boolean(
+        'Variant Fallback', compute='_compute_variant_state',
+        help="The chosen variant no longer exists on the template; the "
+             "primary variant is used instead.")
+    variant_fallback_message = fields.Char(
+        'Variant Fallback Message', compute='_compute_variant_state',
+        help="Why the primary variant is used instead of the chosen one.")
     state = fields.Selection([
         ('setup', 'Setup'),
         ('done', 'Done'),
@@ -53,6 +68,56 @@ class SocialImageBulkWizard(models.TransientModel):
                 self.env[active_model]._description
                 if active_model and active_model in self.env else '')
             wizard.source_record_count = len(active_ids)
+
+    # ------------------------------------------------------------------
+    # Variant selection by name (spec: wizard-bulk-create, decision D4).
+    # Same rule as the render wizard; see there for why the choices are
+    # the union of all template variant names.
+    # ------------------------------------------------------------------
+
+    @api.model
+    def _variant_name_selection(self):
+        names = []
+        for template in self.env['social.image.template'].search([]):
+            for variant in template.variants or []:
+                name = variant.get('name')
+                if isinstance(name, str) and name not in names:
+                    names.append(name)
+        return [(name, name) for name in names]
+
+    @api.depends('template_id', 'template_id.variants', 'variant_name')
+    def _compute_variant_state(self):
+        for wizard in self:
+            index, fallback = resolve_variant_index(
+                wizard.template_id.variants, wizard.variant_name)
+            wizard.variant_index = index
+            wizard.variant_fallback = fallback
+            if fallback and wizard.variant_name:
+                wizard.variant_fallback_message = _(
+                    "Variant %(variant)s no longer exists on template "
+                    "%(template)s. The primary variant is used instead.",
+                    variant=wizard.variant_name,
+                    template=wizard.template_id.name or '?')
+            else:
+                wizard.variant_fallback_message = False
+
+    def _inverse_variant_index(self):
+        """Map a written index back to the variant name, so existing
+        API callers that pass ``variant_index`` keep working."""
+        for wizard in self:
+            variants = wizard.template_id.variants or []
+            index = wizard.variant_index
+            if (isinstance(index, int) and not isinstance(index, bool)
+                    and 0 <= index < len(variants)):
+                wizard.variant_name = variants[index].get('name') or False
+
+    @api.onchange('template_id')
+    def _onchange_template_id(self):
+        """Preselect the template's primary variant by name; a single
+        variant template needs no choice at all."""
+        primary = (self.template_id.get_primary_variant()
+                   if self.template_id else None)
+        self.variant_name = primary and primary.get('name') or False
 
     def action_open(self):
         """Open the wizard form; called from the server action code."""

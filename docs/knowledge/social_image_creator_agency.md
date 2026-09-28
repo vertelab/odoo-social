@@ -14,12 +14,18 @@ Depends on `social_image_creator` + `social_marketing_agency`.
   raise UserError for records outside the template's brand as a
   server-side guard behind the pickers.
 - `social.brand` (`_inherit`, `models/social_brand.py`): brand kit.
-  `palette` is a JSON list of hex strings; `font_ids` is a One2many to
-  `social.brand.font`. The logo field from the agency module is reused.
+  `palette` is a JSON list of hex strings, validated by a constraint
+  (pure `parse_palette` helper): malformed JSON, non-list values or
+  non-`#rrggbb` entries are refused with an example-bearing
+  ValidationError, and hand-typed widget text is normalized into a real
+  list on save. `font_ids` is a One2many to `social.brand.font`. The
+  logo field from the agency module is reused.
 - `social.brand.font` (`models/social_brand_font.py`): `brand_id`,
   `sequence`, `name` (family name, must equal the file basename without
   extension, the render_service/fonts convention), `filename`, `file`
-  (Binary attachment). Constraints: max 5 MB, extension ttf/otf/woff/woff2.
+  (Binary attachment). Constraints: max 5 MB, extension ttf/otf/woff/woff2,
+  and magic-byte content check (`sniff_font_format`: TTF, OTF, WOFF or
+  WOFF2 signatures) so a renamed payload is refused.
   `action_download_for_render_service()` serves the attachment under its
   original basename so it can be copied into `render_service/fonts/`.
 - `social.image.render.wizard` (`_inherit`,
@@ -36,7 +42,10 @@ branch), customer editor writes own brands, agency brand users see their
 `user.brand_ids` plus unbranded templates; `social.brand.font` follows the
 social.brand.credential shape (brand_id required, so no False branch).
 Access rights for customer groups on templates and for the font model are
-in `security/ir.model.access.csv`. Transient wizards need no rules.
+in `security/ir.model.access.csv`; font read is granted to the marketing
+groups plus the customer groups (no blanket internal-user read, so paid
+brand assets are not readable by unrelated staff). Transient wizards
+need no rules.
 
 ## Editor integration
 

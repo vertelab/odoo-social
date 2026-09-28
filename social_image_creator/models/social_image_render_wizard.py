@@ -7,6 +7,33 @@ from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
 
+def resolve_variant_index(variants, variant_name):
+    """Resolve a variant NAME to its index in ``variants`` (the template's
+    variant list from the ``variants`` JSON field).
+
+    Returns ``(index, fallback)``. ``fallback`` is True when the stored
+    name no longer exists on the template (renamed, removed, or the name
+    was never set on a non-empty list from another template) and the
+    primary variant is used instead. An empty ``variant_name`` on a
+    template with variants resolves to the primary variant without a
+    warning: that is the preselected default, not a failed lookup. Pure
+    function so both wizards and the tests share one resolution rule.
+    """
+    variants = variants or []
+    if not variant_name:
+        for index, variant in enumerate(variants):
+            if variant.get('is_primary'):
+                return index, False
+        return 0, False
+    for index, variant in enumerate(variants):
+        if variant.get('name') == variant_name:
+            return index, False
+    for index, variant in enumerate(variants):
+        if variant.get('is_primary'):
+            return index, True
+    return 0, True
+
+
 class SocialImageRenderWizard(models.TransientModel):
     """Fill-in dialog for rendering a `social.image.template` server-side.
 
@@ -55,9 +82,22 @@ class SocialImageRenderWizard(models.TransientModel):
         'Record', model_field='record_model',
         help="Record the template tokens resolve against. Leave empty to "
              "fill in the placeholders manually below.")
+    variant_name = fields.Selection(
+        selection='_variant_name_selection', string='Variant',
+        help="Variant of the template to render, chosen by its name.")
     variant_index = fields.Integer(
-        'Variant Index', default=0,
-        help="Variant of the template to render; 0 is the primary variant.")
+        'Variant Index', compute='_compute_variant_state',
+        inverse='_inverse_variant_index',
+        help="Technical: index of the chosen variant, resolved from the "
+             "name at render time; kept for API callers that still pass "
+             "an index.")
+    variant_fallback = fields.Boolean(
+        'Variant Fallback', compute='_compute_variant_state',
+        help="The chosen variant no longer exists on the template; the "
+             "primary variant is used instead.")
+    variant_fallback_message = fields.Char(
+        'Variant Fallback Message', compute='_compute_variant_state',
+        help="Why the primary variant is used instead of the chosen one.")
     has_binding_model = fields.Boolean(
         'Has Binding Model', compute='_compute_binding_state')
     binding_mismatch = fields.Boolean(
@@ -103,17 +143,79 @@ class SocialImageRenderWizard(models.TransientModel):
         for wizard in self:
             wizard.show_render_timing = bool(wizard._get_target_post())
 
+    # ------------------------------------------------------------------
+    # Variant selection by name (spec: wizard-bulk-create, decision D4)
+    # ------------------------------------------------------------------
+
+    @api.model
+    def _variant_name_selection(self):
+        """Selection choices for ``variant_name``.
+
+        The web client takes selection choices from the field
+        description at view load and cannot filter them per record, so
+        the choices are the union of every template's variant names.
+        The name the user stores is resolved against the chosen
+        template when rendering (see :func:`resolve_variant_index`),
+        falling back to the primary variant with a warning when it no
+        longer exists. Resolving against the template, not the choice
+        list, is what keeps renamed variants harmless.
+        """
+        names = []
+        for template in self.env['social.image.template'].search([]):
+            for variant in template.variants or []:
+                name = variant.get('name')
+                if isinstance(name, str) and name not in names:
+                    names.append(name)
+        return [(name, name) for name in names]
+
+    @api.depends('template_id', 'template_id.variants', 'variant_name')
+    def _compute_variant_state(self):
+        """Resolve the chosen variant name to its index on the current
+        template. A stored name that no longer exists (the template's
+        variants were renamed or reordered after the wizard was opened,
+        or an API caller passed a name from another template) falls
+        back to the primary variant and flags ``variant_fallback`` so
+        the form can explain it."""
+        for wizard in self:
+            index, fallback = resolve_variant_index(
+                wizard.template_id.variants, wizard.variant_name)
+            wizard.variant_index = index
+            wizard.variant_fallback = fallback
+            if fallback and wizard.variant_name:
+                wizard.variant_fallback_message = _(
+                    "Variant %(variant)s no longer exists on template "
+                    "%(template)s. The primary variant is used instead.",
+                    variant=wizard.variant_name,
+                    template=wizard.template_id.name or '?')
+            else:
+                wizard.variant_fallback_message = False
+
+    def _inverse_variant_index(self):
+        """Map a written index back to the variant name, so existing
+        API callers that pass ``variant_index`` keep working (decision
+        D4: the stored field becomes name-based, the render path
+        resolves the index). Out-of-range indexes keep the name as-is;
+        resolution falls back to the primary variant at render time."""
+        for wizard in self:
+            variants = wizard.template_id.variants or []
+            index = wizard.variant_index
+            if (isinstance(index, int) and not isinstance(index, bool)
+                    and 0 <= index < len(variants)):
+                wizard.variant_name = variants[index].get('name') or False
+
     @api.onchange('template_id')
     def _onchange_template_id(self):
         """Rebuild placeholder lines from the selected template, reset
-        the variant and point the record binding at the template's
-        binding model. A record picked for the previous template
-        is kept when it resolves in the new binding model; if it no
-        longer resolves it is cleared here, and if it resolves to the
-        wrong model the mismatch warning on the form tells the user to
-        re-pick."""
+        the variant to the template's primary variant and point the
+        record binding at the template's binding model. A record picked
+        for the previous template is kept when it resolves in the new
+        binding model; if it no longer resolves it is cleared here, and
+        if it resolves to the wrong model the mismatch warning on the
+        form tells the user to re-pick."""
         self.record_model = self.template_id.model_id.model or False
-        self.variant_index = 0
+        primary = (self.template_id.get_primary_variant()
+                   if self.template_id else None)
+        self.variant_name = primary and primary.get('name') or False
         if self.record_id:
             record = None
             if self.record_model and self.record_model in self.env:
@@ -132,7 +234,7 @@ class SocialImageRenderWizard(models.TransientModel):
         self.line_ids = lines
         self._refresh_preview()
 
-    @api.onchange('record_id', 'variant_index')
+    @api.onchange('record_id', 'variant_name')
     def _onchange_preview_trigger(self):
         self._refresh_preview()
 

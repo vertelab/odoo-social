@@ -16,12 +16,18 @@
                 <field name="binding_mismatch" invisible="1"/>
                 <field name="show_render_timing" invisible="1"/>
                 <field name="record_model" invisible="1"/>
+                <field name="variant_fallback" invisible="1"/>
+                <field name="variant_fallback_message" invisible="1"/>
                 <div class="alert alert-warning" role="alert"
                      invisible="not binding_mismatch">
                     The chosen record belongs to a different model than the
                     template's binding model. Pick a record of the binding
                     model, or clear the record and fill in the placeholders
                     manually.
+                </div>
+                <div class="alert alert-warning" role="alert"
+                     invisible="not variant_fallback">
+                    <field name="variant_fallback_message" readonly="1" nolabel="1"/>
                 </div>
                 <group>
                     <field name="template_id"/>
@@ -30,7 +36,7 @@
                     <field name="record_id"
                            invisible="not has_binding_model"
                            options="{'no_create': True, 'no_open': True}"/>
-                    <field name="variant_index"/>
+                    <field name="variant_name"/>
                 </group>
                 <group string="Placeholders"
                        invisible="not line_ids or has_binding_model and record_id">
@@ -67,11 +73,17 @@
         <field name="arch" type="xml">
             <form string="Create Posts from Image Template">
                 <field name="state" invisible="1"/>
+                <field name="variant_fallback" invisible="1"/>
+                <field name="variant_fallback_message" invisible="1"/>
+                <div class="alert alert-warning" role="alert"
+                     invisible="not variant_fallback">
+                    <field name="variant_fallback_message" readonly="1" nolabel="1"/>
+                </div>
                 <group invisible="state != 'setup'">
                     <field name="source_model_name" readonly="1"/>
                     <field name="source_record_count" readonly="1"/>
                     <field name="template_id"/>
-                    <field name="variant_index"/>
+                    <field name="variant_name"/>
                 </group>
                 <group string="Result" invisible="state != 'done'">
                     <field name="created_count" readonly="1"/>

@@ -2,12 +2,12 @@
 
 import { Component, markup, onMounted, onPatched, onWillUnmount, useRef, useState } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
+import { _t } from "@web/core/l10n/translation";
 import { FileUploader } from "@web/views/fields/file_handler";
 import { loadFabric } from "@social_image_creator/lib/fabric_loader";
 import {
     EXTRA_PROPS,
     HISTORY_LIMIT,
-    applyCaseTransform,
     applyImageCoverFit,
     buildLayerDescriptors,
     computeAlignmentDeltas,
@@ -27,7 +27,7 @@ import {
     opacityPercentFromFraction,
     parseShadowColor,
     buildShadowColor,
-    resolveTokens,
+    resolveTextForPreview,
     restoreSceneProps,
     snapBoxFromRect,
     snapBoxToGuides,
@@ -60,6 +60,8 @@ import {
 const HISTORY_DEBOUNCE_MS = 500;
 const AUTOSAVE_DEBOUNCE_MS = 1500;
 const AUTOFIT_MIN_SIZE = 6;
+// Bottom message line (toast) auto-clear delay, unless dismissed earlier.
+const MESSAGE_TIMEOUT_MS = 8000;
 // Snap threshold in SCREEN pixels (zoom-aware): 6px feels right at any
 // zoom level. Hold Alt during drag to bypass snapping entirely.
 const SNAP_THRESHOLD_PX = 6;
@@ -157,9 +159,13 @@ export class SocialImageEditorDialog extends Component {
         this._dimensions = { width: 1200, height: 630 };
         this._dirty = false;
         this._saving = false;
+        // Set when a close attempt hit a failed flush: the next close
+        // asks for explicit discard (close-safety design D1).
+        this._closeFailed = false;
         this._history = { stack: [], cursor: -1, suspended: false };
         this._historyTimer = null;
         this._saveTimer = null;
+        this._messageTimer = null;
         this._dragIndex = null;
         this._needsRenameFocus = false;
         this._penPoints = [];
@@ -221,6 +227,7 @@ export class SocialImageEditorDialog extends Component {
             this._unbindPen();
             clearTimeout(this._historyTimer);
             clearTimeout(this._saveTimer);
+            clearTimeout(this._messageTimer);
             if (this._canvas) {
                 this._canvas.dispose();
                 this._canvas = null;
@@ -252,7 +259,7 @@ export class SocialImageEditorDialog extends Component {
             if (!this._variants || !this._variants.length) {
                 this._variants = [
                     {
-                        name: "Primary",
+                        name: _t("Primary"),
                         width: (record && record.width) || 1200,
                         height: (record && record.height) || 630,
                         scene_json: "{}",
@@ -266,14 +273,14 @@ export class SocialImageEditorDialog extends Component {
             );
             const primary = this._variants[this._primaryIndex];
             this.state.templateName = (record && record.name) || "";
-            this.state.variantName = primary.name || "Primary";
+            this.state.variantName = primary.name || _t("Primary");
             this._dimensions = {
                 width: Number(primary.width) || 1200,
                 height: Number(primary.height) || 630,
             };
             await this._initCanvas(primary.scene_json || "{}");
         } catch (err) {
-            this.state.message = `Editor failed to load: ${err.message || err}`;
+            this._showMessage(_t("Editor failed to load: %s", err.message || err));
         } finally {
             this.state.busy = false;
         }
@@ -315,8 +322,9 @@ export class SocialImageEditorDialog extends Component {
             scene = {};
         }
         await this._loadSceneIntoCanvas(scene);
-        // Derived text props (case transform, autofit) are part of the
-        // render, so a freshly loaded scene gets them applied up front.
+        // Stored scenes keep raw token text: case transform and autofit
+        // apply at render time (render-parity design D3), so on load only
+        // the edit-time autofit convenience for static text is refreshed.
         this._applyTextPropsToAll();
         // Baseline snapshot so undo can return to the loaded state.
         this._pushHistory();
@@ -653,7 +661,7 @@ export class SocialImageEditorDialog extends Component {
             }));
         } catch (err) {
             this.state.previewResults = [];
-            this.state.message = `Record search failed: ${err.message || err}`;
+            this._showMessage(_t("Record search failed: %s", err.message || err));
         }
     }
 
@@ -686,7 +694,7 @@ export class SocialImageEditorDialog extends Component {
             const first = this.state.previewResults[0];
             this.state.previewResults = [];
             if (!first) {
-                this.state.message = "No records found to preview.";
+                this._showMessage(_t("No records found to preview."));
                 return;
             }
             this.state.previewRecordId = first.id;
@@ -724,6 +732,12 @@ export class SocialImageEditorDialog extends Component {
                     [[this.props.resId], this.state.previewRecordId],
                     { scene_json: sceneJson }
                 )) || {};
+            const measurePreviewLine = (lineText, desc) => {
+                const ctx = fc.contextContainer;
+                if (!ctx) return 0;
+                ctx.font = `${desc.fontStyle || "normal"} ${desc.fontWeight || "normal"} ${desc.fontSize}px ${desc.fontFamily || "sans-serif"}`;
+                return ctx.measureText(lineText).width;
+            };
             for (const obj of fc.getObjects()) {
                 // Conditional visibility (any layer type).
                 const hie = obj._hideIfEmpty;
@@ -731,11 +745,19 @@ export class SocialImageEditorDialog extends Component {
                     obj.visible = false;
                     continue;
                 }
-                // Text tokens with pipe transforms.
+                // Text tokens with pipe transforms, plus the render-time
+                // typography pipeline (transform, markdown, autofit) so the
+                // preview matches the server output exactly.
                 if (typeof obj.text === "string") {
-                    const resolved = resolveTokens(obj.text, bindings);
-                    if (resolved !== obj.text) {
-                        obj.set("text", resolved);
+                    const textBefore = obj.text;
+                    const stylesBefore = JSON.stringify(obj.styles || {});
+                    resolveTextForPreview(obj, bindings, { measure: measurePreviewLine });
+                    if (
+                        obj.text !== textBefore ||
+                        JSON.stringify(obj.styles || {}) !== stylesBefore
+                    ) {
+                        obj.set("text", obj.text);
+                        obj.set("styles", obj.styles || {});
                     }
                 }
                 // Bound images: swap src, then cover-fit back into the
@@ -771,7 +793,7 @@ export class SocialImageEditorDialog extends Component {
             }
             fc.renderAll();
         } catch (err) {
-            this.state.message = `Preview failed: ${err.message || err}`;
+            this._showMessage(_t("Preview failed: %s", err.message || err));
             await this._exitPreview();
         } finally {
             this.state.previewBusy = false;
@@ -808,7 +830,7 @@ export class SocialImageEditorDialog extends Component {
             if (this._company && this._company.logo) {
                 items.push({
                     id: "company-logo",
-                    name: "Company logo",
+                    name: _t("Company logo"),
                     url: `/web/image/res.company/${this._companyId}/logo`,
                     kind: "logo",
                 });
@@ -834,7 +856,7 @@ export class SocialImageEditorDialog extends Component {
                     for (const att of atts || []) {
                         items.push({
                             id: att.id,
-                            name: att.name || "image",
+                            name: att.name || _t("image"),
                             url: `/web/content/${att.id}`,
                             kind: "image",
                         });
@@ -892,7 +914,7 @@ export class SocialImageEditorDialog extends Component {
         try {
             await this.orm.create("ir.attachment", [
                 {
-                    name: file.name || "image",
+                    name: file.name || _t("image"),
                     type: "binary",
                     datas: file.data,
                     mimetype: file.type,
@@ -906,7 +928,7 @@ export class SocialImageEditorDialog extends Component {
                 file.name
             );
         } catch (err) {
-            this.state.message = `Upload failed: ${err.message || err}`;
+            this._showMessage(_t("Upload failed: %s", err.message || err));
         }
     }
 
@@ -971,7 +993,7 @@ export class SocialImageEditorDialog extends Component {
             this.state.iconFilter = "";
             this._addObject(grp);
         } catch (err) {
-            this.state.message = `Icon failed to load: ${err.message || err}`;
+            this._showMessage(_t("Icon failed to load: %s", err.message || err));
         }
     }
 
@@ -1292,7 +1314,7 @@ export class SocialImageEditorDialog extends Component {
      */
     _assertEditable() {
         if (this.state.previewMode) {
-            this.state.message = "Exit preview mode to edit the design.";
+            this._showMessage(_t("Exit preview mode to edit the design."));
             return false;
         }
         return true;
@@ -1536,7 +1558,7 @@ export class SocialImageEditorDialog extends Component {
         const { Textbox } = this._fabric;
         const { width } = this._dimensions;
         this._addObject(
-            new Textbox("Text", {
+            new Textbox(_t("Text"), {
                 left: Math.max(20, width * 0.1),
                 top: 60,
                 width: Math.max(200, width * 0.6),
@@ -1965,7 +1987,7 @@ export class SocialImageEditorDialog extends Component {
                 }
             })
             .catch((err) => {
-                this.state.message = `Image failed to load: ${err.message || err}`;
+                this._showMessage(_t("Image failed to load: %s", err.message || err));
             });
     }
 
@@ -2445,7 +2467,7 @@ export class SocialImageEditorDialog extends Component {
             }
         }
         if (!clip) {
-            this.state.message = "Fill with image is not supported for this shape.";
+            this._showMessage(_t("Fill with image is not supported for this shape."));
             return;
         }
 
@@ -2486,7 +2508,7 @@ export class SocialImageEditorDialog extends Component {
             this._syncSelection();
             this._onCanvasChanged();
         } catch (err) {
-            this.state.message = `Fill with image failed: ${err.message || err}`;
+            this._showMessage(_t("Fill with image failed: %s", err.message || err));
         }
     }
 
@@ -2574,7 +2596,7 @@ export class SocialImageEditorDialog extends Component {
             fresh.scaleY = (obj.clipPath.scaleY || 1) * (obj.scaleY || 1);
         }
         if (!fresh) {
-            this.state.message = "Revert to color is not supported for this shape.";
+            this._showMessage(_t("Revert to color is not supported for this shape."));
             return;
         }
         fresh._layerId = obj._layerId;
@@ -2749,21 +2771,19 @@ export class SocialImageEditorDialog extends Component {
     }
 
     /**
-     * Apply the derived text props (case transform, autofit) to a single
-     * text object. Idempotent, so it is safe to call on every render and
-     * after every text edit. `set("text", ...)` fires a `changed` event
-     * that can re-enter this path; the transform stabilizes after one
-     * application, so the loop terminates.
+     * Edit-time text props for the live canvas. Per the render-parity
+     * design (D3) the case transform is NEVER baked into obj.text here:
+     * stored scenes must keep raw {{tokens}} so bindings resolve at
+     * render, and the render service applies the transform to the
+     * resolved value. Autofit stays as an edit-time convenience for
+     * static text only; fitting against placeholder token text is exactly
+     * the overflow bug the render-time autofit fixes.
      */
     _applyTextProps(obj) {
         if (!obj || typeof obj.text !== "string") {
             return;
         }
-        const transformed = applyCaseTransform(obj.text, obj._textTransform);
-        if (transformed !== obj.text) {
-            obj.set("text", transformed);
-        }
-        if (obj._overflow === "autofit") {
+        if (obj._overflow === "autofit" && !obj.text.includes("{{")) {
             const size = computeAutofitFontSize({
                 text: obj.text,
                 boxWidth: obj.width || 0,
@@ -3257,14 +3277,15 @@ export class SocialImageEditorDialog extends Component {
     // ------------------------------------------------------------------
 
     _captureScene() {
-        // Derived text props are part of the render: apply them before
-        // serializing so the saved scene and the SVG master match what the
-        // user sees. Suspended so the resulting `changed` events cannot
-        // schedule extra history/save cycles mid-capture.
+        // Raw capture, no derivation: case transform and autofit apply at
+        // render time (render-parity design D3), so this must NOT rewrite
+        // obj.text; stored scenes keep raw {{tokens}} so bindings resolve.
+        // _textTransform/_overflow still persist via EXTRA_PROPS. Suspended
+        // so the resulting `changed` events cannot schedule extra
+        // history/save cycles mid-capture.
         const wasSuspended = this._history.suspended;
         this._history.suspended = true;
         try {
-            this._applyTextPropsToAll();
             const base = this._canvas.toObject();
             base.objects = this._canvas
                 .getObjects()
@@ -3396,7 +3417,17 @@ export class SocialImageEditorDialog extends Component {
         }
         const key = ev.key.toLowerCase();
         const mod = ev.metaKey || ev.ctrlKey;
+        if (key === "delete" || key === "backspace") {
+            // Remove the active selection. The guards above suppress this
+            // while a text object is in editing mode (and inside inputs).
+            ev.preventDefault();
+            this.deleteSelected();
+            return;
+        }
         if (key === "escape") {
+            // Unwind in reverse order of opening: open pickers close
+            // first, a final Escape closes the dialog itself (subject to
+            // the close-safety rule in close()).
             if (this.state.iconPickerOpen) {
                 this.state.iconPickerOpen = false;
                 this.state.iconFilter = "";
@@ -3407,6 +3438,20 @@ export class SocialImageEditorDialog extends Component {
                 this.state.mediaFilter = "";
                 return;
             }
+            if (this.state.fontPickerOpen) {
+                this.state.fontPickerOpen = false;
+                this.state.fontFilter = "";
+                this._syncGlobalPointerListener();
+                return;
+            }
+            if (this.state.shapesOpen) {
+                this.state.shapesOpen = false;
+                this._syncGlobalPointerListener();
+                return;
+            }
+            ev.preventDefault();
+            this.close();
+            return;
         }
         if (mod && key === "g" && ev.shiftKey) {
             ev.preventDefault();
@@ -3440,10 +3485,58 @@ export class SocialImageEditorDialog extends Component {
     }
 
     /**
+     * Show the bottom message line as a toast: dismissible and
+     * auto-clearing after MESSAGE_TIMEOUT_MS (ux task 6.1). The timer is
+     * reset on every new message, and a stale timer never clears a newer
+     * message. An unresolved save error keeps the bar (with the Retry
+     * button) via state.saveState even after the text clears.
+     */
+    _showMessage(text) {
+        this.state.message = text;
+        clearTimeout(this._messageTimer);
+        if (!text) {
+            return;
+        }
+        this._messageTimer = setTimeout(() => {
+            if (this.state.message === text) {
+                this.state.message = "";
+            }
+        }, MESSAGE_TIMEOUT_MS);
+    }
+
+    dismissMessage() {
+        clearTimeout(this._messageTimer);
+        this._messageTimer = null;
+        this.state.message = "";
+    }
+
+    /**
+     * Text of the bottom message line: the current message, or a fallback
+     * while a save error is unresolved but the message already cleared.
+     */
+    messageBarText() {
+        return this.state.message || _t("Save failed.");
+    }
+
+    /**
+     * Retry a failed save (retry button in the message bar, close-safety
+     * design D1): flush immediately and report the outcome through the
+     * usual save-state and message plumbing.
+     */
+    async retrySave() {
+        await this._flushSave();
+    }
+
+    /**
      * Persist the live scene into the primary variant (variants JSONB, so
      * the legacy width/height/scene_json mirrors stay in sync via the
      * model's write override) and regenerate the SVG master with the same
      * DOMPurify + btoa pipeline as the old inline field.
+     *
+     * @returns {Promise<boolean>} true when the scene is safely persisted
+     *   (nothing dirty, or the write succeeded), false when a write was
+     *   attempted and failed; the caller (close) decides whether staying
+     *   open is required.
      */
     async _flushSave() {
         if (this.state.previewMode) {
@@ -3451,7 +3544,7 @@ export class SocialImageEditorDialog extends Component {
             await this._exitPreview();
         }
         if (!this._canvas || !this._dirty || this._saving) {
-            return;
+            return true;
         }
         this._saving = true;
         this.state.saveState = "saving";
@@ -3480,21 +3573,56 @@ export class SocialImageEditorDialog extends Component {
             this._variants = variants;
             this._dirty = false;
             this.state.saveState = "saved";
-            this.state.message = "";
+            this._closeFailed = false;
+            this.dismissMessage();
+            return true;
         } catch (err) {
             this.state.saveState = "error";
-            this.state.message = `Autosave failed: ${err.message || err}`;
+            this._showMessage(_t("Autosave failed: %s", err.message || err));
+            return false;
         } finally {
             this._saving = false;
         }
     }
 
+    /**
+     * Close the editor. Awaits the final save flush (close-safety design
+     * D1): while a save is in flight closing is blocked, and when the
+     * flush fails the dialog stays open with the message line and its
+     * retry button, keeping the edits. A second close attempt after a
+     * failure asks for explicit discard and only then closes unsaved.
+     */
     async close() {
+        if (this._saving) {
+            // A flush owns the scene right now; closing would strand it.
+            return;
+        }
         clearTimeout(this._saveTimer);
         if (this.state.previewMode) {
             await this._exitPreview();
         }
-        await this._flushSave();
+        const saved = await this._flushSave();
+        if (saved) {
+            this._closeFailed = false;
+            this.props.close();
+            return;
+        }
+        if (!this._closeFailed) {
+            // First failure: stay open; the message line plus its retry
+            // button carry the error, the edits and the dirty flag remain.
+            this._closeFailed = true;
+            return;
+        }
+        // Second attempt after a failure: explicit discard only.
+        const discard = window.confirm(
+            _t(
+                "The changes could not be saved. Close the editor and discard your edits?"
+            )
+        );
+        if (!discard) {
+            return;
+        }
+        this._dirty = false;
         this.props.close();
     }
 }

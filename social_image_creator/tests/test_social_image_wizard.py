@@ -56,11 +56,17 @@ class TestSocialImageRenderWizard(TransactionCase):
         self.assertEqual(post.image_ids.mimetype, 'image/png')
 
     def test_on_publish_stores_pending_render(self):
+        self.template.set_variants([
+            {'name': 'Primary', 'width': 1200, 'height': 630,
+             'scene_json': '{}', 'is_primary': True},
+            {'name': 'Story', 'width': 1080, 'height': 1920,
+             'scene_json': '{}', 'is_primary': False},
+        ])
         post = self.env['social_marketing.post'].create({
             'message': 'Wizard publish post',
         })
         wizard = self._new_wizard(
-            post=post, render_timing='on_publish', variant_index=1)
+            post=post, render_timing='on_publish', variant_name='Story')
         with patch(
                 'odoo.addons.social_image_creator.models.'
                 'social_image_template.SocialImageTemplate._render_scene',

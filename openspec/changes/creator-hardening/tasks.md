@@ -28,7 +28,7 @@
 ## 5. Bulk creation entry point
 
 - [x] 5.1 Implement _sync_bulk_actions() on social.image.template (create on create/write, unlink when unbound, Settings button) with sudo; verify a TransactionCase that binds a model, finds the action in the model's action bindings, opens the wizard with active ids, and that removal happens after the last template re-binds
-- [ ] 5.2 Correct docs/knowledge/social_image_creator.md where it describes the old binding_model_id behavior
+- [x] 5.2 Correct docs/knowledge/social_image_creator.md where it describes the old binding_model_id behavior
 
 ## 6. Preview lifecycle
 
@@ -39,7 +39,7 @@
 ## 7. Menus and docs
 
 - [ ] 7.1 Introduce the Image Studio parent menu with Templates beneath it and move Image Sizes under Configuration; verify the menu tree on staging matches the spec
-- [ ] 7.2 Update docs/knowledge/social_image_creator.md for the company rule, dynamic bulk actions and preview lifecycle (module shape changed)
+- [x] 7.2 Update docs/knowledge/social_image_creator.md for the company rule, dynamic bulk actions and preview lifecycle (module shape changed)
 
 ## 8. Verification
 
