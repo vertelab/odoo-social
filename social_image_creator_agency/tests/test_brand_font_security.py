@@ -1,20 +1,14 @@
 # -*- coding: utf-8 -*-
 # Vertel Sverige AB AGPL-3
 
-from unittest import SkipTest
+import base64
 
 from odoo.exceptions import AccessError, ValidationError
 from odoo.tests.common import TransactionCase
 
-try:
-    from odoo.addons.social_image_creator_agency.models.social_brand_font import (
-        sniff_font_format,
-    )
-except ImportError:
-    # The agency glue module is not installed in this deployment; the
-    # pure signature checks are skipped, the rest of this module's
-    # suites still run.
-    sniff_font_format = None
+from odoo.addons.social_image_creator_agency.models.social_brand_font import (
+    sniff_font_format,
+)
 
 
 class TestFontSignature(TransactionCase):
@@ -24,12 +18,11 @@ class TestFontSignature(TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        if sniff_font_format is None or 'social.brand.font' not in cls.env:
-            raise SkipTest('social_image_creator_agency not installed')
         cls.brand = cls.env['social.brand'].create({
             'name': 'Font Test Brand',
             'partner_id': cls.env['res.partner'].create({
                 'name': 'Font Test Customer',
+                'is_company': True,
             }).id,
         })
 
@@ -51,15 +44,17 @@ class TestFontSignature(TransactionCase):
         return self.env['social.brand.font'].create({
             'brand_id': self.brand.id,
             'name': name,
+            'role': 'body',
             'filename': filename,
-            'file': payload,
+            'font_file': base64.b64encode(payload),
         })
 
     def test_valid_ttf_bytes_accepted(self):
         font = self._create_font(
             'FontTestTTF', b'\x00\x01\x00\x00' + b'\x00' * 40, 'FontTestTTF.ttf')
         self.assertTrue(font)
-        self.assertEqual(sniff_font_format(font.file), 'TTF')
+        self.assertEqual(sniff_font_format(base64.b64decode(font.font_file)),
+                         'TTF')
 
     def test_renamed_payload_rejected(self):
         """A PNG renamed to .ttf must be refused by the constraint."""

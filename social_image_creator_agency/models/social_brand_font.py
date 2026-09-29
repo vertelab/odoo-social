@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 # Vertel Sverige AB AGPL-3
 
-from odoo import _, api, fields, models
+import base64
+
+from odoo import _, api, models
 from odoo.exceptions import UserError, ValidationError
 
 # Render service bound: a font file is registered per template render and
@@ -41,51 +43,57 @@ def sniff_font_format(data):
 
 
 class SocialBrandFont(models.Model):
-    """An uploaded brand font (spec: agency-brand-kit).
+    """Adds content validation and a render-service download to the brand
+    font model owned by ``social_marketing_agency`` (spec: agency-brand-kit).
 
-    ``name`` is the family name used in Fabric (editor ``fontFamily``,
-    scene JSON) and MUST equal the file basename without extension, which is
-    exactly how the render service registers files from
-    ``render_service/fonts/`` (design decision D6). The file is stored as a
-    binary attachment; the render service cannot read Odoo attachments, so
-    deployment is a manual copy: use the line's "Download for render
-    service" button, drop the file into ``render_service/fonts/`` and POST
-    ``/fonts/reload`` (or restart the service). See README.md.
+    The base model and its ``font_file``/``role`` fields live in
+    ``social_marketing_agency``; this module only extends it. Until
+    2026-09-29 this class declared ``_name = 'social.brand.font'``, which
+    collided with the base model: Odoo loaded the base first (it is a
+    dependency) so the redefinition was never applied, this file was dead
+    code and its constraints protected nothing. It also redefined ``name``
+    to mean "family name", conflicting with the base field of the same name
+    meaning "display name", and the view shipped here rendered ``role``,
+    which only the base model defines, so the module could not even be
+    installed. It is now an ``_inherit`` extension.
+
+    The font file is stored as a binary attachment; the render service
+    cannot read Odoo attachments, so deployment is a manual copy: use the
+    row's "Download for render service" button, drop the file into
+    ``render_service/fonts/`` and POST ``/fonts/reload`` (or restart the
+    service). See README.md.
     """
 
-    _name = 'social.brand.font'
-    _description = 'Brand Font'
-    _order = 'sequence, id'
+    _inherit = 'social.brand.font'
 
-    brand_id = fields.Many2one(
-        'social.brand', string='Brand', required=True, ondelete='cascade')
-    sequence = fields.Integer('Sequence', default=10)
-    name = fields.Char(
-        'Family Name', required=True,
-        help="Family name in Fabric: fontFamily, scene JSON. Must equal the "
-             "file basename without extension, e.g. BrandonGrotesque-Bold "
-             "for BrandonGrotesque-Bold.ttf (render service convention).")
-    filename = fields.Char(
-        'File Name',
-        help="Original file name, e.g. BrandonGrotesque-Bold.ttf. Saved as "
-             "the attachment name so the download carries the right basename.")
-    file = fields.Binary('Font File', attachment=True, required=True)
+    def _decode_font_binary(self):
+        """Return the raw font bytes for this record.
 
-    @api.constrains('file')
+        A Binary field read through the ORM returns base64-encoded bytes
+        (the value lives in an attachment), not the raw file content. Both
+        the size and the magic-byte checks need the decoded bytes:
+        comparing base64 text against raw magic signatures rejects every
+        font.
+        """
+        self.ensure_one()
+        return base64.b64decode(self.font_file)
+
+    @api.constrains('font_file')
     def _check_file_size(self):
         for font in self:
-            # Binary fields come back as raw bytes.
-            if font.file and len(font.file) > MAX_FONT_SIZE:
+            if not font.font_file:
+                continue
+            if len(font._decode_font_binary()) > MAX_FONT_SIZE:
                 raise ValidationError(_(
                     "Font file %s is larger than 5 MB.") %
                     (font.filename or font.name or ''))
 
-    @api.constrains('file')
+    @api.constrains('font_file')
     def _check_file_signature(self):
         for font in self:
-            if not font.file:
+            if not font.font_file:
                 continue
-            if sniff_font_format(font.file) is None:
+            if sniff_font_format(font._decode_font_binary()) is None:
                 raise ValidationError(_(
                     "File %(name)s is not a valid font: its content does "
                     "not match any of the supported formats "
@@ -116,7 +124,7 @@ class SocialBrandFont(models.Model):
         attachment = self.env['ir.attachment'].sudo().search([
             ('res_model', '=', self._name),
             ('res_id', '=', self.id),
-            ('res_field', '=', 'file'),
+            ('res_field', '=', 'font_file'),
         ], limit=1)
         if not attachment:
             raise UserError(_(

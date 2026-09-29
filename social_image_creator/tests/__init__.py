@@ -4,6 +4,4 @@ from . import test_binding_access
 from . import test_company_rule
 from . import test_bulk_actions
 from . import test_preview_lifecycle
-from . import test_brand_font_security
 from . import test_wizard_variant_selection
-from . import test_brand_palette_validation
