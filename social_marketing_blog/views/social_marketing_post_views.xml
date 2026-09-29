@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Article title on the post form. Shown only when the post targets a
+         blog channel, where it becomes the title of the published article.
+
+         Declared once, on the TEMPLATE form. The post form is a primary
+         view inheriting that template, so it receives the field through
+         inheritance; adding it again on the post form renders the field
+         twice. The post-only readonly rule is applied below as an attribute
+         override, not as a second field. -->
+    <record id="view_social_marketing_post_template_form_blog" model="ir.ui.view">
+        <field name="name">social_marketing.post.template.form.blog</field>
+        <field name="model">social_marketing.post.template</field>
+        <field name="inherit_id" ref="social_marketing.social_marketing_post_template_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='message']" position="before">
+                <field name="title"
+                       placeholder="Article title"
+                       invisible="not targets_blog_channel"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Posts additionally freeze the title once publishing has begun. -->
+    <record id="view_social_marketing_post_form_blog" model="ir.ui.view">
+        <field name="name">social_marketing.post.form.blog</field>
+        <field name="model">social_marketing.post</field>
+        <field name="inherit_id" ref="social_marketing.social_marketing_post_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='title']" position="attributes">
+                <attribute name="readonly">state in ['posting', 'posted']</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Make blog posts findable by title. -->
+    <record id="view_social_marketing_post_search_blog" model="ir.ui.view">
+        <field name="name">social_marketing.post.search.blog</field>
+        <field name="model">social_marketing.post</field>
+        <field name="inherit_id" ref="social_marketing.social_marketing_post_view_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <field name="title"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Blog configuration on a social account: which website blog the
+         channel publishes to, and under which author. -->
+    <record id="view_social_marketing_account_form_blog" model="ir.ui.view">
+        <field name="name">social_marketing.account.form.blog</field>
+        <field name="model">social_marketing.account</field>
+        <field name="inherit_id" ref="social_marketing.social_marketing_account_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='social_marketing_account_token']" position="after">
+                <group name="social_marketing_account_blog" string="Blog"
+                       invisible="media_type != 'blog'">
+                    <field name="blog_id" options="{'no_create': True}"/>
+                    <field name="author_id" options="{'no_create': True}"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Filter the account list by blog channels. -->
+    <record id="view_social_marketing_account_search_blog" model="ir.ui.view">
+        <field name="name">social_marketing.account.search.blog</field>
+        <field name="model">social_marketing.account</field>
+        <field name="inherit_id" ref="social_marketing.social_marketing_account_view_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='filter_active']" position="after">
+                <filter name="filter_blog" string="Blog Channels"
+                        domain="[('media_id.media_type', '=', 'blog')]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

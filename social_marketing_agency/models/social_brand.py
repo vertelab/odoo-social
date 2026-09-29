@@ -368,3 +368,36 @@ class SocialBrand(models.Model):
             'domain': [('brand_id', '=', self.id)],
             'context': {'default_brand_id': self.id},
         }
+
+    def action_create_post(self):
+        """Start a new post for this brand from its kanban card.
+
+        The brand is put in the session exactly as ``action_set_focus`` does,
+        so the channel list offered inside the form is already scoped to this
+        brand: ``_compute_account_allowed_ids`` calls ``search([])`` on
+        ``social_marketing.account``, whose ``social.brand.focus.mixin``
+        search filter keeps this brand's channels plus the shared
+        (brand-less) ones. Setting it here rather than only defaulting
+        ``brand_id`` is what makes the channel list correct on a cold page,
+        because the compute reads the session, not the record.
+
+        The form is opened on a brand-new record rather than the list: the
+        button means "create a post", and landing on a list would make the
+        user hunt for the New button.
+        """
+        self.ensure_one()
+        if self.env.user.share:
+            raise ValidationError(_('Customer users cannot switch brands.'))
+        from odoo.http import request
+        request.session['social_brand_id'] = self.id
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('New Post'),
+            'res_model': 'social_marketing.post',
+            'view_mode': 'form',
+            'target': 'current',
+            'context': {
+                'default_brand_id': self.id,
+                'default_company_id': self.env.company.id,
+            },
+        }

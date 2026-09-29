@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="social_media_blog" model="social_marketing.media">
+            <field name="name">Blog</field>
+            <field name="media_type">blog</field>
+            <field name="media_description">Publish articles to your website blog</field>
+        </record>
+    </data>
+</odoo>
