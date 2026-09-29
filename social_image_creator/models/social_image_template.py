@@ -140,7 +140,7 @@ class SocialImageTemplate(models.Model):
     scene_json = fields.Text('Scene (Fabric JSON)', default='{}')
     variants = fields.Json(
         'Variants',
-        default=lambda: [{
+        default=lambda self: [{
             'name': 'Primary', 'width': 1200, 'height': 630,
             'scene_json': '{}', 'is_primary': True,
         }],
