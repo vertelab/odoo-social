@@ -5,7 +5,7 @@
     'name': 'Social: Marketing',
     'category': 'Marketing/Social Marketing',
     'summary': 'Manage your social marketing',
-    'version': '1.3.0',
+    'version': '1.3.1',
     'description': """Manage your social marketing """,
     'website': 'https://vertel.se/app/odoo-social',
     'depends': ['web', 'mail', 'link_tracker', 'queue_job'],
