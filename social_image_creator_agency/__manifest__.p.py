@@ -5,7 +5,7 @@
     'name': 'Social Image Creator Agency Glue',
     'category': 'Marketing/Social Marketing',
     'summary': 'Brand scoping and brand kits for social image templates',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.1.0',
     'description': """
 Glue module between social_image_creator and social_marketing_agency
 (design decision D8): brand-scoped image templates, a brand kit (color
