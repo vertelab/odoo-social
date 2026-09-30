@@ -1,0 +1,180 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* social_image_creator_agency
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0-20260815\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-29 16:19+0000\n"
+"PO-Revision-Date: 2026-09-29 16:19+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: social_image_creator_agency
+#. odoo-python
+#: code:addons/social_image_creator_agency/models/social_brand.py:0
+msgid "%r is not a hex color in #rrggbb form."
+msgstr ""
+
+#. module: social_image_creator_agency
+#: model:ir.model.fields,field_description:social_image_creator_agency.field_social_image_template__brand_id
+#: model_terms:ir.ui.view,arch_db:social_image_creator_agency.social_image_template_view_search_brand
+msgid "Brand"
+msgstr ""
+
+#. module: social_image_creator_agency
+#: model:ir.model.fields,field_description:social_image_creator_agency.field_social_brand__font_ids
+msgid "Brand Fonts"
+msgstr ""
+
+#. module: social_image_creator_agency
+#: model_terms:ir.ui.view,arch_db:social_image_creator_agency.social_image_template_view_search_brand
+msgid "Branded"
+msgstr ""
+
+#. module: social_image_creator_agency
+#: model:ir.model.fields,field_description:social_image_creator_agency.field_social_brand__palette
+msgid "Color Palette"
+msgstr ""
+
+#. module: social_image_creator_agency
+#. odoo-python
+#: code:addons/social_image_creator_agency/models/social_brand.py:0
+msgid ""
+"Color palette: %(reason)s. Expected a JSON list of hex colors in #rrggbb "
+"form, for example %(example)s."
+msgstr ""
+
+#. module: social_image_creator_agency
+#: model_terms:ir.ui.view,arch_db:social_image_creator_agency.social_image_template_view_search_brand
+msgid "Company Level"
+msgstr ""
+
+#. module: social_image_creator_agency
+#: model_terms:ir.ui.view,arch_db:social_image_creator_agency.view_social_brand_form_brand_kit
+msgid "Download for render service (copy into render_service/fonts/)"
+msgstr ""
+
+#. module: social_image_creator_agency
+#. odoo-python
+#: code:addons/social_image_creator_agency/models/social_brand_font.py:0
+msgid ""
+"File %(name)s is not a valid font: its content does not match any of the "
+"supported formats (%(formats)s). A renamed file is not enough, upload a real"
+" font binary."
+msgstr ""
+
+#. module: social_image_creator_agency
+#. odoo-python
+#: code:addons/social_image_creator_agency/models/social_brand_font.py:0
+msgid "Font file %s is larger than 5 MB."
+msgstr ""
+
+#. module: social_image_creator_agency
+#: model:ir.model.fields,help:social_image_creator_agency.field_social_brand__font_ids
+msgid ""
+"Fonts uploaded for this brand. The family name must equal the file basename "
+"without extension (the render_service/fonts convention); copy the file into "
+"render_service/fonts/ (or use the line's Download button) to make it "
+"available for server-side rendering."
+msgstr ""
+
+#. module: social_image_creator_agency
+#: model_terms:ir.ui.view,arch_db:social_image_creator_agency.social_image_template_view_search_brand
+msgid "Group By"
+msgstr ""
+
+#. module: social_image_creator_agency
+#: model_terms:ir.ui.view,arch_db:social_image_creator_agency.social_image_template_view_search_brand
+msgid "Image Templates"
+msgstr ""
+
+#. module: social_image_creator_agency
+#: model:ir.model.fields,help:social_image_creator_agency.field_social_brand__palette
+msgid ""
+"JSON list of hex colors, e.g. [\"#003366\", \"#ff6600\"]. Offered as brand "
+"colors in the image editor for templates of this brand."
+msgstr ""
+
+#. module: social_image_creator_agency
+#. odoo-python
+#: code:addons/social_image_creator_agency/models/social_brand_font.py:0
+msgid "No font file is stored on %s yet. Upload one first."
+msgstr ""
+
+#. module: social_image_creator_agency
+#: model:ir.model.fields,help:social_image_creator_agency.field_social_image_template__brand_id
+msgid ""
+"Optional brand scope. When set, customer users only see this template if "
+"they belong to the brand, and binding record pickers are limited to the "
+"brand's records where the binding model supports it."
+msgstr ""
+
+#. module: social_image_creator_agency
+#. odoo-python
+#: code:addons/social_image_creator_agency/models/social_image_template.py:0
+msgid ""
+"Record %(id)s does not belong to brand %(brand)s, which this template is "
+"scoped to."
+msgstr ""
+
+#. module: social_image_creator_agency
+#. odoo-python
+#: code:addons/social_image_creator_agency/models/social_image_template.py:0
+msgid ""
+"Record %(record)s does not belong to brand %(brand)s, which template "
+"%(template)s is scoped to."
+msgstr ""
+
+#. module: social_image_creator_agency
+#. odoo-python
+#: code:addons/social_image_creator_agency/models/social_image_render_wizard.py:0
+msgid ""
+"Record %(record)s does not belong to brand %(brand)s, which template "
+"%(template)s is scoped to. Pick a record of that brand, or use an unbranded "
+"template."
+msgstr ""
+
+#. module: social_image_creator_agency
+#: model:ir.model,name:social_image_creator_agency.model_social_image_render_wizard
+msgid "Render Image Template"
+msgstr "Rendera bildmall"
+
+#. module: social_image_creator_agency
+#: model:ir.model,name:social_image_creator_agency.model_social_brand
+msgid "Social Brand"
+msgstr ""
+
+#. module: social_image_creator_agency
+#: model:ir.model,name:social_image_creator_agency.model_social_brand_font
+msgid "Social Brand Font"
+msgstr ""
+
+#. module: social_image_creator_agency
+#: model:ir.model,name:social_image_creator_agency.model_social_image_template
+msgid "Social Image Template"
+msgstr "Social bildmall"
+
+#. module: social_image_creator_agency
+#. odoo-python
+#: code:addons/social_image_creator_agency/models/social_brand_font.py:0
+msgid ""
+"Unsupported font file type .%(ext)s on %(name)s. Use one of: %(types)s."
+msgstr ""
+
+#. module: social_image_creator_agency
+#. odoo-python
+#: code:addons/social_image_creator_agency/models/social_brand.py:0
+msgid "the palette must be a list of hex colors, not %s."
+msgstr ""
+
+#. module: social_image_creator_agency
+#. odoo-python
+#: code:addons/social_image_creator_agency/models/social_brand.py:0
+msgid "the palette text is not valid JSON"
+msgstr ""

@@ -4,175 +4,854 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 18.0\n"
+"Project-Id-Version: Odoo Server 18.0-20260815\n"
 "Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-29 16:19+0000\n"
+"PO-Revision-Date: 2026-09-29 16:19+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: \n"
+
+#. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_image_template.py:0
+msgid "%s must be an integer between %d and %d."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_data_binding.py:0
+msgid ""
+"A data binding must belong to exactly one template, either an image template"
+" or a post template."
+msgstr ""
+
 #. module: social_image_creator
 #. odoo-javascript
-#: code:addons/social_image_creator/static/src/xml/social_image_editor_field.xml:0
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Abort the render with a clear error when the bound field is empty"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Actions"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_size__active
+msgid "Active"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Add QR code"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
 msgid "Add SVG"
 msgstr "Lägg till SVG"
 
 #. module: social_image_creator
 #. odoo-javascript
-#: code:addons/social_image_creator/static/src/xml/social_image_editor_field.xml:0
-msgid "Add circle"
-msgstr "Lägg till cirkel"
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Add category"
+msgstr ""
 
 #. module: social_image_creator
 #. odoo-javascript
-#: code:addons/social_image_creator/static/src/xml/social_image_editor_field.xml:0
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Add chart"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Add icon"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
 msgid "Add image"
 msgstr "Lägg till bild"
 
 #. module: social_image_creator
 #. odoo-javascript
-#: code:addons/social_image_creator/static/src/xml/social_image_editor_field.xml:0
-msgid "Add line"
-msgstr "Lägg till linje"
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Add series"
+msgstr ""
 
 #. module: social_image_creator
 #. odoo-javascript
-#: code:addons/social_image_creator/static/src/xml/social_image_editor_field.xml:0
-msgid "Add rectangle"
-msgstr "Lägg till rektangel"
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Add shape"
+msgstr ""
 
 #. module: social_image_creator
 #. odoo-javascript
-#: code:addons/social_image_creator/static/src/xml/social_image_editor_field.xml:0
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Add table"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
 msgid "Add text"
 msgstr "Lägg till text"
 
 #. module: social_image_creator
 #. odoo-javascript
-#: code:addons/social_image_creator/static/src/xml/social_image_editor_field.xml:0
-msgid "Add triangle"
-msgstr "Lägg till triangel"
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Align bottom"
+msgstr ""
 
 #. module: social_image_creator
 #. odoo-javascript
-#: code:addons/social_image_creator/static/src/xml/social_image_editor_field.xml:0
-msgid "Bring forward"
-msgstr "Flytta framåt"
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Align center"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Align center horizontally"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Align center vertically"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Align left"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Align right"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Align top"
+msgstr ""
+
+#. module: social_image_creator
+#: model_terms:ir.actions.act_window,help:social_image_creator.action_social_image_template
+msgid ""
+"An image template is a reusable design with named size\n"
+"                variants, for example a post and a story, and placeholders\n"
+"                that fill in from your records. Create one with the New\n"
+"                button, design it in the editor, then render images for\n"
+"                posts and pages from it."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Angle"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+msgid "Area"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields.selection,name:social_image_creator.selection__social_image_render_wizard__render_timing__on_create
+msgid "At post creation"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,help:social_image_creator.field_social_image_render_wizard__render_timing
+msgid ""
+"At post creation renders now and attaches the image to the post. At publish "
+"time stores the template on the post and renders right before publishing; a "
+"failed render blocks the post."
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields.selection,name:social_image_creator.selection__social_image_render_wizard__render_timing__on_publish
+msgid "At publish time"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Autofit (shrink to fit at render)"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+msgid "Autosave failed: %s"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "B"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Back"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Back to a solid color shape"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Background color (white = none)"
+msgstr ""
+
+#. module: social_image_creator
+#: model_terms:ir.ui.view,arch_db:social_image_creator.res_config_settings_view_form
+msgid ""
+"Base URL of the Node render service for image templates (e.g. http://render-"
+"odoo:8600). Set from pillar in production."
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,help:social_image_creator.field_res_config_settings__social_marketing_render_service_url
+msgid ""
+"Base URL of the Node render service for image templates, e.g. http://render-"
+"odoo:8600"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Basic"
+msgstr ""
+
+#. module: social_image_creator
+#: model_terms:ir.ui.view,arch_db:social_image_creator.res_config_settings_view_form
+msgid ""
+"Bearer token for the render service. Secret: never commit; set from pillar "
+"in production."
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,help:social_image_creator.field_res_config_settings__social_marketing_render_service_token
+msgid ""
+"Bearer token used to authenticate render service calls. Stored via "
+"ir.config_parameter; set from pillar in production."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Bind active image layer"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Bind this image to a binary field of the record"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Bind to field"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_template__model_id
+msgid "Binding Model"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_render_wizard__binding_mismatch
+msgid "Binding Model Mismatch"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_image_template.py:0
+msgid "Binding model %s is not available."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_data_binding.py:0
+msgid ""
+"Binding token %s is not a valid name. Use a letter followed by letters, "
+"digits or underscores."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Blur"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Bold"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Brand"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Brand fonts"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Brightness"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_image_template.py:0
+msgid "Bulk creation actions synced"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "C"
+msgstr ""
 
 #. module: social_image_creator
 #: model_terms:ir.ui.view,arch_db:social_image_creator.social_image_render_wizard_view_form
-#: model_terms:ir.ui.view,arch_db:social_marketing.social_marketing_post_view_form
 msgid "Cancel"
 msgstr "Avbryt"
 
 #. module: social_image_creator
 #. odoo-javascript
-#: code:addons/social_image_creator/static/src/xml/social_image_editor_field.xml:0
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Case"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Case transform (applies at render)"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+msgid "Category"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+msgid "Category 1"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+msgid "Category 2"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+msgid "Category 3"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Cells accept numbers or {{field}} tokens."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Char spacing"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Character spacing"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Chart"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+msgid "Chart failed to generate: %s"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+msgid "Chart failed to update: %s"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Chart title"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_image_render_wizard.py:0
+msgid ""
+"Choose a record to bind the template against; at publish time the values are"
+" read from the record, so the placeholders cannot be filled in manually."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
 msgid "Clear canvas"
 msgstr "Rensa canvas"
 
 #. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Click a field to bind this image (cover-fitted at render)."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Click a field to insert its token at the cursor."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+#: model_terms:ir.ui.view,arch_db:social_image_creator.social_image_bulk_wizard_view_form
+msgid "Close"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Column"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Columns"
+msgstr ""
+
+#. module: social_image_creator
 #: model:ir.model.fields,field_description:social_image_creator.field_social_image_template__company_id
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_account__company_id
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_account_stat__company_id
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_live_post__company_id
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_post__company_id
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_stream__company_id
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_stream_post__company_id
-#: model_terms:ir.ui.view,arch_db:social_marketing.social_marketing_account_view_search
-#: model_terms:ir.ui.view,arch_db:social_marketing.social_marketing_post_view_search
-#: model_terms:ir.ui.view,arch_db:social_marketing.social_marketing_stream_view_search
+#: model_terms:ir.ui.view,arch_db:social_image_creator.social_image_template_view_search
 msgid "Company"
 msgstr "Bolag"
 
 #. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+msgid "Company logo"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model,name:social_image_creator.model_res_config_settings
+msgid "Config Settings"
+msgstr "Inställningar"
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Content"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Continue"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Contrast"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Corner radius"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+msgid "Could not load the model fields: %s"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+msgid "Could not set the binding model: %s"
+msgstr ""
+
+#. module: social_image_creator
 #: model:ir.actions.act_window,name:social_image_creator.action_social_image_render_wizard
 #: model_terms:ir.ui.view,arch_db:social_image_creator.social_image_render_wizard_view_form
-#: model_terms:ir.ui.view,arch_db:social_marketing.social_marketing_post_view_form
+#: model_terms:ir.ui.view,arch_db:social_image_creator.social_marketing_post_view_form_render_button
 msgid "Create Image from Template"
 msgstr "Skapa bild från mall"
 
 #. module: social_image_creator
+#: model_terms:ir.ui.view,arch_db:social_image_creator.social_image_bulk_wizard_view_form
+msgid "Create Posts"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_image_bulk_wizard.py:0
+#: model:ir.model,name:social_image_creator.model_social_image_bulk_wizard
+#: model_terms:ir.ui.view,arch_db:social_image_creator.social_image_bulk_wizard_view_form
+msgid "Create Posts from Image Template"
+msgstr ""
+
+#. module: social_image_creator
+#: model_terms:ir.actions.act_window,help:social_image_creator.action_social_image_template
+msgid "Create your first image template"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_bulk_wizard__created_count
+msgid "Created"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_image_bulk_wizard.py:0
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_bulk_wizard__created_post_ids
+msgid "Created Posts"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_data_binding__create_uid
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_bulk_wizard__create_uid
 #: model:ir.model.fields,field_description:social_image_creator.field_social_image_render_wizard__create_uid
 #: model:ir.model.fields,field_description:social_image_creator.field_social_image_render_wizard_line__create_uid
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_size__create_uid
 #: model:ir.model.fields,field_description:social_image_creator.field_social_image_template__create_uid
 #: model:ir.model.fields,field_description:social_image_creator.field_social_image_template_placeholder__create_uid
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_account__create_uid
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_account_stat__create_uid
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_cron_line__create_uid
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_live_post__create_uid
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_live_post_stat__create_uid
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_media__create_uid
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_post__create_uid
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_post_template__create_uid
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_stream__create_uid
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_stream_post__create_uid
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_stream_post_image__create_uid
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_stream_type__create_uid
-#: model:ir.model.fields,field_description:social_marketing.field_social_publish_pipeline_step__create_uid
-#: model:ir.model.fields,field_description:social_marketing.field_social_publish_rate_limit__create_uid
 msgid "Created by"
 msgstr "Skapad av"
 
 #. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_data_binding__create_date
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_bulk_wizard__create_date
 #: model:ir.model.fields,field_description:social_image_creator.field_social_image_render_wizard__create_date
 #: model:ir.model.fields,field_description:social_image_creator.field_social_image_render_wizard_line__create_date
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_size__create_date
 #: model:ir.model.fields,field_description:social_image_creator.field_social_image_template__create_date
 #: model:ir.model.fields,field_description:social_image_creator.field_social_image_template_placeholder__create_date
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_account__create_date
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_account_stat__create_date
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_cron_line__create_date
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_live_post__create_date
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_live_post_stat__create_date
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_media__create_date
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_post__create_date
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_post_template__create_date
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_stream__create_date
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_stream_post__create_date
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_stream_post_image__create_date
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_stream_type__create_date
-#: model:ir.model.fields,field_description:social_marketing.field_social_publish_pipeline_step__create_date
-#: model:ir.model.fields,field_description:social_marketing.field_social_publish_rate_limit__create_date
 msgid "Created on"
 msgstr "Skapad den"
 
 #. module: social_image_creator
-#: model:ir.model.fields.selection,name:social_image_creator.selection__social_image_template__platform__custom
-msgid "Custom"
-msgstr "Anpassad"
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Dashed"
+msgstr ""
 
 #. module: social_image_creator
 #. odoo-javascript
-#: code:addons/social_image_creator/static/src/xml/social_image_editor_field.xml:0
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Data"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_template__binding_ids
+#: model:ir.model.fields,field_description:social_image_creator.field_social_marketing_post__binding_ids
+#: model:ir.model.fields,field_description:social_image_creator.field_social_marketing_post_template__binding_ids
+#: model_terms:ir.ui.view,arch_db:social_image_creator.social_data_binding_view_list
+#: model_terms:ir.ui.view,arch_db:social_image_creator.social_image_template_view_form_bindings
+#: model_terms:ir.ui.view,arch_db:social_image_creator.social_marketing_post_template_view_form_bindings
+msgid "Data Bindings"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Delete layer"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
 msgid "Delete selection"
 msgstr "Ta bort markering"
 
 #. module: social_image_creator
+#: model_terms:ir.ui.view,arch_db:social_image_creator.social_image_template_view_form
+msgid "Design"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_field.xml:0
+msgid "Design preview"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Dismiss"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_data_binding__display_name
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_bulk_wizard__display_name
 #: model:ir.model.fields,field_description:social_image_creator.field_social_image_render_wizard__display_name
 #: model:ir.model.fields,field_description:social_image_creator.field_social_image_render_wizard_line__display_name
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_size__display_name
 #: model:ir.model.fields,field_description:social_image_creator.field_social_image_template__display_name
 #: model:ir.model.fields,field_description:social_image_creator.field_social_image_template_placeholder__display_name
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_account__display_name
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_account_stat__display_name
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_cron_line__display_name
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_live_post__display_name
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_live_post_stat__display_name
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_media__display_name
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_post__display_name
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_post_template__display_name
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_stream__display_name
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_stream_post__display_name
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_stream_post_image__display_name
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_stream_type__display_name
-#: model:ir.model.fields,field_description:social_marketing.field_social_publish_pipeline_step__display_name
-#: model:ir.model.fields,field_description:social_marketing.field_social_publish_rate_limit__display_name
 msgid "Display Name"
 msgstr "Visningsnamn"
 
 #. module: social_image_creator
 #. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Distribute horizontally"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Distribute horizontally (3+ objects)"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Distribute vertically"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Distribute vertically (3+ objects)"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields.selection,name:social_image_creator.selection__social_image_bulk_wizard__state__done
+msgid "Done"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Done editing"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+msgid "Donut"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Dotted"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid ""
+"Double-click a cell to edit its text. Click outside the table or press Done "
+"to finish."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Double-click the table later to edit cell text."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Double-click the table to edit cell text."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Drop here to move to the bottom"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Drop shadow"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Duplicate layer"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
 #: code:addons/social_image_creator/static/src/xml/social_image_editor_field.xml:0
+msgid "Edit Design"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Editing table cells"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+msgid "Editor failed to load: %s"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Encoded content; {{field}} tokens resolve per record"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "End"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "End color"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "End stop position"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+msgid "Enter the QR content first."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+msgid "Exit preview mode to edit the design."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
 msgid "Fabric"
 msgstr "Fabric"
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_bulk_wizard__failure_details
+msgid "Failures"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_data_binding__field_id
+msgid "Field"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_data_binding.py:0
+msgid "Field %(field)s does not belong to model %(model)s."
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_data_binding__field_name
+msgid "Field Name"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_render_wizard__preview_datas
+msgid "File Content (base64)"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Fill"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Fill the shape with an image, clipped to its outline"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Fill with image"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+msgid "Fill with image failed: %s"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+msgid "Fill with image is not supported for this shape."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Font size"
+msgstr ""
 
 #. module: social_image_creator
 #: model:ir.model.fields,field_description:social_image_creator.field_social_image_render_wizard__format
@@ -180,33 +859,161 @@ msgid "Format"
 msgstr "Format"
 
 #. module: social_image_creator
+#: model:social.image.size,name:social_image_creator.social_image_size_full_hd
+msgid "Full HD"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Google Fonts"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Gradient"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Gradient angle"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Grayscale"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Grid options"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Grid spacing"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Group"
+msgstr ""
+
+#. module: social_image_creator
+#: model_terms:ir.ui.view,arch_db:social_image_creator.social_image_template_view_search
+msgid "Group By"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Group selection (Ctrl+G)"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_render_wizard__has_binding_model
+msgid "Has Binding Model"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_size__height
 #: model:ir.model.fields,field_description:social_image_creator.field_social_image_template__height
 msgid "Height (px)"
 msgstr "Höjd (px)"
 
 #. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Hide if empty"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Hide this layer when the field resolves to empty"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+msgid "Horizontal bar"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "I"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_data_binding__id
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_bulk_wizard__id
 #: model:ir.model.fields,field_description:social_image_creator.field_social_image_render_wizard__id
 #: model:ir.model.fields,field_description:social_image_creator.field_social_image_render_wizard_line__id
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_size__id
 #: model:ir.model.fields,field_description:social_image_creator.field_social_image_template__id
 #: model:ir.model.fields,field_description:social_image_creator.field_social_image_template_placeholder__id
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_account__id
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_account_stat__id
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_cron_line__id
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_live_post__id
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_live_post_stat__id
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_media__id
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_post__id
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_post_template__id
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_stream__id
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_stream_post__id
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_stream_post_image__id
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_stream_type__id
-#: model:ir.model.fields,field_description:social_marketing.field_social_publish_pipeline_step__id
-#: model:ir.model.fields,field_description:social_marketing.field_social_publish_rate_limit__id
 msgid "ID"
 msgstr ""
 
 #. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Icon color"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+msgid "Icon failed to load: %s"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_marketing_post__image_template_record_id
+msgid "Image Record ID"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_marketing_post__image_template_record_model
+msgid "Image Record Model"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_marketing_post__image_render_error
+msgid "Image Render Error"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_marketing_post__image_render_pending
+msgid "Image Render Pending"
+msgstr ""
+
+#. module: social_image_creator
+#: model_terms:ir.ui.view,arch_db:social_image_creator.social_image_size_view_form
+msgid "Image Size"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.actions.act_window,name:social_image_creator.action_social_image_size
+#: model:ir.ui.menu,name:social_image_creator.menu_social_image_size
+#: model_terms:ir.ui.view,arch_db:social_image_creator.social_image_size_view_list
+msgid "Image Sizes"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.ui.menu,name:social_image_creator.menu_social_image_studio
+msgid "Image Studio"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_data_binding__template_id
+#: model:ir.model.fields,field_description:social_image_creator.field_social_marketing_post__image_template_id
 #: model_terms:ir.ui.view,arch_db:social_image_creator.social_image_template_view_form
 msgid "Image Template"
 msgstr "Bildmall"
@@ -214,10 +1021,16 @@ msgstr "Bildmall"
 #. module: social_image_creator
 #: model:ir.actions.act_window,name:social_image_creator.action_social_image_template
 #: model:ir.ui.menu,name:social_image_creator.menu_social_image_template
-#: model_terms:ir.ui.view,arch_db:social_marketing.res_config_settings_view_form
+#: model_terms:ir.ui.view,arch_db:social_image_creator.res_config_settings_view_form
 #: model_terms:ir.ui.view,arch_db:social_image_creator.social_image_template_view_list
+#: model_terms:ir.ui.view,arch_db:social_image_creator.social_image_template_view_search
 msgid "Image Templates"
 msgstr "Bildmallar"
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_marketing_post__image_variant_index
+msgid "Image Variant Index"
+msgstr ""
 
 #. module: social_image_creator
 #. odoo-python
@@ -226,14 +1039,98 @@ msgid "Image created"
 msgstr "Bild skapad"
 
 #. module: social_image_creator
-#: model:ir.model.fields.selection,name:social_image_creator.selection__social_image_template__platform__instagram_square
-msgid "Instagram Square (1080×1080)"
-msgstr "Instagram kvadrat (1080×1080)"
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+msgid "Image failed to load: %s"
+msgstr ""
 
 #. module: social_image_creator
-#: model:ir.model.fields.selection,name:social_image_creator.selection__social_image_template__platform__instagram_story
-msgid "Instagram Story (1080×1920)"
-msgstr "Instagram Story (1080×1920)"
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Image filters"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_image_render_wizard.py:0
+msgid "Image render scheduled"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Insert Dynamic Data"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Insert QR code"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Insert as text token"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Insert dynamic data"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Insert icon"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Insert table"
+msgstr ""
+
+#. module: social_image_creator
+#: model:social.image.size,name:social_image_creator.social_image_size_instagram_portrait
+msgid "Instagram Portrait"
+msgstr ""
+
+#. module: social_image_creator
+#: model:social.image.size,name:social_image_creator.social_image_size_instagram_square
+msgid "Instagram Square"
+msgstr ""
+
+#. module: social_image_creator
+#: model:social.image.size,name:social_image_creator.social_image_size_instagram_story
+msgid "Instagram Story"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_image_template.py:0
+msgid "Invalid variants on template %s: %s"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_image_template.py:0
+msgid "Invalid variants: %s"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Italic"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Justify"
+msgstr ""
 
 #. module: social_image_creator
 #: model:ir.model.fields,field_description:social_image_creator.field_social_image_render_wizard_line__label
@@ -242,77 +1139,267 @@ msgid "Label"
 msgstr "Etikett"
 
 #. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_data_binding__write_uid
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_bulk_wizard__write_uid
 #: model:ir.model.fields,field_description:social_image_creator.field_social_image_render_wizard__write_uid
 #: model:ir.model.fields,field_description:social_image_creator.field_social_image_render_wizard_line__write_uid
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_size__write_uid
 #: model:ir.model.fields,field_description:social_image_creator.field_social_image_template__write_uid
 #: model:ir.model.fields,field_description:social_image_creator.field_social_image_template_placeholder__write_uid
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_account__write_uid
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_account_stat__write_uid
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_cron_line__write_uid
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_live_post__write_uid
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_live_post_stat__write_uid
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_media__write_uid
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_post__write_uid
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_post_template__write_uid
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_stream__write_uid
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_stream_post__write_uid
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_stream_post_image__write_uid
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_stream_type__write_uid
-#: model:ir.model.fields,field_description:social_marketing.field_social_publish_pipeline_step__write_uid
-#: model:ir.model.fields,field_description:social_marketing.field_social_publish_rate_limit__write_uid
 msgid "Last Updated by"
 msgstr "Senast uppdaterad av"
 
 #. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_data_binding__write_date
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_bulk_wizard__write_date
 #: model:ir.model.fields,field_description:social_image_creator.field_social_image_render_wizard__write_date
 #: model:ir.model.fields,field_description:social_image_creator.field_social_image_render_wizard_line__write_date
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_size__write_date
 #: model:ir.model.fields,field_description:social_image_creator.field_social_image_template__write_date
 #: model:ir.model.fields,field_description:social_image_creator.field_social_image_template_placeholder__write_date
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_account__write_date
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_account_stat__write_date
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_cron_line__write_date
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_live_post__write_date
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_live_post_stat__write_date
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_media__write_date
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_post__write_date
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_post_template__write_date
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_stream__write_date
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_stream_post__write_date
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_stream_post_image__write_date
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_stream_type__write_date
-#: model:ir.model.fields,field_description:social_marketing.field_social_publish_pipeline_step__write_date
-#: model:ir.model.fields,field_description:social_marketing.field_social_publish_rate_limit__write_date
 msgid "Last Updated on"
 msgstr "Senast uppdaterad den"
 
 #. module: social_image_creator
-#: model:ir.model.fields.selection,name:social_image_creator.selection__social_image_template__platform__linkedin_post
-msgid "LinkedIn Post (1200×627)"
-msgstr "LinkedIn-inlägg (1200×627)"
+#: model:ir.model.fields,help:social_image_creator.field_social_marketing_post__image_render_error
+msgid ""
+"Last render failure. Publishing is blocked while a render is pending and "
+"failing."
+msgstr ""
 
 #. module: social_image_creator
 #. odoo-javascript
-#: code:addons/social_image_creator/static/src/xml/social_image_editor_field.xml:0
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Layers"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Line"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Line height"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Linear"
+msgstr ""
+
+#. module: social_image_creator
+#: model:social.image.size,name:social_image_creator.social_image_size_linkedin_post
+msgid "LinkedIn Post"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,help:social_image_creator.field_social_image_template__variants
+msgid ""
+"List of size variants: {name, width, height, scene_json, is_primary}. "
+"Exactly one variant is primary; the primary mirrors into the "
+"width/height/scene_json fields."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Live data preview"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Live data preview: resolve tokens against a real record"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
 msgid "Loading editor..."
 msgstr "Läser in redigerare..."
 
 #. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Loading font previews"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Loading font..."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Loading media..."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Media library"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Media library: brand images and logos"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_data_binding__model_id
+msgid "Model"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_data_binding__model_name
+msgid "Model Name"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+msgid "Model search failed: %s"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,help:social_image_creator.field_social_image_template__model_id
+msgid "Model that template tokens resolve against"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "More shapes"
+msgstr ""
+
+#. module: social_image_creator
 #: model:ir.model.fields,field_description:social_image_creator.field_social_image_render_wizard_line__name
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_size__name
 #: model:ir.model.fields,field_description:social_image_creator.field_social_image_template__name
 #: model:ir.model.fields,field_description:social_image_creator.field_social_image_template_placeholder__name
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_account__name
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_media__name
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_post__name
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_stream_type__name
-#: model_terms:ir.ui.view,arch_db:social_marketing.social_marketing_account_view_form
-#: model_terms:ir.ui.view,arch_db:social_marketing.social_marketing_account_view_search
 msgid "Name"
 msgstr "Namn"
 
 #. module: social_image_creator
-#: model:ir.model.fields.selection,name:social_image_creator.selection__social_image_template__platform__og
-msgid "Open Graph (1200×630)"
-msgstr "Open Graph (1200×630)"
+#: model:ir.model.fields,help:social_image_creator.field_social_data_binding__name
+msgid "Name used in the template, written as {{ token }}."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Never"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_field.xml:0
+msgid "No design yet"
+msgstr ""
+
+#. module: social_image_creator
+#: model_terms:ir.ui.view,arch_db:social_image_creator.social_image_bulk_wizard_view_form
+msgid "No failures."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "No icons match your search."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_marketing_post.py:0
+msgid "No image template configured on the post."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "No images in the media library yet. Upload one with the button above."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "No layers yet. Use the toolbar above to add objects."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "No models found."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_image_bulk_wizard.py:0
+msgid ""
+"No posts could be created. Failures:\n"
+"%s"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_marketing_post.py:0
+msgid "No record chosen for the image template on post %s."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+msgid "No records found to preview."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "No transform"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_image_template.py:0
+msgid "No variant named %r."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Not bound"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Offset X"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Offset Y"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Opacity"
+msgstr ""
+
+#. module: social_image_creator
+#: model:social.image.size,name:social_image_creator.social_image_size_open_graph
+msgid "Open Graph"
+msgstr ""
 
 #. module: social_image_creator
 #: model:ir.model.fields.selection,name:social_image_creator.selection__social_image_render_wizard__format__png
@@ -325,6 +1412,26 @@ msgid "PNG Master"
 msgstr "PNG-master"
 
 #. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Pen tool"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid ""
+"Pen tool: click to place anchors, Enter or double-click to close, Esc to "
+"cancel"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+msgid "Pie"
+msgstr ""
+
+#. module: social_image_creator
 #: model:ir.model.fields,field_description:social_image_creator.field_social_image_render_wizard__line_ids
 #: model:ir.model.fields,field_description:social_image_creator.field_social_image_template__placeholder_ids
 #: model_terms:ir.ui.view,arch_db:social_image_creator.social_image_render_wizard_view_form
@@ -334,9 +1441,155 @@ msgid "Placeholders"
 msgstr "Platshållare"
 
 #. module: social_image_creator
-#: model:ir.model.fields,field_description:social_image_creator.field_social_image_template__platform
-msgid "Platform"
-msgstr "Plattform"
+#: model:ir.model.fields,field_description:social_image_creator.field_social_data_binding__post_template_id
+msgid "Post Template"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_render_wizard__preview_attachment_id
+#: model_terms:ir.ui.view,arch_db:social_image_creator.social_image_render_wizard_view_form
+msgid "Preview"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_render_wizard__preview_error
+msgid "Preview Error"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+msgid "Preview failed: %s"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Preview record"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_image_template.py:0
+msgid "Preview scene is not valid JSON."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+msgid "Primary"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Properties"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "QR code"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+msgid "QR content cannot be encoded."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "R"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Radial"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Radius"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_render_wizard__record_id
+msgid "Record"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_image_template.py:0
+msgid ""
+"Record %(id)s of model %(model)s does not exist or you do not have read "
+"access to it."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_image_render_wizard.py:0
+msgid ""
+"Record %(record)s belongs to model %(record_model)s, but template "
+"%(template)s is bound to model %(model)s. Pick a record of the right model."
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_render_wizard__record_model
+msgid "Record Model"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_image_template.py:0
+msgid "Record model %s does not match the template binding model %s."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_image_render_wizard.py:0
+msgid "Record model %s is not available."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+msgid "Record search failed: %s"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,help:social_image_creator.field_social_image_render_wizard__record_id
+msgid ""
+"Record the template tokens resolve against. Leave empty to fill in the "
+"placeholders manually below."
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,help:social_image_creator.field_social_image_bulk_wizard__failure_details
+msgid "Records whose post or render failed, with the reason."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Redo"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Remove category"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Remove series"
+msgstr ""
 
 #. module: social_image_creator
 #: model_terms:ir.ui.view,arch_db:social_image_creator.social_image_render_wizard_view_form
@@ -344,14 +1597,113 @@ msgid "Render"
 msgstr "Rendera"
 
 #. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_image_render_wizard.py:0
 #: model:ir.model,name:social_image_creator.model_social_image_render_wizard
 msgid "Render Image Template"
 msgstr "Rendera bildmall"
 
 #. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_res_config_settings__social_marketing_render_service_token
+#: model_terms:ir.ui.view,arch_db:social_image_creator.res_config_settings_view_form
+msgid "Render Service Token"
+msgstr "Render-tjänstens token"
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_res_config_settings__social_marketing_render_service_url
+#: model_terms:ir.ui.view,arch_db:social_image_creator.res_config_settings_view_form
+msgid "Render Service URL"
+msgstr "Render-tjänstens URL"
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_render_wizard__render_timing
+msgid "Render Timing"
+msgstr ""
+
+#. module: social_image_creator
 #: model:ir.model,name:social_image_creator.model_social_image_render_wizard_line
 msgid "Render Wizard Placeholder Line"
 msgstr "Render-guide platshållarrad"
+
+#. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_image_render_wizard.py:0
+msgid ""
+"Render at publish time is only available when the wizard is opened from a "
+"social post."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_image_template.py:0
+msgid ""
+"Render service is not configured. Set the render service URL in Settings "
+"(Social Marketing)."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_image_template.py:0
+msgid ""
+"Render service is unreachable (%s). Check the configured URL and that the "
+"service is running."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_image_template.py:0
+msgid ""
+"Render service returned HTTP %s. Check the template scene and the service "
+"logs."
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,help:social_image_creator.field_social_marketing_post__image_render_pending
+msgid ""
+"Render the template image when the post is published. Cleared once the image"
+" has been rendered."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Required (fail render if empty)"
+msgstr ""
+
+#. module: social_image_creator
+#: model_terms:ir.ui.view,arch_db:social_image_creator.social_image_bulk_wizard_view_form
+msgid "Result"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Retry"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Revert to color"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+msgid "Revert to color is not supported for this shape."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Row"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Rows"
+msgstr ""
 
 #. module: social_image_creator
 #: model:ir.model.fields.selection,name:social_image_creator.selection__social_image_render_wizard__format__svg
@@ -365,19 +1717,32 @@ msgstr "SVG-master"
 
 #. module: social_image_creator
 #. odoo-javascript
-#: code:addons/social_image_creator/static/src/xml/social_image_editor_field.xml:0
-msgid "Save"
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Save failed"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+msgid "Save failed."
 msgstr ""
 
 #. module: social_image_creator
 #. odoo-javascript
 #: code:addons/social_image_creator/static/src/xml/social_image_editor_field.xml:0
-msgid "Save scene + SVG master"
-msgstr "Spara scen + SVG-master"
+msgid "Save the record to enable the editor."
+msgstr ""
 
 #. module: social_image_creator
-#: model_terms:ir.ui.view,arch_db:social_image_creator.social_image_template_view_form
-msgid "Scene"
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Saved"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Saving..."
 msgstr ""
 
 #. module: social_image_creator
@@ -387,9 +1752,173 @@ msgstr "Scen (Fabric JSON)"
 
 #. module: social_image_creator
 #. odoo-javascript
-#: code:addons/social_image_creator/static/src/xml/social_image_editor_field.xml:0
-msgid "Send backward"
-msgstr "Flytta bakåt"
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Search fields"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Search fonts"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Search icons"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Search images"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Search models"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Search records..."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Select a text or image layer to bind it to a field."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Select an image layer on the canvas to bind it to this field."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Select an object to edit its properties."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_image_bulk_wizard.py:0
+msgid "Select at least one record to create posts from."
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_bulk_wizard__source_record_count
+msgid "Selected Records"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_data_binding__sequence
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_size__sequence
+msgid "Sequence"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+msgid "Series %s"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+msgid "Series 1"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_image_template.py:0
+msgid ""
+"Server actions offering bulk post creation are up to date for the bound "
+"models."
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields.selection,name:social_image_creator.selection__social_image_bulk_wizard__state__setup
+msgid "Setup"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Shadow"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Shadow color"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Shadow opacity"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Shape"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Shapes"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_render_wizard__show_render_timing
+msgid "Show Render Timing"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Show grid"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Showing the first 400 of"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Shrink the font until the text fits the box width"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Snap to grid"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model,name:social_image_creator.model_social_data_binding
+msgid "Social Data Binding"
+msgstr ""
+
+#. module: social_image_creator
+#: model_terms:ir.ui.view,arch_db:social_image_creator.res_config_settings_view_form
+msgid "Social Image Creator"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model,name:social_image_creator.model_social_image_size
+msgid "Social Image Size Preset"
+msgstr ""
 
 #. module: social_image_creator
 #: model:ir.model,name:social_image_creator.model_social_image_template
@@ -402,6 +1931,124 @@ msgid "Social Image Template Placeholder"
 msgstr "Social bildmall-platshållare"
 
 #. module: social_image_creator
+#: model:ir.actions.server,name:social_image_creator.ir_cron_social_image_preview_cleanup_ir_actions_server
+msgid "Social Image: Clean Up Preview Attachments"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model,name:social_image_creator.model_social_marketing_post
+msgid "Social Post"
+msgstr "Sociala inlägg"
+
+#. module: social_image_creator
+#: model:ir.model,name:social_image_creator.model_social_marketing_post_template
+msgid "Social Post Template"
+msgstr "Mall för sociala inlägg"
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Solid"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_bulk_wizard__source_model_name
+msgid "Source Model"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Start"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Start color"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Start stop position"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_bulk_wizard__state
+msgid "Status"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Step 1 of 3: choose the model the template binds to."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Step 2 of 3: pick a field of"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Step 3 of 3: insert"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Stroke"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Stroke style"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Stroke width"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Style"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.actions.server,name:social_image_creator.action_social_image_template_sync_bulk_actions
+msgid "Sync Bulk Creation Actions"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "System fonts"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Table"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,help:social_image_creator.field_social_image_bulk_wizard__variant_index
+#: model:ir.model.fields,help:social_image_creator.field_social_image_render_wizard__variant_index
+msgid ""
+"Technical: index of the chosen variant, resolved from the name at render "
+"time; kept for API callers that still pass an index."
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_bulk_wizard__template_id
 #: model:ir.model.fields,field_description:social_image_creator.field_social_image_render_wizard__template_id
 #: model:ir.model.fields,field_description:social_image_creator.field_social_image_template_placeholder__template_id
 msgid "Template"
@@ -409,9 +2056,128 @@ msgstr "Mall"
 
 #. module: social_image_creator
 #. odoo-python
+#: code:addons/social_image_creator/models/social_image_bulk_wizard.py:0
+msgid ""
+"Template %(template)s has no binding model. Bulk creation renders one image "
+"per record, so the template must be bound to the model of the selected "
+"records."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_image_bulk_wizard.py:0
+msgid ""
+"Template %(template)s is bound to model %(model)s, but the selected records "
+"are %(source)s. Nothing was created; pick a template bound to %(source)s or "
+"run the action on %(model)s records instead."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_image_template.py:0
+msgid ""
+"Template %(template)s: model %(model)s cannot be bound. Transient and "
+"abstract models are not allowed."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_image_template.py:0
+msgid ""
+"Template %(template)s: model %(model)s is not in the allowed binding models "
+"list (%(allowed)s). Ask an administrator to update the "
+"social_image_creator.allowed_binding_models system parameter."
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,help:social_image_creator.field_social_image_bulk_wizard__template_id
+msgid "Template bound to the model of the selected records."
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,help:social_image_creator.field_social_marketing_post__image_template_id
+msgid "Template rendered for this post's image."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-python
 #: code:addons/social_image_creator/models/social_image_template.py:0
 msgid "Template scene is not valid JSON."
 msgstr "Mallscenen är inte giltig JSON."
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Text"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Text color"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Text or URL, {{field}} allowed"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+msgid ""
+"The changes could not be saved. Close the editor and discard your edits?"
+msgstr ""
+
+#. module: social_image_creator
+#: model_terms:ir.ui.view,arch_db:social_image_creator.social_image_render_wizard_view_form
+msgid ""
+"The chosen record belongs to a different model than the\n"
+"                    template's binding model. Pick a record of the binding\n"
+"                    model, or clear the record and fill in the placeholders\n"
+"                    manually."
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,help:social_image_creator.field_social_image_render_wizard__binding_mismatch
+msgid ""
+"The chosen record belongs to a different model than the template's binding "
+"model."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_image_render_wizard.py:0
+msgid ""
+"The chosen record does not match the template's binding model. Pick a record"
+" of model %s or clear the record and fill in the placeholders manually."
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,help:social_image_creator.field_social_image_bulk_wizard__variant_fallback
+#: model:ir.model.fields,help:social_image_creator.field_social_image_render_wizard__variant_fallback
+msgid ""
+"The chosen variant no longer exists on the template; the primary variant is "
+"used instead."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+msgid "The content cannot be encoded as a QR code."
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,help:social_image_creator.field_social_data_binding__field_id
+msgid "The field read off the source record. Picked, never typed."
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,help:social_image_creator.field_social_data_binding__model_id
+msgid "The model the source record must belong to."
+msgstr ""
 
 #. module: social_image_creator
 #. odoo-python
@@ -421,23 +2187,278 @@ msgstr "Den renderade bilden lades till i inlägget."
 
 #. module: social_image_creator
 #. odoo-python
+#: code:addons/social_image_creator/models/social_image_bulk_wizard.py:0
+msgid ""
+"The source model is missing. Open this action from a list view with selected"
+" records."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_image_template.py:0
+msgid "The template has no variant to duplicate."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_image_render_wizard.py:0
+msgid ""
+"The template image renders when the post is published; a failed render "
+"blocks the post."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_image_template.py:0
+msgid ""
+"This template has no binding model. Use render_template() with explicit "
+"bindings instead."
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_data_binding__name
+msgid "Token"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_data_binding.py:0
+msgid "Token %s is already bound on this template."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "U"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "UPPERCASE"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Underline"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Undo"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Ungroup"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Ungroup (Ctrl+Shift+G)"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Unsaved changes"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-python
 #: code:addons/social_image_creator/models/social_image_template.py:0
 msgid "Unsupported render format: %s"
 msgstr "Formatet stöds inte: %s"
 
 #. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Upload"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Upload an image into the company media library"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+msgid "Upload failed: %s"
+msgstr ""
+
+#. module: social_image_creator
 #: model:ir.model.fields,field_description:social_image_creator.field_social_image_render_wizard_line__value
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_account_stat__value
-#: model:ir.model.fields,field_description:social_marketing.field_social_marketing_live_post_stat__value
 msgid "Value"
 msgstr "Värde"
 
 #. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_bulk_wizard__variant_name
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_render_wizard__variant_name
+msgid "Variant"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_image_bulk_wizard.py:0
+#: code:addons/social_image_creator/models/social_image_render_wizard.py:0
+msgid ""
+"Variant %(variant)s no longer exists on template %(template)s. The primary "
+"variant is used instead."
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_bulk_wizard__variant_fallback
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_render_wizard__variant_fallback
+msgid "Variant Fallback"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_bulk_wizard__variant_fallback_message
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_render_wizard__variant_fallback_message
+msgid "Variant Fallback Message"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_bulk_wizard__variant_index
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_render_wizard__variant_index
+msgid "Variant Index"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_image_template.py:0
+msgid "Variant index %d is out of range."
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,help:social_image_creator.field_social_image_bulk_wizard__variant_name
+#: model:ir.model.fields,help:social_image_creator.field_social_image_render_wizard__variant_name
+msgid "Variant of the template to render, chosen by its name."
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,help:social_image_creator.field_social_marketing_post__image_variant_index
+msgid "Variant of the template to render; 0 is the primary variant."
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_template__variants
+#: model_terms:ir.ui.view,arch_db:social_image_creator.social_image_template_view_form
+msgid "Variants"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_template__variants_summary
+msgid "Variants Summary"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+msgid "Vertical bar"
+msgstr ""
+
+#. module: social_image_creator
+#: model_terms:ir.ui.view,arch_db:social_image_creator.social_image_bulk_wizard_view_form
+msgid "View Created Posts"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "W"
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,help:social_image_creator.field_social_image_render_wizard__preview_error
+msgid "Why the live preview could not be rendered."
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,help:social_image_creator.field_social_image_bulk_wizard__variant_fallback_message
+#: model:ir.model.fields,help:social_image_creator.field_social_image_render_wizard__variant_fallback_message
+msgid "Why the primary variant is used instead of the chosen one."
+msgstr ""
+
+#. module: social_image_creator
+#: model:ir.model.fields,field_description:social_image_creator.field_social_image_size__width
 #: model:ir.model.fields,field_description:social_image_creator.field_social_image_template__width
 msgid "Width (px)"
 msgstr "Bredd (px)"
 
 #. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Width in px"
+msgstr ""
+
+#. module: social_image_creator
 #: model:ir.model.fields,field_description:social_image_creator.field_social_image_render_wizard_line__wizard_id
 msgid "Wizard"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "X"
+msgstr ""
+
+#. module: social_image_creator
+#: model:social.image.size,name:social_image_creator.social_image_size_x_header
+msgid "X/Twitter Header"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "Y"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_data_binding.py:0
+msgid "Yes"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-python
+#: code:addons/social_image_creator/models/social_image_template.py:0
+msgid "You do not have read access to model %(model)s (%(error)s)."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "icons, keep typing to narrow down."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/js/dialog/social_image_editor_dialog.js:0
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "image"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "into the design."
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "lowercase"
+msgstr ""
+
+#. module: social_image_creator
+#. odoo-javascript
+#: code:addons/social_image_creator/static/src/xml/social_image_editor_dialog.xml:0
+msgid "{{field}} tokens resolve per record."
 msgstr ""
