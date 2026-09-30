@@ -1101,12 +1101,12 @@ msgstr ""
 #. module: social_image_creator
 #: model:social.image.size,name:social_image_creator.social_image_size_instagram_square
 msgid "Instagram Square"
-msgstr ""
+msgstr "Instagram kvadrat"
 
 #. module: social_image_creator
 #: model:social.image.size,name:social_image_creator.social_image_size_instagram_story
 msgid "Instagram Story"
-msgstr ""
+msgstr "Instagram Story"
 
 #. module: social_image_creator
 #. odoo-python
@@ -1195,7 +1195,7 @@ msgstr ""
 #. module: social_image_creator
 #: model:social.image.size,name:social_image_creator.social_image_size_linkedin_post
 msgid "LinkedIn Post"
-msgstr ""
+msgstr "LinkedIn-inlägg"
 
 #. module: social_image_creator
 #: model:ir.model.fields,help:social_image_creator.field_social_image_template__variants
@@ -1399,7 +1399,7 @@ msgstr ""
 #. module: social_image_creator
 #: model:social.image.size,name:social_image_creator.social_image_size_open_graph
 msgid "Open Graph"
-msgstr ""
+msgstr "Open Graph"
 
 #. module: social_image_creator
 #: model:ir.model.fields.selection,name:social_image_creator.selection__social_image_render_wizard__format__png
